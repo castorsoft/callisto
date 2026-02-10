@@ -1,5 +1,0 @@
-/home/lamb/dev/castorsoft/dfe/build/CMakeFiles/dfe_app.dir
-/home/lamb/dev/castorsoft/dfe/build/CMakeFiles/edit_cache.dir
-/home/lamb/dev/castorsoft/dfe/build/CMakeFiles/rebuild_cache.dir
-/home/lamb/dev/castorsoft/dfe/build/CMakeFiles/dfe_app_autogen_timestamp_deps.dir
-/home/lamb/dev/castorsoft/dfe/build/CMakeFiles/dfe_app_autogen.dir
