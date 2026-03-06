@@ -3,6 +3,7 @@
 
 #include <QSqlDatabase>
 #include <QString>
+#include <QSqlError>
 
 class DatabaseManager {
 public:
@@ -10,11 +11,13 @@ public:
 
     bool open(const QString& driver = "QMYSQL",
               const QString& host = "localhost",
-              const QString& port = "5432",
+              const int& port = 5432,
               const QString& dbname = "",
               const QString& user = "",
               const QString& pass = "");
     void close();
+
+    QSqlError lastError();
 
     QSqlDatabase database() const; // conexão global (atenção a threads)
 
