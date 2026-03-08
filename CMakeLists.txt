@@ -21,7 +21,10 @@ set(CMAKE_AUTOUIC ON)
 file(COPY src/migrations DESTINATION ./)
 file(COPY src/config.json DESTINATION ./)
 
-add_executable(dfe_app src/main.cpp src/database/database.cpp src/forms/MainWindow.cpp)
+add_executable(dfe_app
+        src/main.cpp
+        src/database/database.cpp
+        src/forms/MainWindow.cpp)
 
 target_link_libraries(dfe_app PRIVATE Qt6::Sql Qt6::Widgets Qt6::Core Qt6::Gui)
 # target_link_libraries(dfe_app PRIVATE plugin_api dl Qt6::Widgets Qt6::Sql Qt6::Core)

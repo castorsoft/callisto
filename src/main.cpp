@@ -1,5 +1,5 @@
 #include <iostream>
-#include <exception>
+#include <memory>
 
 #include <QApplication>
 #include <QFile>
@@ -10,9 +10,16 @@
 #include <QPixmap>
 #include <QSqlError>
 #include <QDebug>
+#include <string>
+#include <QSqlDatabase>
+#include <QException>
+
+#include "exceptions/FileNotFoundException.h"
+#include "exceptions/DatabaseException.h"
 
 #include "forms/MainWindow.h"
-#include "database/database.h"
+// #include "database/database.h"
+#include "database/models/Migration.h"
 #include "utilities/JsonUtils.h"
 
 void runStartUpFunctions();
@@ -29,8 +36,8 @@ int main(int argc, char *argv[]) {
     try {
         runStartUpFunctions();
     }
-    catch(const std::exception& e) {
-        std::cerr << e.what() << '\n';
+    catch(const QException& e) {
+        qDebug() << "Erro ao executar os scripts: " << e.what();
         return 1;
     }
     window.show();
@@ -51,10 +58,11 @@ void establishDatabaseConnection() {
     QString host, database, username, password;
     int port;
 
+    QString configFile = "config.json";
     {
-        QFile file("./config.json");
+        QFile file(configFile);
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            std::cerr << "Failed to open config file" << std::endl;
+            throw DatabaseException("Arquivo não encontrado: " + configFile);
         }
         val = file.readAll();
     }
@@ -69,10 +77,17 @@ void establishDatabaseConnection() {
     username = JsonUtils::getValue<QString>(root, "database.username", QString(""));
     password = "yamete";
 
-    if (DatabaseManager::instance().open("QPSQL", host, port, database, username, password)) {
+    auto db = QSqlDatabase::addDatabase("QPSQL");
+    db.setHostName(host);
+    db.setPort(port);
+    db.setDatabaseName(database);
+    db.setUserName(username);
+    db.setPassword(password);
+
+    if (db.open()) {
         qDebug() << "Conexão estabelecida com sucesso";
     } else {
-        qDebug() << "Erro: " + DatabaseManager::instance().lastError().text();
+        throw DatabaseException("Não foi possível se conectar ao banco de dados principal: " + db.lastError().text());
     }
 }
 
@@ -87,20 +102,30 @@ void runMigrations() {
 
     qDebug() << "Arquivos para serem rodados: " << migrationFiles.count();
     for (const QString &fileName : migrationFiles) {
-        QFile file(dir.filePath(fileName));
-        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            std::cerr << "Failed to open migration file: " << fileName.toStdString() << std::endl;
+        auto migration = Migration::findByField("migration", fileName);
+
+        if (migration == nullptr) {
+            migration = std::make_unique<Migration>();
+            migration->migration = fileName;
+
+            QFile file(dir.filePath(fileName));
+
+            if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+                std::cerr << "Failed to open migration file: " << fileName.toStdString() << std::endl;
+            }
+            QString sql = file.readAll();
+
+            QSqlQuery query;
+
+
+            qDebug() << sql;
+            if (!query.exec(sql)) {
+                throw DatabaseException("Erro ao atualizar o banco no arquivo " + fileName + ": " + query.lastError().text());
+            } else {
+                qDebug() << "Arquivo executado com sucesso: " + fileName;
+                migration->save();
+            }
         }
-        QString sql = file.readAll();
-        QSqlQuery query(DatabaseManager::instance().database());
-        if (!query.exec(sql)) {
-            qDebug() << "Não executou";
-            std::cout << "Failed to execute migration: " << fileName.toStdString() << std::endl;
-            // throw std::exception("Failed to execute migration " + fileName.toStdString() + ": " + query.lastError().text().toStdString());
-        } else {
-            // MigrationRepository::create(fileName.toStdString());
-            qDebug() << "Successfully ran migration: " + fileName.toStdString();
-        }
+        dir.remove(fileName);
     }
-    qDebug() << "Last error: " + DatabaseManager::instance().lastError().text();
 }
