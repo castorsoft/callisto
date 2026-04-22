@@ -8,7 +8,7 @@ Ferramenta para manutenção de arquivos fiscais com suporte de extensões para 
 - Geração de arquivos fiscais como SPED, Sintegra e inventário;
 - Geração de relatórios;
 - Envio dos arquivos por e-mail;
-- Manifestação do destinatário (MD-e);
+- Manifestação do destinatário (Distribuição DFe);
 
 # Tecnologias utilizadas
 

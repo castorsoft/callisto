@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
 
     });
 
-    drogon::app().loadConfigFile("server_config.json").setLogLevel(trantor::Logger::kDebug).addListener("0.0.0.0", 9000).setThreadNum(8).run();
+    drogon::app().loadConfigFile("./server_config.json").setLogLevel(trantor::Logger::kDebug).addListener("0.0.0.0", 9000).setThreadNum(8).run();
 }
 
 void runMigrations()

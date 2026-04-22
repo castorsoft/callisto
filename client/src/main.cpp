@@ -12,7 +12,6 @@
 #include <QException>
 
 #include "forms/MainWindow.h"
-#include "utilities/JsonUtils.h"
 
 int main(int argc, char *argv[]) {
 

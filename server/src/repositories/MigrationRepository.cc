@@ -2,8 +2,6 @@
 
 #include <drogon/HttpAppFramework.h>
 
-#include <memory>
-
 using namespace drogon::orm;
 
 std::shared_ptr<Migrations> MigrationRepository::findByMigration(const QString &migration)
@@ -27,7 +25,7 @@ void MigrationRepository::save(std::shared_ptr<Migrations> migration)
         mapper.insert(*migration);
     } catch (const drogon::orm::DrogonDbException &e) {
         LOG_ERROR << "Erro ao salvar migration: " << e.base().what();
-        throw; // Repassamos a exceção para o Service decidir o que fazer
+        throw;
     }
 }
 

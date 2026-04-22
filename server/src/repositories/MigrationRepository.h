@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include <drogon/drogon.h>
 
 #include <QString>
@@ -15,8 +17,6 @@ public:
         return inst;
     }
 
-    // std::optional<Migration> getById(int id);
-    // std::vector<Migration> getAll(const drogon::orm::Criteria &criteria);
     std::shared_ptr<Migrations> findByMigration(const QString &migration);
     void save(std::shared_ptr<Migrations> migration);
     void update(const std::shared_ptr<Migrations> migration);
