@@ -14,7 +14,6 @@
 #include "forms/MainWindow.h"
 
 int main(int argc, char *argv[]) {
-
     qDebug() << "Iniciando aplicação";
     QApplication app(argc, argv);
 

@@ -10,9 +10,9 @@ set(SOURCES_FILES)
 
 # find_package(PkgConfig REQUIRED)
 
-# adicionar Qt Widgets além de Sql e ativar automoc
+# adicionar Qt Widgets além de ativar automoc
 find_package(Vulkan REQUIRED)
-find_package(Qt6 REQUIRED COMPONENTS Sql Widgets Core Gui)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Core Gui)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
