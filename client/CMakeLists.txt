@@ -24,6 +24,7 @@ make_directory(logs)
 
 add_executable(dfe_client
         src/main.cpp
-        src/forms/MainWindow.cpp)
+        src/forms/MainWindow.cpp
+        )
 
 target_link_libraries(dfe_client PRIVATE Qt6::Widgets Qt6::Core Qt6::Gui)
