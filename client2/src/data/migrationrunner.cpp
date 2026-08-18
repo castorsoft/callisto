@@ -7,6 +7,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QString>
+#include <QApplication>
 
 MigrationRunner::MigrationRunner(QSqlDatabase db): m_db(db) {}
 
@@ -47,6 +48,7 @@ bool MigrationRunner::runPendingMigrations(const QString &migrationsDirPath) {
             qCritical() << "[MigrationRunner] Abortando migrations devido a um erro.";
             return false;
         }
+        QApplication::processEvents();
         ranCount++;
     }
     if (ranCount == 0) {
@@ -123,7 +125,7 @@ bool MigrationRunner::executeMigrationFile(const QString &filePath, const QStrin
     }
 
     QSqlQuery recordQuery(m_db);
-    recordQuery.prepare("INSERT INTO migrations (migration, batch) VALUES (:migration, batch)");
+    recordQuery.prepare("INSERT INTO migrations (migration, batch) VALUES (:migration, :batch)");
     recordQuery.bindValue(":migration", fileName);
     recordQuery.bindValue(":batch", batch);
 

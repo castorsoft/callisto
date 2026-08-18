@@ -9,15 +9,28 @@
 #include <QEventLoop>
 #include <QTimer>
 
+
+void logToFile(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    QString message = qFormatLogMessage(type, context, msg);
+    static FILE *f = fopen("application.log", "a");
+    fprintf(f, "%s\n", qPrintable(message));
+    fflush(f);
+
+    // if (originalHandler)
+    //     originalHandler(type, context, msg);
+}
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     QPixmap q("://Resources/splash_620x300.png");
-    if (q.isNull()) qDebug("IsNull");
     QSplashScreen splash(q);
 
     splash.show();
     a.processEvents();
+    qSetMessagePattern("[%{time yyyyMMdd h:mm:ss.zzz ttt} %{if-debug}D%{endif}%{if-info}I%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] %{file}:%{line} - %{message}");
+    qInstallMessageHandler(logToFile);
 
     splash.showMessage("Carregando configurações.");
     ConfigManager &config = ConfigManager::instance();
@@ -50,7 +63,6 @@ int main(int argc, char *argv[])
 
     splash.showMessage("O sistema está sendo iniciado.");
 
-    a.setStyle("")
     MainWindow w;
     w.show();
     splash.finish(&w);
