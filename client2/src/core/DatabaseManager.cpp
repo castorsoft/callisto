@@ -1,4 +1,4 @@
-#include "databasemanager.h"
+#include "DatabaseManager.h"
 
 #include <QSqlError>
 

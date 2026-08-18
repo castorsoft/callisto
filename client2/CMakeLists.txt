@@ -10,16 +10,18 @@ qt_standard_project_setup()
 qt_add_executable(client2
     WIN32 MACOSX_BUNDLE
     src/main.cpp
-    src/forms/mainwindow.cpp
-    src/forms/mainwindow.h
-    src/forms/mainwindow.ui
+    src/forms/MainWindow.cpp
+    src/forms/MainWindow.h
+    src/forms/MainWindow.ui
     src/assets/images.qrc
-    src/data/migrationrunner.cpp
-    src/data/migrationrunner.h
-    src/data/databasemanager.h
-    src/data/databasemanager.cpp
-    src/data/configmanager.h
-    src/data/configmanager.cpp
+    src/core/MigrationRunner.cpp
+    src/core/MigrationRunner.h
+    src/core/DatabaseManager.h
+    src/core/DatabaseManager.cpp
+    src/core/ConfigManager.h
+    src/core/ConfigManager.cpp
+    src/core/IPlugin.h
+    src/core/PluginManager.h
 )
 
 target_link_libraries(client2

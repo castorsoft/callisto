@@ -1,4 +1,4 @@
-#include "migrationrunner.h"
+#include "MigrationRunner.h"
 
 #include <QSqlQuery>
 #include <QSqlError>
@@ -51,12 +51,12 @@ bool MigrationRunner::runPendingMigrations(const QString &migrationsDirPath) {
         QApplication::processEvents();
         ranCount++;
     }
+
     if (ranCount == 0) {
         qInfo() << "[MigrationRunner] Nenhuma migration pendente.";
     } else {
         qInfo() << "[MigrationRunner] " << ranCount << " migration(s) executada(s) no Batch " << nextBatch;
     }
-
 
     return true;
 }

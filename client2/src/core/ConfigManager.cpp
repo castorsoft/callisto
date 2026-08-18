@@ -1,4 +1,4 @@
-#include "configmanager.h"
+#include "ConfigManager.h"
 
 #include <QFile>
 #include <QByteArray>

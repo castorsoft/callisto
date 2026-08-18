@@ -1,7 +1,7 @@
-#include "forms/mainwindow.h"
-#include "data/databasemanager.h"
-#include "data/configmanager.h"
-#include "data/migrationrunner.h"
+#include "forms/MainWindow.h"
+#include "core/DatabaseManager.h"
+#include "core/ConfigManager.h"
+#include "core/MigrationRunner.h"
 
 #include <QApplication>
 #include <QSplashScreen>
@@ -16,9 +16,6 @@ void logToFile(QtMsgType type, const QMessageLogContext &context, const QString 
     static FILE *f = fopen("application.log", "a");
     fprintf(f, "%s\n", qPrintable(message));
     fflush(f);
-
-    // if (originalHandler)
-    //     originalHandler(type, context, msg);
 }
 
 int main(int argc, char *argv[])
@@ -29,6 +26,7 @@ int main(int argc, char *argv[])
 
     splash.show();
     a.processEvents();
+
     qSetMessagePattern("[%{time yyyyMMdd h:mm:ss.zzz ttt} %{if-debug}D%{endif}%{if-info}I%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] %{file}:%{line} - %{message}");
     qInstallMessageHandler(logToFile);
 
