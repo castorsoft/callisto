@@ -1,0 +1,34 @@
+#ifndef CONFIGMANAGER_H
+#define CONFIGMANAGER_H
+
+#include <QString>
+#include <QJsonObject>
+
+class ConfigManager {
+public:
+    static ConfigManager& instance();
+
+    bool load(const QString &filePath);
+
+    bool save() const;
+
+    QString dbHost() const;
+    int dbPort() const;
+    QString dbName() const;
+    QString dbUser() const;
+    QString dbPassword() const;
+
+    void setDatabaseConfig(const QString &host, int port, const QString &dbName, const QString &user, const QString &password);
+private:
+    ConfigManager() = default;
+    ~ConfigManager() = default;
+    ConfigManager(const ConfigManager&) = delete;
+    ConfigManager& operator=(const ConfigManager&) = delete;
+
+    QString m_filePath;
+    QJsonObject m_configJson;
+
+    void createDefaultConfig();
+};
+
+#endif
