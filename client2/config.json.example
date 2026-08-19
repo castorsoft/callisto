@@ -8,5 +8,12 @@
         "password": "secret",
         "port": 5432,
         "user": "postgres"
+    },
+    "services": {
+        "search": {
+            "paths": [
+                "./"
+            ]
+        }
     }
 }

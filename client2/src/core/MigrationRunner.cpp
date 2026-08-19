@@ -8,6 +8,7 @@
 #include <QFileInfo>
 #include <QString>
 #include <QApplication>
+#include <QSqlRecord>
 
 MigrationRunner::MigrationRunner(QSqlDatabase db): m_db(db) {}
 
@@ -63,19 +64,27 @@ bool MigrationRunner::runPendingMigrations(const QString &migrationsDirPath) {
 
 bool MigrationRunner::ensureMigrationsTableExists() {
     QSqlQuery query(m_db);
+    query.prepare("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = :table_schema AND table_name = :table_name)");
+    query.bindValue(":table_schema", "public");
+    query.bindValue(":table_name", "migrations");
+    query.exec();
+    if (query.next() && !query.value(query.record().indexOf("exists")).toBool()) {
+        QString sql = R"(
+            CREATE TABLE IF NOT EXISTS migrations (
+                id SERIAL PRIMARY KEY,
+                migration VARCHAR(255) NOT NULL,
+                batch INT NOT NULL,
+                executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        )";
 
-    QString sql = R"(
-        CREATE TABLE IF NOT EXISTS migrations (
-            id SERIAL PRIMARY KEY,
-            migration VARCHAR(255) NOT NULL,
-            batch INT NOT NULL,
-            executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-    )";
-    if (!query.exec(sql)) {
-        qCritical() << "[MigrationRunner] Erro ao criar/verificar a tabela 'migrations': " << query.lastError().text();
-        return false;
+        query.clear();
+        if (!query.exec(sql)) {
+            qCritical() << "[MigrationRunner] Erro ao criar/verificar a tabela 'migrations': " << query.lastError().text();
+            return false;
+        }
     }
+
     return true;
 }
 

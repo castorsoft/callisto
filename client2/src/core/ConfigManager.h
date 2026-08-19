@@ -22,6 +22,7 @@ public:
     QStringList searchPaths() const;
 
     void setDatabaseConfig(const QString &host, int port, const QString &dbName, const QString &user, const QString &password);
+    void setServiceSearchConfig(const QStringList &paths);
 private:
     ConfigManager() = default;
     ~ConfigManager() = default;

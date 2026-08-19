@@ -3,6 +3,7 @@
 #include <QFile>
 #include <QByteArray>
 #include <QJsonParseError>
+#include <QJsonArray>
 
 void ConfigManager::createDefaultConfig()
 {
@@ -13,18 +14,21 @@ void ConfigManager::createDefaultConfig()
     dbConfig["user"] = "postgres";
     dbConfig["password"] = "secret";
 
-    QJsonArray pathsConfig;
-    pathsConfig.
+    QJsonArray pathsItemsConfig;
+    pathsItemsConfig.push_back("./");
+
+    QJsonObject pathsConfig;
+    pathsConfig["paths"] = pathsItemsConfig;
 
     QJsonObject servicesConfig;
-    servicesConfig["search"] = pathsConfig
+    servicesConfig["search"] = pathsConfig;
 
     // QJsonObject appConfig;
     // appConfig["theme"] = "system";
 
     m_configJson["database"] = dbConfig;
     // m_configJson["application"] = appConfig;
-    dbConfig["services"] = servicesConfig
+    m_configJson["services"] = servicesConfig;
 }
 
 ConfigManager &ConfigManager::instance()
@@ -116,6 +120,19 @@ QStringList ConfigManager::searchPaths() const
 {
     QStringList list(m_configJson["services"].toObject()["search"].toObject()["paths"].toVariant().toStringList());
     return list;
+}
+
+void ConfigManager::setServiceSearchConfig(const QStringList &paths)
+{
+    QJsonArray pathsItemsConfig;
+    for (const auto &path: paths) {
+        pathsItemsConfig.push_back(path);
+    }
+
+    QJsonObject pathsConfig;
+    pathsConfig["paths"] = pathsItemsConfig;
+
+    m_configJson["services"].toObject().insert("search", pathsConfig);
 }
 
 void ConfigManager::setDatabaseConfig(const QString &host, int port, const QString &dbName, const QString &user, const QString &password)
