@@ -20,9 +20,22 @@
    <property name="cursor">
     <cursorShape>ArrowCursor</cursorShape>
    </property>
-   <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="3,10">
+   <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0">
     <item>
-     <widget class="QListView" name="listView"/>
+     <widget class="QListView" name="listView">
+      <property name="minimumSize">
+       <size>
+        <width>264</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>264</width>
+        <height>16777215</height>
+       </size>
+      </property>
+     </widget>
     </item>
     <item>
      <widget class="QTabWidget" name="tabWidget"/>

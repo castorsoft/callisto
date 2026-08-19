@@ -13,11 +13,18 @@ void ConfigManager::createDefaultConfig()
     dbConfig["user"] = "postgres";
     dbConfig["password"] = "secret";
 
-    QJsonObject appConfig;
-    appConfig["theme"] = "system";
+    QJsonArray pathsConfig;
+    pathsConfig.
+
+    QJsonObject servicesConfig;
+    servicesConfig["search"] = pathsConfig
+
+    // QJsonObject appConfig;
+    // appConfig["theme"] = "system";
 
     m_configJson["database"] = dbConfig;
-    m_configJson["application"] = appConfig;
+    // m_configJson["application"] = appConfig;
+    dbConfig["services"] = servicesConfig
 }
 
 ConfigManager &ConfigManager::instance()
@@ -103,6 +110,12 @@ QString ConfigManager::dbUser() const
 QString ConfigManager::dbPassword() const
 {
     return m_configJson["database"].toObject()["password"].toString("");
+}
+
+QStringList ConfigManager::searchPaths() const
+{
+    QStringList list(m_configJson["services"].toObject()["search"].toObject()["paths"].toVariant().toStringList());
+    return list;
 }
 
 void ConfigManager::setDatabaseConfig(const QString &host, int port, const QString &dbName, const QString &user, const QString &password)

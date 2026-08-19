@@ -12,11 +12,14 @@ public:
 
     bool save() const;
 
+    // Configurações do banco de dados
     QString dbHost() const;
     int dbPort() const;
     QString dbName() const;
     QString dbUser() const;
     QString dbPassword() const;
+
+    QStringList searchPaths() const;
 
     void setDatabaseConfig(const QString &host, int port, const QString &dbName, const QString &user, const QString &password);
 private:
