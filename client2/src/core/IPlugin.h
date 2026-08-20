@@ -8,8 +8,15 @@ class IPlugin {
 public:
     virtual ~IPlugin() = default;
 
-    virtual QString name() const = 0;
-    virtual QString version() const = 0;
+    // Métodos para a identificacão do plugin
+    virtual QString name() const = 0;       // Nome único
+    virtual QString version() const = 0;    // Versão atual do plugin
+
+    // Métodos para adicionar um menu no list da tela principal
+    virtual QString listTitle() const = 0;
+    virtual QString listIcon() const = 0;
+    virtual void listOnClick() const = 0;
+
     virtual void initialize() const = 0;
     virtual void deinitialize() const = 0;
 };
