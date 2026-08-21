@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.19)
 project(client2 LANGUAGES CXX)
 
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Sql Gui)
-find_package(KF6WidgetsAddons REQUIRED)
 set(CMAKE_AUTORCC ON)
 
 qt_standard_project_setup()
@@ -23,6 +22,9 @@ qt_add_executable(client2
     src/core/IPlugin.h
     src/core/PluginManager.h
     src/core/PluginManager.cpp
+    src/core/ServiceManager.h
+    src/core/IService.h
+    src/services/SyncWorker.h
 )
 
 target_link_libraries(client2
@@ -31,7 +33,6 @@ target_link_libraries(client2
         Qt::Widgets
         Qt::Sql
         Qt::Gui
-        KF6::WidgetsAddons
 )
 
 install(TARGETS client2

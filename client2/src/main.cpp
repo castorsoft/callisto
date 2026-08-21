@@ -28,9 +28,11 @@ int main(int argc, char *argv[])
     splash.show();
     a.processEvents();
 
+    // Salva os logs na pasta
     qSetMessagePattern("[%{time yyyyMMdd h:mm:ss.zzz ttt} %{if-debug}D%{endif}%{if-info}I%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] %{file}:%{line} - %{message}");
     qInstallMessageHandler(logToFile);
 
+    // Leitura do arquivo config.json
     splash.showMessage("Carregando configurações.");
     ConfigManager &config = ConfigManager::instance();
     if (!config.load(a.applicationDirPath() + "/config.json")) {
@@ -38,6 +40,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    // Comunicação com o BD
     splash.showMessage("Estabelecendo a comunicação com o banco de dados.");
     DatabaseManager &dbMgr = DatabaseManager::instance();
     if (!dbMgr.connectToDatabase(
@@ -51,6 +54,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    // Migrations do BD
     splash.showMessage("Verificando versão do banco de dados.");
     MigrationRunner runner(dbMgr.database());
     QString migrationsPath = a.applicationDirPath() + "/migrations";
@@ -60,9 +64,10 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    // Carrega o sistema de plugins
     splash.showMessage("Carregando plugins.");
     PluginManager &pluginMgr = PluginManager::instance();
-    pluginMgr.loadPlugins("./bin/plugins");
+    pluginMgr.loadPlugins(a.applicationDirPath() + "/bin/plugins");
 
     splash.showMessage("O sistema está sendo iniciado.");
 
