@@ -42,13 +42,13 @@ bool ConfigManager::load(const QString &filePath)
     m_filePath = filePath;
     QFile file(m_filePath);
     if (!file.exists()) {
-        qInfo() << "[ConfigManager] Arquivo de configuracao nao encontrado. Criando padrao em: '" << m_filePath << "'.";
+        qInfo() << "[ConfigManager] Arquivo de configuracao nao encontrado. Criando padrao em:" << m_filePath;
         createDefaultConfig();
         return save();
     }
 
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qCritical() << "[ConfigManager] Nao foi possivel abrir o arquivo '" << m_filePath << "' para leitura.";
+        qCritical() << "[ConfigManager] Nao foi possivel abrir o arquivo" << m_filePath << "para leitura.";
         return false;
     }
 
@@ -64,12 +64,12 @@ bool ConfigManager::load(const QString &filePath)
     }
 
     if (!doc.isObject()) {
-        qCritical() << "[ConfigManager] O arquivo JSON nao contem um objeto valido. ";
+        qCritical() << "[ConfigManager] O arquivo JSON nao contem um objeto valido.";
         return false;
     }
 
     m_configJson = doc.object();
-    qInfo() << "[ConfigManager] Configuracoes carregadas de: '" << m_filePath << "'.";
+    qInfo() << "[ConfigManager] Configuracoes carregadas de:" << m_filePath;
 
     return true;
 }
@@ -79,7 +79,7 @@ bool ConfigManager::save() const
     QFile file(m_filePath);
 
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        qCritical() << "[ConfigManager] Nao foi possivel abrir o arquivo '" << m_filePath << "' para escrita.";
+        qCritical() << "[ConfigManager] Nao foi possivel abrir o arquivo" << m_filePath << "para escrita.";
         return false;
     }
 

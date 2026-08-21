@@ -2,6 +2,7 @@
 #include "core/DatabaseManager.h"
 #include "core/ConfigManager.h"
 #include "core/MigrationRunner.h"
+#include "core/PluginManager.h"
 
 #include <QApplication>
 #include <QSplashScreen>
@@ -58,6 +59,10 @@ int main(int argc, char *argv[])
         qCritical() << "Falha ao executar as migrations do banco de dados. A aplicacao sera encerrada.";
         return -1;
     }
+
+    splash.showMessage("Carregando plugins.");
+    PluginManager &pluginMgr = PluginManager::instance();
+    pluginMgr.loadPlugins("./bin/plugins");
 
     splash.showMessage("O sistema está sendo iniciado.");
 

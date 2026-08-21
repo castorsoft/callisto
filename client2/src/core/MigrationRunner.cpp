@@ -24,7 +24,7 @@ bool MigrationRunner::runPendingMigrations(const QString &migrationsDirPath) {
 
     QDir dir(migrationsDirPath);
     if (!dir.exists()) {
-        qCritical() << "[MigrationRunner] Diretorio de migrations nao encontrado: '" << migrationsDirPath << "'";
+        qCritical() << "[MigrationRunner] Diretorio de migrations nao encontrado:" << migrationsDirPath;
         return false;
     }
 
@@ -44,7 +44,7 @@ bool MigrationRunner::runPendingMigrations(const QString &migrationsDirPath) {
         if (executedMigrations.contains(fileName)) {
             continue;
         }
-        qInfo() << "[MigrationRunner] Executando nova migration: " << fileName;
+        qInfo() << "[MigrationRunner] Executando nova migration:" << fileName;
         if (!executeMigrationFile(fileInfo.absoluteFilePath(), fileName, nextBatch)) {
             qCritical() << "[MigrationRunner] Abortando migrations devido a um erro.";
             return false;
@@ -56,7 +56,7 @@ bool MigrationRunner::runPendingMigrations(const QString &migrationsDirPath) {
     if (ranCount == 0) {
         qInfo() << "[MigrationRunner] Nenhuma migration pendente.";
     } else {
-        qInfo() << "[MigrationRunner] " << ranCount << " migration(s) executada(s) no Batch " << nextBatch;
+        qInfo() << "[MigrationRunner] " << ranCount << " migration(s) executada(s) no Batch" << nextBatch;
     }
 
     return true;
@@ -80,7 +80,7 @@ bool MigrationRunner::ensureMigrationsTableExists() {
 
         query.clear();
         if (!query.exec(sql)) {
-            qCritical() << "[MigrationRunner] Erro ao criar/verificar a tabela 'migrations': " << query.lastError().text();
+            qCritical() << "[MigrationRunner] Erro ao criar/verificar a tabela 'migrations':" << query.lastError().text();
             return false;
         }
     }
@@ -109,7 +109,7 @@ QStringList MigrationRunner::getExecutedMigrations() {
 bool MigrationRunner::executeMigrationFile(const QString &filePath, const QString &fileName, int batch) {
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qCritical() << "[MigrationRunner] Nao foi possível abrir o arquivo '" << filePath << "'";
+        qCritical() << "[MigrationRunner] Nao foi possível abrir o arquivo" << filePath;
         return false;
     }
 
@@ -117,18 +117,18 @@ bool MigrationRunner::executeMigrationFile(const QString &filePath, const QStrin
     file.close();
 
     if (sqlContent.isEmpty()) {
-        qWarning() << "[MigrationRunner] Arquivo de migration vazio '" << filePath << "'";
+        qWarning() << "[MigrationRunner] Arquivo de migration vazio" << filePath;
         return true;
     }
 
     if (!m_db.transaction()) {
-        qCritical() << "MigrationRunner Erro ao iniciar transacao para '" << filePath << "'";
+        qCritical() << "MigrationRunner Erro ao iniciar transacao para" << filePath;
         return false;
     }
 
     QSqlQuery query(m_db);
     if (!query.exec(sqlContent)) {
-        qCritical() << "[MigrationRunner] Erro ao executar DDL da migration '" << filePath << "': " << query.lastError().text();
+        qCritical() << "[MigrationRunner] Erro ao executar DDL da migration" << filePath << query.lastError().text();
         m_db.rollback();
         return false;
     }
@@ -139,16 +139,16 @@ bool MigrationRunner::executeMigrationFile(const QString &filePath, const QStrin
     recordQuery.bindValue(":batch", batch);
 
     if (!recordQuery.exec()) {
-        qCritical() << "[MigrationRunner] Falha ao registrar a migration " << fileName << ": " << recordQuery.lastError().text();
+        qCritical() << "[MigrationRunner] Falha ao registrar a migration" << fileName << recordQuery.lastError().text();
         m_db.rollback();
         return false;
     }
 
     if (!m_db.commit()) {
-        qCritical() << "[migrationRunner] Erro ao dar commit na transacao para " << fileName;
+        qCritical() << "[migrationRunner] Erro ao dar commit na transacao para" << fileName;
         return false;
     }
 
-    qInfo() << "[MigrationRunner] Executado com sucesso: " << fileName << " (Batch: " << batch << ")";
+    qInfo() << "[MigrationRunner] Executado com sucesso:" << fileName << "(Batch:" << batch << ")";
     return true;
 }

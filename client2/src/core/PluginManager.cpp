@@ -12,7 +12,7 @@ void PluginManager::loadPlugins(const QString &pluginsDir)
 {
     QDir dir(pluginsDir);
     if (!dir.exists()) {
-        qWarning() << "[PluginManager] Diretorio nao encontrado: " << pluginsDir;
+        qWarning() << "[PluginManager] Diretorio nao encontrado:" << pluginsDir;
         return;
     }
 
@@ -31,13 +31,13 @@ void PluginManager::loadPlugins(const QString &pluginsDir)
                 plugin->initialize();
                 m_plugins.append(plugin);
                 m_loaders.append(loader);
-                qInfo() << "[PluginManager] carregado plugin " << plugin->name() << " v" << plugin->version();
+                qInfo() << "[PluginManager] carregado plugin" << plugin->name() << plugin->version();
             } else {
                 loader->unload();
                 delete loader;
             }
         } else {
-            qWarning() << "[PluginManager] Erro ao carregar os plugins: " << loader->errorString();
+            qWarning() << "[PluginManager] Erro ao carregar os plugins:" << loader->errorString();
             delete loader;
         }
     }
@@ -54,4 +54,12 @@ IPlugin *PluginManager::pluginByName(const QString &name) const
         if (plugin->name() == name) return plugin;
     }
     return nullptr;
+}
+
+PluginManager::~PluginManager()
+{
+    for (auto loader: m_loaders) {
+        loader->unload();
+        delete loader;
+    }
 }
