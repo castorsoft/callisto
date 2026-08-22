@@ -15,7 +15,7 @@ void ConfigManager::createDefaultConfig()
     dbConfig["password"] = "secret";
 
     QJsonArray pathsItemsConfig;
-    pathsItemsConfig.push_back("./");
+    pathsItemsConfig.push_back("./data/files/");
 
     QJsonObject pathsConfig;
     pathsConfig["paths"] = pathsItemsConfig;

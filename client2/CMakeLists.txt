@@ -24,7 +24,9 @@ qt_add_executable(client2
     src/core/PluginManager.cpp
     src/core/ServiceManager.h
     src/core/IService.h
-    src/services/SyncWorker.h
+    src/services/DirectoryWatcherWorker.h
+    # src/services/SyncWorker.h
+    # src/services/SyncWorker.cpp
 )
 
 target_link_libraries(client2
