@@ -1,11 +1,10 @@
 #ifndef DIRECTORYWATCHERWORKER_H
 #define DIRECTORYWATCHERWORKER_H
 
-#include "../core/IService.h"
-#include <QObject>
+#include "../IService.h"
 #include <QFileSystemWatcher>
 #include <QSet>
-#include <QThread>
+#include <QMutex>
 
 class DirectoryWatcherWorker: public IService {
     Q_OBJECT
@@ -28,11 +27,11 @@ private slots:
     void onDirectoryChanged(const QString &path);
 
 private:
-    QThread m_thread;
     QFileSystemWatcher *m_watcher{nullptr};
     QString m_watchPath;
     QSet<QString> m_knownFiles;
     bool m_isRunning{false};
+    QMutex m_mutex;
 
     void updateKnownFiles();
 };

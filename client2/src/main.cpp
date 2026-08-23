@@ -3,6 +3,8 @@
 #include "core/ConfigManager.h"
 #include "core/MigrationRunner.h"
 #include "core/PluginManager.h"
+#include "core/ServiceManager.h"
+#include "core/services/DirectoryWatcherWorker.h"
 
 #include <QApplication>
 #include <QSplashScreen>
@@ -10,6 +12,10 @@
 #include <QEventLoop>
 #include <QTimer>
 
+void startDirectoryWatcherService() {
+    auto watcherService = new DirectoryWatcherWorker(ConfigManager::instance().searchPaths()[0]);
+    ServiceManager::instance().RegisterService(watcherService);
+}
 
 void logToFile(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
@@ -68,6 +74,12 @@ int main(int argc, char *argv[])
     splash.showMessage("Carregando plugins.");
     PluginManager &pluginMgr = PluginManager::instance();
     pluginMgr.loadPlugins(a.applicationDirPath() + "/bin/plugins");
+
+    splash.showMessage("Inicializando serviços");
+    // Adicionar demais services aqui
+    startDirectoryWatcherService();
+
+    ServiceManager::instance().startAll();
 
     splash.showMessage("O sistema está sendo iniciado.");
 

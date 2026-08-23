@@ -23,10 +23,10 @@ qt_add_executable(client2
     src/core/PluginManager.h
     src/core/PluginManager.cpp
     src/core/ServiceManager.h
+    src/core/ServiceManager.cpp
     src/core/IService.h
-    src/services/DirectoryWatcherWorker.h
-    # src/services/SyncWorker.h
-    # src/services/SyncWorker.cpp
+    src/core/services/DirectoryWatcherWorker.h
+    src/core/services/DirectoryWatcherWorker.cpp
 )
 
 target_link_libraries(client2
@@ -54,6 +54,8 @@ endif()
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/migrations)
     file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/migrations DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 endif()
+
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/files)
 
 add_subdirectory(src/plugins/test_plugin)
 

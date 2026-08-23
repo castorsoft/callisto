@@ -12,7 +12,7 @@
     "services": {
         "search": {
             "paths": [
-                "./data/files/"
+                "./files/"
             ]
         }
     }
