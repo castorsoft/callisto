@@ -6,13 +6,8 @@ set(CMAKE_AUTORCC ON)
 
 qt_standard_project_setup()
 
-qt_add_executable(client2
-    WIN32 MACOSX_BUNDLE
-    src/main.cpp
-    src/forms/MainWindow.cpp
-    src/forms/MainWindow.h
-    src/forms/MainWindow.ui
-    src/assets/images.qrc
+# 1. Agrupar os arquivos de negocio em uma biblioteca estatica
+qt_add_library(core_lib STATIC
     src/core/MigrationRunner.cpp
     src/core/MigrationRunner.h
     src/core/DatabaseManager.h
@@ -29,13 +24,25 @@ qt_add_executable(client2
     src/core/services/DirectoryWatcherWorker.cpp
 )
 
-target_link_libraries(client2
-    PRIVATE
-        Qt::Core
-        Qt::Widgets
-        Qt::Sql
-        Qt::Gui
+target_link_libraries(core_lib PRIVATE Qt::Core Qt::Sql Qt::Widgets Qt::Gui)
+target_include_directories(core_lib PUBLIC src)
+
+# 2. Executavel principal da aplicacao
+qt_add_executable(client2
+    WIN32 MACOSX_BUNDLE
+    src/main.cpp
+    src/forms/MainWindow.cpp
+    src/forms/MainWindow.h
+    src/forms/MainWindow.ui
+    src/assets/images.qrc
 )
+
+# client2 consome a core_lib
+target_link_libraries(client2 PRIVATE core_lib Qt::Core Qt::Widgets Qt::Sql Qt::Gui)
+
+# 3. Habilitar testes
+enable_testing()
+add_subdirectory(tests)
 
 install(TARGETS client2
     BUNDLE  DESTINATION .
