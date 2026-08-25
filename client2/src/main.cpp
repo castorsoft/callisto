@@ -1,10 +1,10 @@
-#include "forms/MainWindow.h"
-#include "core/DatabaseManager.h"
-#include "core/ConfigManager.h"
-#include "core/MigrationRunner.h"
-#include "core/PluginManager.h"
-#include "core/ServiceManager.h"
-#include "core/services/DirectoryWatcherWorker.h"
+#include "presentation/forms/MainWindow.h"
+#include "infrastructure/database/DatabaseManager.h"
+#include "infrastructure/config/ConfigManager.h"
+#include "infrastructure/database/MigrationRunner.h"
+#include "infrastructure/plugins/PluginManager.h"
+#include "application/services/ServiceManager.h"
+#include "application/workers/DirectoryWatcherWorker.h"
 
 #include <QApplication>
 #include <QSplashScreen>

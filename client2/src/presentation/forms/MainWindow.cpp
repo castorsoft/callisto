@@ -1,7 +1,7 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 
-#include "../core/PluginManager.h"
+#include "infrastructure/plugins/PluginManager.h"
 #include <QListWidgetItem>
 
 MainWindow::MainWindow(QWidget *parent)

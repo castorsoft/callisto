@@ -2,7 +2,7 @@
 #define TESTBUTTONPLUGIN_H
 
 #include <QObject>
-#include "../../../core/IPlugin.h"
+#include "../../../infrastructure/plugins/IPlugin.h"
 
 class TestButtonPlugin: public QObject, public IPlugin {
     Q_OBJECT

@@ -1,7 +1,7 @@
 #ifndef DIRECTORYWATCHERWORKER_H
 #define DIRECTORYWATCHERWORKER_H
 
-#include "../IService.h"
+#include "../services/IService.h"
 #include <QFileSystemWatcher>
 #include <QSet>
 #include <QMutex>

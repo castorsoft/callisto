@@ -8,20 +8,20 @@ qt_standard_project_setup()
 
 # 1. Agrupar os arquivos de negocio em uma biblioteca estatica
 qt_add_library(core_lib STATIC
-    src/core/MigrationRunner.cpp
-    src/core/MigrationRunner.h
-    src/core/DatabaseManager.h
-    src/core/DatabaseManager.cpp
-    src/core/ConfigManager.h
-    src/core/ConfigManager.cpp
-    src/core/IPlugin.h
-    src/core/PluginManager.h
-    src/core/PluginManager.cpp
-    src/core/ServiceManager.h
-    src/core/ServiceManager.cpp
-    src/core/IService.h
-    src/core/services/DirectoryWatcherWorker.h
-    src/core/services/DirectoryWatcherWorker.cpp
+    src/infrastructure/database/MigrationRunner.cpp
+    src/infrastructure/database/MigrationRunner.h
+    src/infrastructure/database/DatabaseManager.h
+    src/infrastructure/database/DatabaseManager.cpp
+    src/infrastructure/config/ConfigManager.h
+    src/infrastructure/config/ConfigManager.cpp
+    src/infrastructure/plugins/IPlugin.h
+    src/infrastructure/plugins/PluginManager.h
+    src/infrastructure/plugins/PluginManager.cpp
+    src/application/services/ServiceManager.h
+    src/application/services/ServiceManager.cpp
+    src/application/services/IService.h
+    src/application/workers/DirectoryWatcherWorker.h
+    src/application/workers/DirectoryWatcherWorker.cpp
 )
 
 target_link_libraries(core_lib PRIVATE Qt::Core Qt::Sql Qt::Widgets Qt::Gui)
@@ -31,9 +31,9 @@ target_include_directories(core_lib PUBLIC src)
 qt_add_executable(client2
     WIN32 MACOSX_BUNDLE
     src/main.cpp
-    src/forms/MainWindow.cpp
-    src/forms/MainWindow.h
-    src/forms/MainWindow.ui
+    src/presentation/forms/MainWindow.cpp
+    src/presentation/forms/MainWindow.h
+    src/presentation/forms/MainWindow.ui
     src/assets/images.qrc
 )
 
