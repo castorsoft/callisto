@@ -1,0 +1,8 @@
+[20260910 9:45:38.760 -03:00 I] /home/lamb/dev/castorsoft/dfe/client3/src/infrastructure/config/ConfigManager.cpp:72 - [ConfigManager] Configuracoes carregadas de: "/home/lamb/dev/castorsoft/dfe/client3/build/config.json"
+[20260910 9:45:38.817 -03:00 I] /home/lamb/dev/castorsoft/dfe/client3/src/infrastructure/database/DatabaseManager.cpp:29 - [DatabaseManager] Conexao com o PostgreSQL estabelecida com sucesso.
+[20260910 9:45:38.837 -03:00 I] /home/lamb/dev/castorsoft/dfe/client3/src/infrastructure/database/MigrationRunner.cpp:56 - [MigrationRunner] Nenhuma migration pendente.
+[20260910 9:45:38.839 -03:00 I] /home/lamb/dev/castorsoft/dfe/client3/build/external_plugins/test_plugin/test_plugin_autogen/UVLADIE3JM/../../../../../external_plugins/test_plugin/src/TestButtonPlugin.h:18 - [TestButtonPlugin] Inicializado
+[20260910 9:45:38.839 -03:00 I] /home/lamb/dev/castorsoft/dfe/client3/src/plugins/PluginManager.cpp:34 - [PluginManager] carregado plugin "dev.castorsoft.teste-button" "0.0.1"
+[20260910 9:45:38.840 -03:00 I] /home/lamb/dev/castorsoft/dfe/client3/src/infrastructure/background/ServiceManager.cpp:20 - [ServiceManager] Servico registrado: "Serviço de Monitoramento de Arquivos"
+[20260910 9:45:38.840 -03:00 I] /home/lamb/dev/castorsoft/dfe/client3/src/infrastructure/background/ServiceManager.cpp:20 - [ServiceManager] Servico registrado: "Serviço de reprocessamento de arquivos"
+[20260910 9:45:38.840 -03:00 I] /home/lamb/dev/castorsoft/dfe/client3/src/infrastructure/background/services/DirectoryWatcherWorker.cpp:75 - [DirectoryWatcher] Monitoramento iniciado na pasta "./files/" | Thread  0x7fa3fd60c6c0
