@@ -15,7 +15,7 @@ void ArquivoRepository::salvar(Arquivo &modelArquivo)
     QSqlQuery query(m_db);
     if (modelArquivo.id() == -1) {
         query.prepare("INSERT INTO arquivos (caminho_arquivo, nome_arquivo, processado, possui_erro, mensagem_erro, processar_novamente)"
-            "VALUES (:caminho_arquivo, :nome_arquivo, :processado, :possui_erro, :mensagem_erro, processar_novamente)"
+            "VALUES (:caminho_arquivo, :nome_arquivo, :processado, :possui_erro, :mensagem_erro, :processar_novamente)"
             "RETURNING id, uuid, criado_em, atualizado_em");
 
         query.bindValue(":caminho_arquivo", modelArquivo.caminhoArquivo());

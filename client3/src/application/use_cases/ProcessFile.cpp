@@ -7,7 +7,7 @@
 
 ProcessFile::ProcessFile(QObject *parent): QObject(parent) { }
 
-void ProcessFile::execute(Arquivo &modelArquivo)
+void ProcessFile::execute(const Arquivo &modelArquivo)
 {
     emit processingStarted(modelArquivo);
 
@@ -36,6 +36,15 @@ void ProcessFile::execute(Arquivo &modelArquivo)
                 qInfo() << "[ProcessFile] Documento possui uma estrutura nao suportada:" << filePath;
             }
 
+            switch (doc->GetType())
+            {
+                case zafra::core::DocumentType::NFe:
+                    processarNFe(static_cast<const zafra::document::NFeDocument&>(*doc));
+                    break;
+                default:
+                    break;
+            }
+
             // auto documentoFiscal = zafra::carregarDocumento(filepath.toStdString(), modelo);
 
             // auto modelDocumentoFiscalArquivo = DocumentoFiscalArquivo(documentoFiscal.xml(), documentoFiscal.chaveAcesso(), jsonCabulosoAqui, modelo);
@@ -53,4 +62,9 @@ void ProcessFile::execute(Arquivo &modelArquivo)
             emit fileError(modelArquivo, QString::fromLocal8Bit(e.what()));
         }
     // });
+}
+
+void ProcessFile::processarNFe(const zafra::document::NFeDocument &doc)
+{
+    qInfo() << "[ProcessarNFe] << Processando NFe" << doc.getChaveAcesso();
 }

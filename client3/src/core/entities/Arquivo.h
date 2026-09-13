@@ -3,9 +3,11 @@
 #include <QString>
 #include <QUuid>
 #include <QDateTime>
+#include <QMetaType>
 
 class Arquivo {
 public:
+
     Arquivo() = default;
     Arquivo(QString caminhoArquivo, QString nomeArquivo, bool processado): m_caminhoArquivo(caminhoArquivo), m_nomeArquivo(nomeArquivo), m_processado(processado) {};
 
@@ -45,3 +47,5 @@ private:
     std::optional<QDateTime> m_criadoEm;
     std::optional<QDateTime> m_atualizadoEm;
 };
+
+Q_DECLARE_METATYPE(Arquivo)

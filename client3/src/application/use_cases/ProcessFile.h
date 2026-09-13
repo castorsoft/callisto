@@ -2,6 +2,8 @@
 
 #include "../../core/entities/Arquivo.h"
 
+#include <zafra/document/documents/nfe_document.hpp>
+
 #include <QObject>
 
 class ProcessFile: public QObject {
@@ -11,10 +13,12 @@ public:
     explicit ProcessFile(QObject *parent = nullptr);
 
 public slots:
-    void execute(Arquivo &modelArquivo);
+    void execute(const Arquivo &modelArquivo);
 
 signals:
     void processingStarted(const Arquivo &arquivo);
     void processingFinished(const Arquivo &arquivo, bool success);
     void fileError(const Arquivo &arquivo, const QString &errorMessage);
+private:
+    void processarNFe(const zafra::document::NFeDocument &doc);
 };

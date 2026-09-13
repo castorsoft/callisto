@@ -5,6 +5,7 @@
 CREATE TABLE IF NOT EXISTS public.arquivos
 (
     id serial,
+    uuid uuid NOT NULL DEFAULT gen_random_uuid(),
     caminho_arquivo text COLLATE pg_catalog."default" NOT NULL,
     nome_arquivo character varying(255) COLLATE pg_catalog."default" NOT NULL,
     processado boolean NOT NULL DEFAULT false,

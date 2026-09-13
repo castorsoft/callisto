@@ -12,12 +12,13 @@ void ScheduleFilesForProcessing::startService()
 
 ScheduleFilesForProcessing::ScheduleFilesForProcessing(QObject *parent): IService(parent)
 {
-
+    m_arquivoRepository = new ArquivoRepository();
 }
 
 ScheduleFilesForProcessing::~ScheduleFilesForProcessing()
 {
     stopService();
+    delete m_arquivoRepository;
 }
 
 bool ScheduleFilesForProcessing::isRunning() const

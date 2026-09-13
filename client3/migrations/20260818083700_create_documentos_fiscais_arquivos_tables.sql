@@ -5,7 +5,7 @@
 CREATE TABLE IF NOT EXISTS public.documentos_fiscais_arquivos
 (
     id SERIAL,
-    uuid uuid NOT NULL,
+    uuid uuid NOT NULL DEFAULT gen_random_uuid(),
     documento text COLLATE pg_catalog."default" NOT NULL,
     chave_acesso bit varying(50) NOT NULL,
     processado boolean NOT NULL DEFAULT false,

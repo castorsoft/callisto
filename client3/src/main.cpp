@@ -42,6 +42,7 @@ void logToFile(QtMsgType type, const QMessageLogContext &context, const QString 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+    qRegisterMetaType<Arquivo>("Arquivo");
     QPixmap q("://assets/splash_620x300.png");
     QSplashScreen splash(q);
 

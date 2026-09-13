@@ -20,7 +20,7 @@ public slots:
     void onFileAdded(const QString &filePath);
 
 signals:
-    void requestFileProcess(Arquivo &arquivo);
+    void requestFileProcess(const Arquivo &arquivo);
 
 private:
     // void execute();
