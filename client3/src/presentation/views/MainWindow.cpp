@@ -14,21 +14,26 @@ MainWindow::MainWindow(QWidget *parent)
     loadNativeButtons();
     loadPluginButtons();
     connect(ui->listWidget,&QListWidget::itemClicked, this, &MainWindow::onListClick);
+    connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this, &MainWindow::closeSubForm);
 }
 
 MainWindow::~MainWindow() {
     delete ui;
 }
 
-QMdiSubWindow *MainWindow::addSubForm(QWidget *form) {
-    if (!form) return nullptr;
+void MainWindow::addSubForm(QWidget *form) {
+    if (!form) return;
 
-    QMdiSubWindow *subWindow = ui->mdiArea->addSubWindow(form);
     form->setAttribute(Qt::WA_DeleteOnClose);
+    int index = ui->tabWidget->addTab(form, form->windowTitle());
+    ui->tabWidget->setCurrentIndex(index);
+}
 
-    subWindow->showMaximized();
-
-    return subWindow;
+void MainWindow::closeSubForm(int index) {
+    QWidget *form = ui->tabWidget->widget(index);
+    if (form) {
+        form->close();
+    }
 }
 
 void MainWindow::loadPluginButtons() {

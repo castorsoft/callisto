@@ -3,7 +3,6 @@
 #include <QMainWindow>
 #include <QListWidgetItem>
 #include <QWidget>
-#include <QMdiSubWindow>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -19,7 +18,8 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
 
-    QMdiSubWindow* addSubForm(QWidget *form);
+    void addSubForm(QWidget *form);
+    void closeSubForm(int index);
 
 private:
     Ui::MainWindow *ui;

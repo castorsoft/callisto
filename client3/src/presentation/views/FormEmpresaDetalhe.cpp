@@ -1,4 +1,4 @@
-#include "FormEmpresaDetalheh"
+#include "FormEmpresaDetalhe.h"
 #include "ui_FormEmpresaDetalhe.h"
 
 FormEmpresaDetalhe::FormEmpresaDetalhe(QWidget *parent)

@@ -9,11 +9,15 @@
 
 #include "plugins/PluginManager.h"
 
-#include "presentation/views/MainWindow.h"
-
+#ifdef HEADLESS_MODE
+#include <QCoreApplication>
+#else
 #include <QApplication>
 #include <QSplashScreen>
 #include <QPixmap>
+#include "presentation/views/MainWindow.h"
+#endif
+
 #include <QEventLoop>
 #include <QTimer>
 
@@ -41,20 +45,34 @@ void logToFile(QtMsgType type, const QMessageLogContext &context, const QString 
 
 int main(int argc, char *argv[])
 {
+#ifdef HEADLESS_MODE
+    QCoreApplication a(argc, argv);
+#else
     QApplication a(argc, argv);
+#endif
     qRegisterMetaType<Arquivo>("Arquivo");
+
+#ifndef HEADLESS_MODE
     QPixmap q("://assets/splash_620x300.png");
     QSplashScreen splash(q);
 
     splash.show();
     a.processEvents();
+#endif
 
     // Salva os logs na pasta
     qSetMessagePattern("[%{time yyyyMMdd h:mm:ss.zzz ttt} %{if-debug}D%{endif}%{if-info}I%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] %{file}:%{line} - %{message}");
     qInstallMessageHandler(logToFile);
 
+    auto showMessage = [&](const QString &msg) {
+#ifndef HEADLESS_MODE
+        splash.showMessage(msg);
+#endif
+        qInfo() << msg;
+    };
+
     // Leitura do arquivo config.json
-    splash.showMessage("Carregando configurações.");
+    showMessage("Carregando configurações.");
     ConfigManager &config = ConfigManager::instance();
     if (!config.load(a.applicationDirPath() + "/config.json")) {
         qCritical() << "Erro ao incializar as configuracoes da aplicacao. A aplicacao sera encerrada.";
@@ -62,7 +80,7 @@ int main(int argc, char *argv[])
     }
 
     // Comunicação com o BD
-    splash.showMessage("Estabelecendo a comunicação com o banco de dados.");
+    showMessage("Estabelecendo a comunicação com o banco de dados.");
     DatabaseManager &dbMgr = DatabaseManager::instance();
     if (!dbMgr.connectToDatabase(
         config.dbHost(),
@@ -76,7 +94,7 @@ int main(int argc, char *argv[])
     }
 
     // Migrations do BD
-    splash.showMessage("Verificando versão do banco de dados.");
+    showMessage("Verificando versão do banco de dados.");
     MigrationRunner runner(dbMgr.database());
     QString migrationsPath = a.applicationDirPath() + "/migrations";
 
@@ -86,20 +104,24 @@ int main(int argc, char *argv[])
     }
 
     // Carrega o sistema de plugins
-    splash.showMessage("Carregando plugins.");
+    showMessage("Carregando plugins.");
     PluginManager &pluginMgr = PluginManager::instance();
     pluginMgr.loadPlugins(a.applicationDirPath() + "/bin/plugins");
 
-    splash.showMessage("Inicializando serviços");
+    showMessage("Inicializando serviços");
     // Adicionar demais services aqui
     startDirectoryWatcherService();
 
     ServiceManager::instance().startAll();
 
-    splash.showMessage("O sistema está sendo iniciado.");
+    showMessage("O sistema está sendo iniciado.");
 
+#ifndef HEADLESS_MODE
     MainWindow w;
     w.show();
     splash.finish(&w);
     return QApplication::exec();
+#else
+    return QCoreApplication::exec();
+#endif
 }

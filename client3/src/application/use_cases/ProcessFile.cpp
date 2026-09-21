@@ -8,8 +8,18 @@
 
 ProcessFile::ProcessFile(QObject *parent): QObject(parent) { }
 
-void ProcessFile::execute(const Arquivo &modelArquivo)
+#include "../../infrastructure/database/repositories/ArquivoRepository.h"
+
+void ProcessFile::execute(const QUuid &uuid)
 {
+    ArquivoRepository repo;
+    auto optArquivo = repo.buscarPorUuid(uuid);
+    if (!optArquivo) {
+        qCritical() << "[ProcessFile] Arquivo nao encontrado no banco para o uuid:" << uuid;
+        return;
+    }
+    Arquivo modelArquivo = optArquivo.value();
+
     emit processingStarted(modelArquivo);
 
     // QtConcurrent::run([this, filePath]() {
@@ -29,6 +39,7 @@ void ProcessFile::execute(const Arquivo &modelArquivo)
 
             zafra::xml::XmlDocument xmlReader;
             xmlReader.LoadFromFile(filePath.toStdString());
+            qInfo() << "Nome primeiro node:" << xmlReader.GetRoot()->GetName();
             auto doc = zafra::document::DocumentFactory::DetectAndCreate(xmlReader.GetRoot().get());
             if (!doc) {
                 qCritical() << "[ProcessFile] Falha ao decodificar arquivo, nulo retornado:" << filePath;
@@ -87,6 +98,8 @@ void ProcessFile::processarNFe(const zafra::document::NFeDocument &doc)
         qInfo() << "[ProcessarNFe] Documento ja existe no banco de dados.";
         return;
     }
+
+
 
     // TODO: Obter idPessoa do contexto do usuario atual. Hardcoded 1 por enquanto.
     int idPessoa = 1;

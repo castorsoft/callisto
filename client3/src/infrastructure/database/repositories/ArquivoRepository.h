@@ -12,7 +12,8 @@ public:
 
     void salvar(Arquivo &modelArquivo);
     bool existeArquivo(const QString &filePath, Arquivo *modelArquivo = nullptr) override;
-    QList<Arquivo> carregarArquivosPendentes();
+    QList<Arquivo> carregarArquivosPendentes() override;
+    std::optional<Arquivo> buscarPorUuid(const QUuid &uuid) override;
 private:
     QSqlDatabase m_db;
 };

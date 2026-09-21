@@ -42,6 +42,10 @@ void ScheduleFilesForProcessing::onFileAdded(const QString &filePath)
         Arquivo modelArquivo(arquivoInfo.absoluteFilePath(), arquivoInfo.fileName(), false);
 
         m_arquivoRepository->salvar(modelArquivo);
-        emit requestFileProcess(modelArquivo);
+        if (modelArquivo.uuid().has_value()) {
+            emit requestFileProcess(modelArquivo.uuid().value());
+        } else {
+            qWarning() << "Falha ao obter UUID após salvar o arquivo:" << filePath;
+        }
     }
 }

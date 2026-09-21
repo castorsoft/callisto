@@ -13,7 +13,7 @@ public:
     explicit ProcessFile(QObject *parent = nullptr);
 
 public slots:
-    void execute(const Arquivo &modelArquivo);
+    void execute(const QUuid &uuid);
 
 signals:
     void processingStarted(const Arquivo &arquivo);

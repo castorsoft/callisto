@@ -57,6 +57,11 @@ qt_add_executable(client3 ${APP_SOURCES}
 # client2 consome a core_lib
 target_link_libraries(client3 PRIVATE core_lib Qt::Widgets Qt::Gui)
 
+option(HEADLESS "Build as a terminal application without GUI" OFF)
+if(HEADLESS)
+    target_compile_definitions(client3 PRIVATE HEADLESS_MODE)
+endif()
+
 # # 3. Habilitar testes
 # enable_testing()
 # add_subdirectory(tests)

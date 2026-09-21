@@ -74,3 +74,26 @@ QList<Arquivo> ArquivoRepository::carregarArquivosPendentes()
 
     return QList<Arquivo>();
 }
+
+std::optional<Arquivo> ArquivoRepository::buscarPorUuid(const QUuid &uuid)
+{
+    QSqlQuery query(m_db);
+    query.prepare("SELECT * FROM arquivos WHERE uuid = :uuid");
+    query.bindValue(":uuid", uuid);
+
+    if (query.exec() && query.next()) {
+        return Arquivo::loadFromDatabase(
+            query.value("id").toInt(),
+            query.value("uuid").toUuid(),
+            query.value("caminho_arquivo").toString(),
+            query.value("nome_arquivo").toString(),
+            query.value("processado").toBool(),
+            query.value("possui_erro").toBool(),
+            query.value("mensagem_erro").isNull() ? std::nullopt : std::make_optional(query.value("mensagem_erro").toString()),
+            query.value("processar_novamente").isNull() ? std::nullopt : std::make_optional(query.value("processar_novamente").toBool()),
+            query.value("criado_em").toDateTime(),
+            query.value("atualizado_em").toDateTime()
+        );
+    }
+    return std::nullopt;
+}
