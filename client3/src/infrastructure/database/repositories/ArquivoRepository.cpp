@@ -42,18 +42,20 @@ bool ArquivoRepository::existeArquivo(const QString &filePath, Arquivo *modelArq
     query.bindValue(":caminho_arquivo", filePath);
 
     if (query.exec() && query.next()) {
-        *modelArquivo = Arquivo::loadFromDatabase(
-            query.value("id").toInt(),
-            query.value("uuid").toUuid(),
-            query.value("caminho_arquivo").toString(),
-            query.value("nome_arquivo").toString(),
-            query.value("processado").toBool(),
-            query.value("possui_erro").toBool(),
-            query.value("mensagem_erro").isNull() ? std::nullopt : std::make_optional(query.value("mensagem_erro").toString()),
-            query.value("processar_novamente").isNull() ? std::nullopt : std::make_optional(query.value("processar_novamente").toBool()),
-            query.value("criado_em").toDateTime(),
-            query.value("atualizado_em").toDateTime()
-        );
+        if (modelArquivo) {
+            *modelArquivo = Arquivo::loadFromDatabase(
+                query.value("id").toInt(),
+                query.value("uuid").toUuid(),
+                query.value("caminho_arquivo").toString(),
+                query.value("nome_arquivo").toString(),
+                query.value("processado").toBool(),
+                query.value("possui_erro").toBool(),
+                query.value("mensagem_erro").isNull() ? std::nullopt : std::make_optional(query.value("mensagem_erro").toString()),
+                query.value("processar_novamente").isNull() ? std::nullopt : std::make_optional(query.value("processar_novamente").toBool()),
+                query.value("criado_em").toDateTime(),
+                query.value("atualizado_em").toDateTime()
+            );
+        }
         return true;
     }
 

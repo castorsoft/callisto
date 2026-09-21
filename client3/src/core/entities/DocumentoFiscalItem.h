@@ -1,0 +1,81 @@
+#pragma once
+
+#include <QString>
+#include <QDateTime>
+#include <QJsonObject>
+#include <QMetaType>
+#include <optional>
+
+class DocumentoFiscalItem {
+public:
+    DocumentoFiscalItem() = default;
+
+    // Construtor principal para criação antes de salvar no banco
+    DocumentoFiscalItem(int idDocumentoFiscal, int numeroItem, QString codigoProduto, QString descricao,
+                        QString ncm, std::optional<int> cfop, QString unidadeMedida, double quantidade,
+                        double valorUnitario, double valorTotal, double valorDesconto, QJsonObject dados);
+
+    static DocumentoFiscalItem loadFromDatabase(int id, int idDocumentoFiscal, int numeroItem,
+                                                QString codigoProduto, QString descricao, QString ncm,
+                                                std::optional<int> cfop, QString unidadeMedida,
+                                                double quantidade, double valorUnitario, double valorTotal,
+                                                double valorDesconto, QJsonObject dados,
+                                                QDateTime criadoEm, QDateTime atualizadoEm);
+
+    std::optional<int> id() const { return m_id; }
+    int idDocumentoFiscal() const { return m_idDocumentoFiscal; }
+    int numeroItem() const { return m_numeroItem; }
+    QString codigoProduto() const { return m_codigoProduto; }
+    QString descricao() const { return m_descricao; }
+    QString ncm() const { return m_ncm; }
+    std::optional<int> cfop() const { return m_cfop; }
+    QString unidadeMedida() const { return m_unidadeMedida; }
+    double quantidade() const { return m_quantidade; }
+    double valorUnitario() const { return m_valorUnitario; }
+    double valorTotal() const { return m_valorTotal; }
+    double valorDesconto() const { return m_valorDesconto; }
+    QJsonObject dados() const { return m_dados; }
+
+    std::optional<QDateTime> criadoEm() const { return m_criadoEm; }
+    std::optional<QDateTime> atualizadoEm() const { return m_atualizadoEm; }
+
+    // Getters para impostos e dados específicos dentro de "dados" JSON
+    QString cstIcms() const;
+    QString cstPis() const;
+    QString cstCofins() const;
+    QString cstIpi() const;
+
+    double baseIcms() const;
+    double valorIcms() const;
+    double aliquotaIcms() const;
+
+    void hidratar(int id, QDateTime criadoEm, QDateTime atualizadoEm);
+
+private:
+    DocumentoFiscalItem(int id, int idDocumentoFiscal, int numeroItem, QString codigoProduto,
+                        QString descricao, QString ncm, std::optional<int> cfop, QString unidadeMedida,
+                        double quantidade, double valorUnitario, double valorTotal, double valorDesconto,
+                        QJsonObject dados, QDateTime criadoEm, QDateTime atualizadoEm);
+
+    int m_id = -1;
+    int m_idDocumentoFiscal = -1;
+    int m_numeroItem = 0;
+
+    QString m_codigoProduto;
+    QString m_descricao;
+    QString m_ncm;
+    std::optional<int> m_cfop;
+    QString m_unidadeMedida;
+
+    double m_quantidade = 0.0;
+    double m_valorUnitario = 0.0;
+    double m_valorTotal = 0.0;
+    double m_valorDesconto = 0.0;
+
+    QJsonObject m_dados;
+
+    std::optional<QDateTime> m_criadoEm;
+    std::optional<QDateTime> m_atualizadoEm;
+};
+
+Q_DECLARE_METATYPE(DocumentoFiscalItem)

@@ -2,6 +2,8 @@
 
 #include <QMainWindow>
 #include <QListWidgetItem>
+#include <QWidget>
+#include <QMdiSubWindow>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -17,8 +19,15 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
 
+    QMdiSubWindow* addSubForm(QWidget *form);
+
 private:
     Ui::MainWindow *ui;
     void loadPluginButtons();
+    void loadNativeButtons();
+
+    void addActionToList(QAction *action);
     void onListClick(QListWidgetItem* item);
+
+    void onClickEmpresas();
 };

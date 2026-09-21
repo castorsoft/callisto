@@ -36,13 +36,12 @@ void ScheduleFilesForProcessing::stopService()
 
 void ScheduleFilesForProcessing::onFileAdded(const QString &filePath)
 {
-    Arquivo* modelArquivo;
-    QFileInfo arquivo = QFileInfo(filePath);
+    QFileInfo arquivoInfo = QFileInfo(filePath);
 
-    if (!m_arquivoRepository->existeArquivo(filePath, modelArquivo)) {
-        modelArquivo = new Arquivo(arquivo.absoluteFilePath(), arquivo.fileName(), false);
+    if (!m_arquivoRepository->existeArquivo(filePath)) {
+        Arquivo modelArquivo(arquivoInfo.absoluteFilePath(), arquivoInfo.fileName(), false);
 
-        m_arquivoRepository->salvar(*modelArquivo);
-        emit requestFileProcess(*modelArquivo);
+        m_arquivoRepository->salvar(modelArquivo);
+        emit requestFileProcess(modelArquivo);
     }
 }

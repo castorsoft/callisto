@@ -38,7 +38,7 @@
      </widget>
     </item>
     <item>
-     <widget class="QTabWidget" name="tabWidget"/>
+     <widget class="QMdiArea" name="mdiArea"/>
     </item>
    </layout>
   </widget>

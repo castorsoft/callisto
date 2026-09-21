@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS public.documentos_fiscais
     dados jsonb,
     criado_em timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     atualizado_em timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT documentos_fiscais_pkey PRIMARY KEY (id, id_pessoa)
+    CONSTRAINT documentos_fiscais_pkey PRIMARY KEY (id)
 )
 
 TABLESPACE pg_default;

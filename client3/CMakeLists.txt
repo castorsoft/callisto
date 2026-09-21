@@ -89,3 +89,6 @@ add_subdirectory(external_plugins/test_plugin)
 #     NO_UNSUPPORTED_PLATFORM_ERROR
 # )
 # install(SCRIPT ${deploy_script})
+
+# Diz ao executável onde encontrar o .so em tempo de execução
+set_target_properties(client3 PROPERTIES BUILD_RPATH "/usr/local/lib/libzafra.so")

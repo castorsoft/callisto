@@ -11,7 +11,7 @@ public:
     ArquivoRepository();
 
     void salvar(Arquivo &modelArquivo);
-    bool existeArquivo(const QString &filePath, Arquivo *modelArquivo);
+    bool existeArquivo(const QString &filePath, Arquivo *modelArquivo = nullptr) override;
     QList<Arquivo> carregarArquivosPendentes();
 private:
     QSqlDatabase m_db;
