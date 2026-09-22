@@ -4,6 +4,8 @@
 #include "../../plugins/PluginManager.h"
 #include "../plugins/api/IUIExtension.h"
 
+#include "FormEmpresaListagem.h"
+
 #include <QListWidgetItem>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -48,8 +50,8 @@ void MainWindow::loadPluginButtons() {
 
 void MainWindow::loadNativeButtons() {
     QAction *actionListarEmpresas = new QAction("Empresas", this);
-
     connect(actionListarEmpresas, &QAction::triggered, this, &MainWindow::onClickEmpresas);
+
 
     addActionToList(actionListarEmpresas);
 }
@@ -73,7 +75,14 @@ void MainWindow::onListClick(QListWidgetItem* item) {
 }
 
 void MainWindow::onClickEmpresas() {
-    // auto form = new FormEmpresasListagem(this);
+    // Verifica se o formulário já está aberto
+    for (int i = 0; i < ui->tabWidget->count(); ++i) {
+        if (qobject_cast<FormEmpresaListagem*>(ui->tabWidget->widget(i))) {
+            ui->tabWidget->setCurrentIndex(i); // Apenas foca na aba existente
+            return;
+        }
+    }
 
-    // this->addSubForm(form);
+    auto form = new FormEmpresaListagem(this);
+    this->addSubForm(form);
 }

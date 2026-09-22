@@ -17,6 +17,9 @@ public:
 
 private:
     Ui::FormEmpresaDetalhe *ui;
+
+private slots:
+    void onPessoaChange(int index);
 };
 
 #endif // FORMEMPRESADETALHEH

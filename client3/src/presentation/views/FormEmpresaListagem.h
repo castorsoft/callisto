@@ -15,6 +15,10 @@ public:
     explicit FormEmpresaListagem(QWidget *parent = nullptr);
     ~FormEmpresaListagem();
 
+private slots:
+    void onNovoClicked();
+    void voltarParaListagem();
+
 private:
     Ui::FormEmpresaListagem *ui;
 };
