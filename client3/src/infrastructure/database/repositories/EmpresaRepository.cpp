@@ -3,6 +3,7 @@
 #include <QVariant>
 #include <QSqlError>
 #include "../DatabaseManager.h"
+#include "EnderecoRepository.h"
 
 EmpresaRepository::EmpresaRepository()
 {
@@ -59,6 +60,10 @@ std::optional<Empresa> EmpresaRepository::mapToEntity(QSqlQuery &query)
     int id = query.value("id").toInt();
     QList<int> contatos = carregarContatos(id);
 
+    EnderecoRepository enderecoRepo;
+    std::optional<Endereco> enderecoOpt = enderecoRepo.buscarPorId(query.value("id_endereco").toInt());
+    Endereco endereco = enderecoOpt.has_value() ? enderecoOpt.value() : Endereco();
+
     return Empresa::loadFromDatabase(
         id,
         query.value("uuid").toUuid(),
@@ -66,7 +71,7 @@ std::optional<Empresa> EmpresaRepository::mapToEntity(QSqlQuery &query)
         query.value("razao_social").toString(),
         query.value("nome_fantasia").isNull() ? std::nullopt : std::make_optional(query.value("nome_fantasia").toString()),
         query.value("regime_tributario").toString(),
-        query.value("id_endereco").toInt(),
+        endereco,
         query.value("inscricao_estadual").isNull() ? std::nullopt : std::make_optional(query.value("inscricao_estadual").toString()),
         query.value("inscricao_municipal").isNull() ? std::nullopt : std::make_optional(query.value("inscricao_municipal").toString()),
         contatos,
@@ -77,6 +82,11 @@ std::optional<Empresa> EmpresaRepository::mapToEntity(QSqlQuery &query)
 
 void EmpresaRepository::salvar(Empresa &modelEmpresa)
 {
+    Endereco endereco = modelEmpresa.endereco();
+    EnderecoRepository enderecoRepo;
+    enderecoRepo.salvar(endereco);
+    modelEmpresa.setEndereco(endereco);
+
     QSqlQuery query(m_db);
 
     if (!modelEmpresa.id().has_value() || modelEmpresa.id().value() == -1) {
@@ -96,7 +106,7 @@ void EmpresaRepository::salvar(Empresa &modelEmpresa)
     query.bindValue(":razao_social", modelEmpresa.razaoSocial());
     query.bindValue(":nome_fantasia", modelEmpresa.nomeFantasia().has_value() ? modelEmpresa.nomeFantasia().value() : QVariant());
     query.bindValue(":regime_tributario", modelEmpresa.regimeTributario());
-    query.bindValue(":id_endereco", modelEmpresa.idEndereco());
+    query.bindValue(":id_endereco", endereco.id().value());
     query.bindValue(":inscricao_estadual", modelEmpresa.inscricaoEstadual().has_value() ? modelEmpresa.inscricaoEstadual().value() : QVariant());
     query.bindValue(":inscricao_municipal", modelEmpresa.inscricaoMunicipal().has_value() ? modelEmpresa.inscricaoMunicipal().value() : QVariant());
 

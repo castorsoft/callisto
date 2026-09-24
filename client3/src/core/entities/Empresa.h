@@ -7,22 +7,24 @@
 #include <QList>
 #include <optional>
 
+#include "Endereco.h"
+
 class Empresa {
 public:
     Empresa() = default;
 
     // Constructor for creating new instances before DB insert
     Empresa(QString cnpjCpf, QString razaoSocial, std::optional<QString> nomeFantasia,
-            QString regimeTributario, int idEndereco,
+            QString regimeTributario, Endereco endereco,
             std::optional<QString> inscricaoEstadual, std::optional<QString> inscricaoMunicipal,
             QList<int> contatosIds = {})
         : m_cnpjCpf(cnpjCpf), m_razaoSocial(razaoSocial), m_nomeFantasia(nomeFantasia),
-          m_regimeTributario(regimeTributario), m_idEndereco(idEndereco),
+          m_regimeTributario(regimeTributario), m_endereco(endereco),
           m_inscricaoEstadual(inscricaoEstadual), m_inscricaoMunicipal(inscricaoMunicipal),
           m_contatosIds(contatosIds) {}
 
     static Empresa loadFromDatabase(int internalId, QUuid uuid, QString cnpjCpf, QString razaoSocial,
-                                    std::optional<QString> nomeFantasia, QString regimeTributario, int idEndereco,
+                                    std::optional<QString> nomeFantasia, QString regimeTributario, Endereco endereco,
                                     std::optional<QString> inscricaoEstadual, std::optional<QString> inscricaoMunicipal,
                                     QList<int> contatosIds,
                                     QDateTime criadoEm, QDateTime atualizadoEm);
@@ -34,7 +36,10 @@ public:
     QString razaoSocial() const { return m_razaoSocial; }
     std::optional<QString> nomeFantasia() const { return m_nomeFantasia; }
     QString regimeTributario() const { return m_regimeTributario; }
-    int idEndereco() const { return m_idEndereco; }
+
+    Endereco endereco() const { return m_endereco.value(); }
+    void setEndereco(const Endereco &endereco) { m_endereco = endereco; }
+
     std::optional<QString> inscricaoEstadual() const { return m_inscricaoEstadual; }
     std::optional<QString> inscricaoMunicipal() const { return m_inscricaoMunicipal; }
 
@@ -48,11 +53,11 @@ public:
 
 private:
     Empresa(int internalId, QUuid uuid, QString cnpjCpf, QString razaoSocial,
-            std::optional<QString> nomeFantasia, QString regimeTributario, int idEndereco,
+            std::optional<QString> nomeFantasia, QString regimeTributario, Endereco endereco,
             std::optional<QString> inscricaoEstadual, std::optional<QString> inscricaoMunicipal,
             QList<int> contatosIds, QDateTime criadoEm, QDateTime atualizadoEm)
         : m_id(internalId), m_uuid(uuid), m_cnpjCpf(cnpjCpf), m_razaoSocial(razaoSocial),
-          m_nomeFantasia(nomeFantasia), m_regimeTributario(regimeTributario), m_idEndereco(idEndereco),
+          m_nomeFantasia(nomeFantasia), m_regimeTributario(regimeTributario), m_endereco(endereco),
           m_inscricaoEstadual(inscricaoEstadual), m_inscricaoMunicipal(inscricaoMunicipal),
           m_contatosIds(contatosIds), m_criadoEm(criadoEm), m_atualizadoEm(atualizadoEm) {}
 
@@ -63,7 +68,7 @@ private:
     QString m_razaoSocial;
     std::optional<QString> m_nomeFantasia;
     QString m_regimeTributario;
-    int m_idEndereco;
+    std::optional<Endereco> m_endereco;
     std::optional<QString> m_inscricaoEstadual;
     std::optional<QString> m_inscricaoMunicipal;
 

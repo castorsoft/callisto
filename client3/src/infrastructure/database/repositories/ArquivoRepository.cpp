@@ -29,6 +29,7 @@ void ArquivoRepository::salvar(Arquivo &modelArquivo)
             modelArquivo.hidratar(query.value("id").toInt(), query.value("uuid").toUuid(), query.value("criado_em").toDateTime(), query.value("atualizado_em").toDateTime());
         }
     } else {
+        modelArquivo.hidratar(query.value("atualizado_em").toDateTime());
         // TODO: fazer update (não esquecer do returning do atualizado_em)
     }
 

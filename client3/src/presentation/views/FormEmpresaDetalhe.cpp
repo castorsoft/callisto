@@ -3,6 +3,7 @@
 #include "../components/ToastNotification.h"
 #include "../../core/entities/Empresa.h"
 #include "../../infrastructure/database/repositories/EmpresaRepository.h"
+#include "../../infrastructure/database/repositories/EnderecoRepository.h"
 
 FormEmpresaDetalhe::FormEmpresaDetalhe(QWidget *parent)
     : QWidget(parent)
@@ -44,6 +45,10 @@ void FormEmpresaDetalhe::onSalvar() {
     }
 
     try {
+        if
+        EnderecoRepository endRepo;
+
+
         Empresa emp(cpfCnpj, razaoSocial, nomeFantasia.isEmpty() ? std::nullopt : std::make_optional(nomeFantasia),
                     regimeTributario, 0, std::nullopt, std::nullopt);
 
