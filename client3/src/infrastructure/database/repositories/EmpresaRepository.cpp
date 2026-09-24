@@ -108,6 +108,8 @@ void EmpresaRepository::salvar(Empresa &modelEmpresa)
         }
 
         salvarContatos(modelEmpresa.id().value(), modelEmpresa.contatosIds());
+    } else {
+        qCritical() << "[EmpresaRepository] Erro ao inserir Empresa:" << query.lastError().text();
     }
 }
 

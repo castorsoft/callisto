@@ -18,6 +18,7 @@ public:
 private slots:
     void onNovoClicked();
     void voltarParaListagem();
+    void carregarLista();
 
 private:
     Ui::FormEmpresaListagem *ui;

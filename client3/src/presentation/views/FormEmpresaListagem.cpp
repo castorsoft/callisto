@@ -1,6 +1,9 @@
 #include "FormEmpresaListagem.h"
 #include "ui_FormEmpresaListagem.h"
 #include "FormEmpresaDetalhe.h"
+#include "../../infrastructure/database/repositories/EmpresaRepository.h"
+#include "providers/EmpresaListProvider.h"
+#include "../components/providers/TableDataProviderAdapter.h"
 
 FormEmpresaListagem::FormEmpresaListagem(QWidget *parent)
     : QWidget(parent)
@@ -10,6 +13,8 @@ FormEmpresaListagem::FormEmpresaListagem(QWidget *parent)
 
     // Conecta o sinal do botão "Novo" da listagem
     connect(ui->genericListWidget, &GenericListWidget::actionNewRequested, this, &FormEmpresaListagem::onNovoClicked);
+
+    carregarLista();
 }
 
 FormEmpresaListagem::~FormEmpresaListagem()
@@ -23,7 +28,7 @@ void FormEmpresaListagem::onNovoClicked()
 
     // IMPORTANTE: Aqui você pode conectar os sinais do seu detalhe (ex: clicou em cancelar ou salvar)
     // para fechar o formulário e voltar pra tabela. Exemplo fictício:
-    // connect(detalhe, &FormEmpresaDetalhe::fechar, this, &FormEmpresaListagem::voltarParaListagem);
+    connect(detalhe, &FormEmpresaDetalhe::fechar, this, &FormEmpresaListagem::voltarParaListagem);
 
     ui->stackedWidget->addWidget(detalhe);
     ui->stackedWidget->setCurrentWidget(detalhe);
@@ -38,4 +43,15 @@ void FormEmpresaListagem::voltarParaListagem()
         ui->stackedWidget->removeWidget(widgetAtual);
         widgetAtual->deleteLater();
     }
+
+    carregarLista();
+}
+
+void FormEmpresaListagem::carregarLista()
+{
+    EmpresaRepository repo;
+    auto empresas = repo.listarTodas();
+    auto provider = std::make_shared<EmpresaListProvider>(empresas);
+    auto model = new TableDataProviderAdapter(provider, this);
+    ui->genericListWidget->setModel(model);
 }

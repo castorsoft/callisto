@@ -2,12 +2,12 @@ cmake_minimum_required(VERSION 3.19)
 project(client2 LANGUAGES CXX)
 
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Sql Gui Concurrent)
-find_package(zafra REQUIRED)
-find_package(tinyxml2 REQUIRED)
-find_package(LibXml2 REQUIRED)
+# add_subdirectory(../../zafra zafra) # If we want to build it together
+# Actually, the user says "Os fontes da lib estão em ../../zafra". Let's add it.
+
+add_subdirectory(../../zafra zafra)
+
 set(CMAKE_AUTORCC ON)
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 
 qt_standard_project_setup()
 
@@ -34,8 +34,6 @@ target_link_libraries(core_lib PUBLIC
 #    Qt::Gui
     Qt::Concurrent
     zafra
-    tinyxml2::tinyxml2
-    LibXml2::LibXml2
 )
 
 
@@ -93,7 +91,3 @@ add_subdirectory(external_plugins/test_plugin)
 #     OUTPUT_SCRIPT deploy_script
 #     NO_UNSUPPORTED_PLATFORM_ERROR
 # )
-# install(SCRIPT ${deploy_script})
-
-# Diz ao executável onde encontrar o .so em tempo de execução
-set_target_properties(client3 PROPERTIES BUILD_RPATH "/usr/local/lib/libzafra.so")

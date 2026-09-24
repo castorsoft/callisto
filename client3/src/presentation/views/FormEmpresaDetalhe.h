@@ -20,6 +20,11 @@ private:
 
 private slots:
     void onPessoaChange(int index);
+    void onSalvar();
+
+signals:
+    void fechar();
+    void salvar();
 };
 
 #endif // FORMEMPRESADETALHEH
