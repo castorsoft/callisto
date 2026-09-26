@@ -17,6 +17,7 @@ public:
 
 private slots:
     void onNovoClicked();
+    void onAlterarClicked(int rowIndex);
     void voltarParaListagem();
     void carregarLista();
 

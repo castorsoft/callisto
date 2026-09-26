@@ -21,6 +21,10 @@ private:
 private slots:
     void onPessoaChange(int index);
     void onSalvar();
+    void atualizarCidades(int indexUF);
+
+private:
+    void preencherUF();
 
 signals:
     void fechar();

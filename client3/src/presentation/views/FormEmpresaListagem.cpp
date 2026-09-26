@@ -13,6 +13,7 @@ FormEmpresaListagem::FormEmpresaListagem(QWidget *parent)
 
     // Conecta o sinal do botão "Novo" da listagem
     connect(ui->genericListWidget, &GenericListWidget::actionNewRequested, this, &FormEmpresaListagem::onNovoClicked);
+    // connect(ui->genericListWidget, &GenericListWidget::actionEditRequested, this, &FormEmpresaDetalhe::onAlterarClicked);
 
     carregarLista();
 }
@@ -32,6 +33,10 @@ void FormEmpresaListagem::onNovoClicked()
 
     ui->stackedWidget->addWidget(detalhe);
     ui->stackedWidget->setCurrentWidget(detalhe);
+}
+
+void FormEmpresaListagem::onAlterarClicked(int rowIndex) {
+
 }
 
 void FormEmpresaListagem::voltarParaListagem()

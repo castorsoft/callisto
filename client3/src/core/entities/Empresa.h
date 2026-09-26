@@ -11,7 +11,7 @@
 
 class Empresa {
 public:
-    Empresa() = default;
+    Empresa();
 
     // Constructor for creating new instances before DB insert
     Empresa(QString cnpjCpf, QString razaoSocial, std::optional<QString> nomeFantasia,
