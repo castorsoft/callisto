@@ -12,7 +12,7 @@ QList<Cidade> CidadeRepository::listarPorEstado(int idEstado) {
     QSqlQuery query(m_db);
     query.prepare("SELECT id, nome, id_ibge, id_estado FROM cidades WHERE id_estado = :id_estado ORDER BY nome");
     query.bindValue(":id_estado", idEstado);
-    
+
     if (query.exec()) {
         while (query.next()) {
             cidades.append(Cidade(
@@ -24,4 +24,20 @@ QList<Cidade> CidadeRepository::listarPorEstado(int idEstado) {
         }
     }
     return cidades;
+}
+
+std::optional<Cidade> CidadeRepository::buscarPorId(int id) {
+    QSqlQuery query(m_db);
+    query.prepare("SELECT id, nome, id_ibge, id_estado FROM cidades WHERE id = :id");
+    query.bindValue(":id", id);
+
+    if (query.exec() && query.next()) {
+        return Cidade(
+            query.value("id").toInt(),
+            query.value("nome").toString(),
+            query.value("id_ibge").toInt(),
+            query.value("id_estado").toInt()
+        );
+    }
+    return std::nullopt;
 }

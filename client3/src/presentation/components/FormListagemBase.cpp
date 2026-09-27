@@ -1,20 +1,20 @@
-#include "GenericListWidget.h"
-#include "ui_GenericListWidget.h"
+#include "FormListagemBase.h"
+#include "ui_FormListagemBase.h"
 
-GenericListWidget::GenericListWidget(QWidget *parent) :
+FormListagemBase::FormListagemBase(QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::GenericListWidget)
+    ui(new Ui::FormListagemBase)
 {
     ui->setupUi(this);
     applyTableConfigurations();
 }
 
-GenericListWidget::~GenericListWidget()
+FormListagemBase::~FormListagemBase()
 {
     delete ui;
 }
 
-void GenericListWidget::applyTableConfigurations()
+void FormListagemBase::applyTableConfigurations()
 {
     ui->tableView->setAlternatingRowColors(true);
     ui->tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -23,17 +23,18 @@ void GenericListWidget::applyTableConfigurations()
     ui->tableView->horizontalHeader()->setStretchLastSection(true);
 }
 
-void GenericListWidget::setModel(QAbstractItemModel *model)
+void FormListagemBase::setModel(QAbstractItemModel *model)
 {
+    m_model = model;
     ui->tableView->setModel(model);
 }
 
-void GenericListWidget::on_btnNew_clicked()
+void FormListagemBase::on_btnNew_clicked()
 {
     emit actionNewRequested();
 }
 
-void GenericListWidget::on_btnEdit_clicked()
+void FormListagemBase::on_btnEdit_clicked()
 {
     QModelIndexList selection = ui->tableView->selectionModel()->selectedRows();
     if (!selection.isEmpty()) {
@@ -41,7 +42,7 @@ void GenericListWidget::on_btnEdit_clicked()
     }
 }
 
-void GenericListWidget::on_btnDelete_clicked()
+void FormListagemBase::on_btnDelete_clicked()
 {
     QModelIndexList selection = ui->tableView->selectionModel()->selectedRows();
     if (!selection.isEmpty()) {

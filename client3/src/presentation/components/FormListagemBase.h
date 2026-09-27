@@ -4,18 +4,22 @@
 #include <QAbstractItemModel>
 
 namespace Ui {
-class GenericListWidget;
+class FormListagemBase;
 }
 
-class GenericListWidget : public QWidget
+class FormListagemBase : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit GenericListWidget(QWidget *parent = nullptr);
-    ~GenericListWidget() override;
+    explicit FormListagemBase(QWidget *parent = nullptr);
+    ~FormListagemBase() override;
 
+    virtual void carregarLista() = 0;
+
+protected:
     void setModel(QAbstractItemModel *model);
+    QAbstractItemModel *m_model = nullptr;
 
 signals:
     void actionNewRequested();
@@ -28,6 +32,6 @@ private slots:
     void on_btnDelete_clicked();
 
 private:
-    Ui::GenericListWidget *ui;
+    Ui::FormListagemBase *ui;
     void applyTableConfigurations();
 };

@@ -12,6 +12,7 @@ public:
     QString nome() const { return m_nome; }
     int idIbge() const { return m_idIbge; }
     int idEstado() const { return m_idEstado; }
+    int idUF() const { return m_idEstado; }
 
 private:
     int m_id;

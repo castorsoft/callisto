@@ -3,6 +3,7 @@
 #include <QVariant>
 #include <QSqlError>
 #include "../DatabaseManager.h"
+#include "CidadeRepository.h"
 
 EnderecoRepository::EnderecoRepository()
 {
@@ -11,7 +12,7 @@ EnderecoRepository::EnderecoRepository()
 
 std::optional<Endereco> EnderecoRepository::mapToEntity(QSqlQuery &query)
 {
-    return Endereco::loadFromDatabase(
+    auto endereco = Endereco::loadFromDatabase(
         query.value("id").toInt(),
         query.value("uuid").toUuid(),
         query.value("logradouro").toString(),
@@ -23,6 +24,14 @@ std::optional<Endereco> EnderecoRepository::mapToEntity(QSqlQuery &query)
         query.value("criado_em").toDateTime(),
         query.value("atualizado_em").toDateTime()
     );
+
+    CidadeRepository cidRepo;
+    auto cidade = cidRepo.buscarPorId(endereco.idCidade());
+    if (cidade.has_value()) {
+        endereco.setCidade(cidade.value());
+    }
+
+    return endereco;
 }
 
 void EnderecoRepository::salvar(Endereco &modelEndereco)

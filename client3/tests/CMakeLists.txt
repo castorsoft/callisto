@@ -3,7 +3,7 @@ find_package(Qt6 REQUIRED COMPONENTS Test)
 include(FetchContent)
 FetchContent_Declare(
   googletest
-  URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+  URL https://github.com/google/googletest/archive/refs/tags/v1.18.0.zip
 )
 # Make GoogleTest available
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)

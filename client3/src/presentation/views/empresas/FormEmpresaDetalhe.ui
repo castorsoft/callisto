@@ -211,7 +211,7 @@
                 </layout>
               </item>
               <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_4">
+                <layout class="QHBoxLayout" name="horizontalLayout_41">
                   <item>
                     <widget class="QPushButton" name="btnCancelar">
                       <property name="minimumSize">

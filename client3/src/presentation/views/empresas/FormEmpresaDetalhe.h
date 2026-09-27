@@ -2,12 +2,14 @@
 #define FORMEMPRESADETALHEH
 
 #include <QWidget>
+#include "../../components/FormDetalheBase.h"
+#include "../../../core/entities/Empresa.h"
 
 namespace Ui {
 class FormEmpresaDetalhe;
 }
 
-class FormEmpresaDetalhe : public QWidget
+class FormEmpresaDetalhe : public FormDetalheBase
 {
     Q_OBJECT
 
@@ -18,17 +20,20 @@ public:
 private:
     Ui::FormEmpresaDetalhe *ui;
 
+protected slots:
+    void onSalvar() override;
+
 private slots:
     void onPessoaChange(int index);
-    void onSalvar();
     void atualizarCidades(int indexUF);
+
+protected:
+    bool validar() override;
+    void carregarDados() override;
 
 private:
     void preencherUF();
-
-signals:
-    void fechar();
-    void salvar();
+    std::optional<Empresa> m_empresaAtual;
 };
 
 #endif // FORMEMPRESADETALHEH

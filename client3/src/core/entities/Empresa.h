@@ -11,7 +11,7 @@
 
 class Empresa {
 public:
-    Empresa();
+    Empresa() = default;
 
     // Constructor for creating new instances before DB insert
     Empresa(QString cnpjCpf, QString razaoSocial, std::optional<QString> nomeFantasia,
@@ -43,7 +43,15 @@ public:
     std::optional<QString> inscricaoEstadual() const { return m_inscricaoEstadual; }
     std::optional<QString> inscricaoMunicipal() const { return m_inscricaoMunicipal; }
 
+    void setCnpjCpf(const QString &val) { m_cnpjCpf = val; }
+    void setRazaoSocial(const QString &val) { m_razaoSocial = val; }
+    void setNomeFantasia(const std::optional<QString> &val) { m_nomeFantasia = val; }
+    void setRegimeTributario(const QString &val) { m_regimeTributario = val; }
+    void setInscricaoEstadual(const std::optional<QString> &val) { m_inscricaoEstadual = val; }
+    void setInscricaoMunicipal(const std::optional<QString> &val) { m_inscricaoMunicipal = val; }
+
     QList<int> contatosIds() const { return m_contatosIds; }
+    void setContatosIds(const QList<int> &ids) { m_contatosIds = ids; }
 
     std::optional<QDateTime> criadoEm() const { return m_criadoEm; }
     std::optional<QDateTime> atualizadoEm() const { return m_atualizadoEm; }

@@ -16,6 +16,7 @@ public:
     QString currentText() const;
     QVariant currentData() const;
     int currentIndex() const;
+    int findIndex(const QVariant &data);
 
     void setCurrentIndex(int index);
 
@@ -23,6 +24,9 @@ public:
 
 signals:
     void currentIndexChanged(int index);
+
+protected:
+    bool eventFilter(QObject *obj, QEvent *event) override;
 
 private:
     QComboBox *m_comboBox;

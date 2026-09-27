@@ -8,6 +8,7 @@ class CidadeRepository : public ICidadeRepository {
 public:
     CidadeRepository();
     QList<Cidade> listarPorEstado(int idEstado) override;
+    std::optional<Cidade> buscarPorId(int id);
 private:
     QSqlDatabase m_db;
 };
