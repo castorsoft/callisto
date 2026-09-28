@@ -86,3 +86,4 @@ CMakeLists.txt.user*
 /.qtcreator/
 
 .vscode/
+application.log

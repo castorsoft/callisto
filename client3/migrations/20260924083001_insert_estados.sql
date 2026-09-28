@@ -25,3 +25,4 @@ INSERT INTO public.estados (nome, sigla, id_ibge) VALUES ('Santa Catarina',	'SC'
 INSERT INTO public.estados (nome, sigla, id_ibge) VALUES ('São Paulo',	'SP',	35);
 INSERT INTO public.estados (nome, sigla, id_ibge) VALUES ('Sergipe',	'SE',	28);
 INSERT INTO public.estados (nome, sigla, id_ibge) VALUES ('Tocantins',	'TO',	17);
+INSERT INTO public.estados (nome, sigla, id_ibge) VALUES ('Exterior',	'EX',	99);

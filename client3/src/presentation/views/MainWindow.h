@@ -21,6 +21,9 @@ public:
     void addSubForm(QWidget *form);
     void closeSubForm(int index);
 
+    template <typename T>
+    bool existeFormulario();
+
 private:
     Ui::MainWindow *ui;
     void loadPluginButtons();
@@ -30,4 +33,5 @@ private:
     void onListClick(QListWidgetItem* item);
 
     void onClickEmpresas();
+    void onClickPessoas();
 };

@@ -6,6 +6,8 @@
 #include "../../../infrastructure/database/repositories/EnderecoRepository.h"
 #include "../../../infrastructure/database/repositories/EstadoRepository.h"
 #include "../../../infrastructure/database/repositories/CidadeRepository.h"
+#include "../../../core/GlobalState.h"
+#include "../../../infrastructure/services/CnpjService.h"
 #include <QVariant>
 
 FormEmpresaDetalhe::FormEmpresaDetalhe(QWidget *parent)
@@ -23,6 +25,8 @@ FormEmpresaDetalhe::FormEmpresaDetalhe(QWidget *parent)
 
     preencherUF();
     atualizarCidades(1);
+
+    connect(ui->edtCNPJ, &InputMasked::editingFinished, this, &FormEmpresaDetalhe::onCnpjEditingFinished);
 
     connect(ui->rgPessoa, &InputRadioGroup::currentIndexChanged, this, &FormEmpresaDetalhe::onPessoaChange);
     connect(ui->btnCancelar, &QPushButton::clicked, this, &FormEmpresaDetalhe::fechar);
@@ -136,6 +140,7 @@ void FormEmpresaDetalhe::onSalvar() {
         EmpresaRepository repo;
         repo.salvar(emp);
 
+        GlobalState::instance().setEmpresaAtual(emp);
 
         ToastNotification::show(this, "Sucesso", "Empresa salva com sucesso!", ToastNotification::Success, 3000);
         emit fechar();
@@ -178,4 +183,60 @@ void FormEmpresaDetalhe::onPessoaChange(int index) {
         ui->edtCNPJ->setEnabled(true);
         ui->edtCPF->setEnabled(false);
     }
+}
+
+void FormEmpresaDetalhe::onCnpjEditingFinished() {
+    QString cnpj = ui->edtCNPJ->text();
+    cnpj.remove('.').remove('-').remove('/');
+
+    if (cnpj.length() == 14) {
+        auto *service = new CnpjService(this);
+        connect(service, &CnpjService::consultaFinalizada, this, &FormEmpresaDetalhe::onCnpjRetornado);
+        connect(service, &CnpjService::erroConsulta, this, &FormEmpresaDetalhe::onCnpjErro);
+
+        ToastNotification::show(this, "Aguarde", "Consultando CNPJ...", ToastNotification::Info, 2000);
+        service->consultarCNPJ(cnpj);
+    }
+}
+
+void FormEmpresaDetalhe::onCnpjRetornado(const CnpjResult &resultado) {
+    auto *service = qobject_cast<CnpjService*>(sender());
+    if (service) service->deleteLater();
+
+    if (!resultado.isValid) {
+        ToastNotification::show(this, "Aviso", "CNPJ inválido ou não encontrado na Receita.", ToastNotification::Warning, 3000);
+        return;
+    }
+
+    if (!resultado.razaoSocial.isEmpty()) ui->edtRazaoSocial->setText(resultado.razaoSocial);
+    if (!resultado.nomeFantasia.isEmpty()) ui->edtNomeFantasia->setText(resultado.nomeFantasia);
+
+    if (!resultado.cep.isEmpty()) ui->edtCEP->setText(resultado.cep);
+    if (!resultado.logradouro.isEmpty()) ui->edtLogradouro->setText(resultado.logradouro);
+    if (!resultado.numero.isEmpty()) ui->edtNumero->setText(resultado.numero);
+    if (!resultado.complemento.isEmpty()) ui->edtComplemento->setText(resultado.complemento);
+    if (!resultado.bairro.isEmpty()) ui->edtBairro->setText(resultado.bairro);
+
+    if (!resultado.siglaEstado.isEmpty()) {
+        int indexUF = ui->cbUF->comboBox()->findText(resultado.siglaEstado);
+        if (indexUF >= 0) ui->cbUF->setCurrentIndex(indexUF);
+    }
+
+    if (resultado.ibgeCidade > 0) {
+        CidadeRepository cidadeRepo;
+        auto cidadeOpt = cidadeRepo.buscarPorIbge(resultado.ibgeCidade);
+        if (cidadeOpt.has_value()) {
+            int indexCidade = ui->cbCidade->findIndex(cidadeOpt.value().id());
+            if (indexCidade >= 0) ui->cbCidade->setCurrentIndex(indexCidade);
+        }
+    }
+
+    ToastNotification::show(this, "Sucesso", "Dados preenchidos via Receita Federal!", ToastNotification::Success, 3000);
+}
+
+void FormEmpresaDetalhe::onCnpjErro(const QString &erro) {
+    auto *service = qobject_cast<CnpjService*>(sender());
+    if (service) service->deleteLater();
+
+    ToastNotification::show(this, "Erro", "Falha na consulta do CNPJ: " + erro, ToastNotification::Error, 3000);
 }

@@ -23,8 +23,10 @@ protected:
     QStackedWidget *m_stackedWidget;
     FormListagemBase *m_formListagem;
 
-protected slots:
+public slots:
     virtual void onNovoRegistro();
+
+protected slots:
     virtual void onEditarRegistro(int rowIndex);
     virtual void voltarParaListagem();
 

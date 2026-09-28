@@ -26,6 +26,9 @@ protected slots:
 private slots:
     void onPessoaChange(int index);
     void atualizarCidades(int indexUF);
+    void onCnpjEditingFinished();
+    void onCnpjRetornado(const struct CnpjResult &resultado);
+    void onCnpjErro(const QString &erro);
 
 protected:
     bool validar() override;

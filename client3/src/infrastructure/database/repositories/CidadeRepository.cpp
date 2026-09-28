@@ -41,3 +41,19 @@ std::optional<Cidade> CidadeRepository::buscarPorId(int id) {
     }
     return std::nullopt;
 }
+
+std::optional<Cidade> CidadeRepository::buscarPorIbge(int idIbge) {
+    QSqlQuery query(m_db);
+    query.prepare("SELECT id, nome, id_ibge, id_estado FROM cidades WHERE id_ibge = :id_ibge");
+    query.bindValue(":id_ibge", idIbge);
+
+    if (query.exec() && query.next()) {
+        return Cidade(
+            query.value("id").toInt(),
+            query.value("nome").toString(),
+            query.value("id_ibge").toInt(),
+            query.value("id_estado").toInt()
+        );
+    }
+    return std::nullopt;
+}

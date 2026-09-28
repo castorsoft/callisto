@@ -19,6 +19,7 @@ public:
 
 signals:
     void textChanged(const QString &text);
+    void editingFinished();
 
 private:
     QLineEdit *m_lineEdit;

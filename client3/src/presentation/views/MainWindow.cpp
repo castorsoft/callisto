@@ -5,8 +5,12 @@
 #include "../plugins/api/IUIExtension.h"
 
 #include "empresas/FormEmpresas.h"
+#include "pessoas/FormPessoas.h"
 
 #include <QListWidgetItem>
+
+#include "../../infrastructure/database/repositories/EmpresaRepository.h"
+#include "../../core/GlobalState.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -17,6 +21,19 @@ MainWindow::MainWindow(QWidget *parent)
     loadPluginButtons();
     connect(ui->listWidget,&QListWidget::itemClicked, this, &MainWindow::onListClick);
     connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this, &MainWindow::closeSubForm);
+
+    // Lógica para carregar a empresa atual ou forçar o cadastro
+    EmpresaRepository repo;
+    QList<Empresa> empresas = repo.listarTodas();
+    if (empresas.isEmpty()) {
+        auto form = new FormEmpresas(this);
+
+        form->setWindowTitle("Empresas");
+        this->addSubForm(form);
+        form->onNovoRegistro();
+    } else {
+        GlobalState::instance().setEmpresaAtual(empresas.first());
+    }
 }
 
 MainWindow::~MainWindow() {
@@ -52,8 +69,12 @@ void MainWindow::loadNativeButtons() {
     QAction *actionListarEmpresas = new QAction("Empresas", this);
     connect(actionListarEmpresas, &QAction::triggered, this, &MainWindow::onClickEmpresas);
 
-
     addActionToList(actionListarEmpresas);
+
+    QAction *actionListarPessoas = new QAction("Pessoas", this);
+    connect(actionListarPessoas, &QAction::triggered, this, &MainWindow::onClickPessoas);
+
+    addActionToList(actionListarPessoas);
 }
 
 void MainWindow::addActionToList(QAction *action) {
@@ -74,16 +95,29 @@ void MainWindow::onListClick(QListWidgetItem* item) {
     }
 }
 
-void MainWindow::onClickEmpresas() {
-    // Verifica se o formulário já está aberto
+template <typename T>
+bool MainWindow::existeFormulario() {
     for (int i = 0; i < ui->tabWidget->count(); ++i) {
-        if (qobject_cast<FormEmpresas*>(ui->tabWidget->widget(i))) {
+        if (qobject_cast<T*>(ui->tabWidget->widget(i))) {
             ui->tabWidget->setCurrentIndex(i); // Apenas foca na aba existente
-            return;
+            return true;
         }
     }
+    return false;
+}
+
+void MainWindow::onClickEmpresas() {
+    if (existeFormulario<FormEmpresas>()) return;
 
     auto form = new FormEmpresas(this);
     form->setWindowTitle("Empresas");
+    this->addSubForm(form);
+}
+
+void MainWindow::onClickPessoas() {
+    if (existeFormulario<FormPessoas>()) return;
+
+    auto form = new FormPessoas(this);
+    form->setWindowTitle("Pessoas");
     this->addSubForm(form);
 }

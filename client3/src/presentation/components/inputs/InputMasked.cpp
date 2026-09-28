@@ -9,6 +9,7 @@ InputMasked::InputMasked(QWidget *parent) : InputBase(parent) {
     connect(m_lineEdit, &QLineEdit::textChanged, this, [this](const QString &) {
         emit textChanged(text());
     });
+    connect(m_lineEdit, &QLineEdit::editingFinished, this, &InputMasked::editingFinished);
 }
 
 QString InputMasked::text() const {

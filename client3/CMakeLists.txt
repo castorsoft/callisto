@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.19)
 project(client2 LANGUAGES CXX)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Sql Gui Concurrent)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Sql Gui Concurrent Network)
 # add_subdirectory(../../zafra zafra) # If we want to build it together
 # Actually, the user says "Os fontes da lib estão em ../../zafra". Let's add it.
 
@@ -30,6 +30,7 @@ target_include_directories(core_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries(core_lib PUBLIC
     Qt::Core
     Qt::Sql
+    Qt::Network
 #    Qt::Widgets
 #    Qt::Gui
     Qt::Concurrent
