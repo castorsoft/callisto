@@ -5,6 +5,8 @@
 #include "../DatabaseManager.h"
 #include "../../../core/entities/Arquivo.h"
 
+#include <QSqlRecord>
+
 ArquivoRepository::ArquivoRepository()
 {
     m_db = DatabaseManager::instance().database();
@@ -13,7 +15,7 @@ ArquivoRepository::ArquivoRepository()
 void ArquivoRepository::salvar(Arquivo &modelArquivo)
 {
     QSqlQuery query(m_db);
-    if (modelArquivo.id() == -1) {
+    if (!modelArquivo.id().has_value() || modelArquivo.id().value() == -1) {
         query.prepare("INSERT INTO arquivos (caminho_arquivo, nome_arquivo, processado, possui_erro, mensagem_erro, processar_novamente)"
             "VALUES (:caminho_arquivo, :nome_arquivo, :processado, :possui_erro, :mensagem_erro, :processar_novamente)"
             "RETURNING id, uuid, criado_em, atualizado_em");
@@ -26,10 +28,13 @@ void ArquivoRepository::salvar(Arquivo &modelArquivo)
         query.bindValue(":processar_novamente", modelArquivo.processarNovamente().has_value() ? modelArquivo.processarNovamente().value() : QVariant());
 
         if (query.exec() && query.next()) {
-            modelArquivo.hidratar(query.value("id").toInt(), query.value("uuid").toUuid(), query.value("criado_em").toDateTime(), query.value("atualizado_em").toDateTime());
+            modelArquivo.setId(query.value("id").toInt());
+            modelArquivo.setUuid(query.value("uuid").toUuid());
+            modelArquivo.setCriadoEm(query.value("criado_em").toDateTime());
+            modelArquivo.setAtualizadoEm(query.value("atualizado_em").toDateTime());
         }
     } else {
-        modelArquivo.hidratar(query.value("atualizado_em").toDateTime());
+        modelArquivo.setAtualizadoEm(query.value("atualizado_em").toDateTime());
         // TODO: fazer update (não esquecer do returning do atualizado_em)
     }
 
@@ -44,18 +49,7 @@ bool ArquivoRepository::existeArquivo(const QString &filePath, Arquivo *modelArq
 
     if (query.exec() && query.next()) {
         if (modelArquivo) {
-            *modelArquivo = Arquivo::loadFromDatabase(
-                query.value("id").toInt(),
-                query.value("uuid").toUuid(),
-                query.value("caminho_arquivo").toString(),
-                query.value("nome_arquivo").toString(),
-                query.value("processado").toBool(),
-                query.value("possui_erro").toBool(),
-                query.value("mensagem_erro").isNull() ? std::nullopt : std::make_optional(query.value("mensagem_erro").toString()),
-                query.value("processar_novamente").isNull() ? std::nullopt : std::make_optional(query.value("processar_novamente").toBool()),
-                query.value("criado_em").toDateTime(),
-                query.value("atualizado_em").toDateTime()
-            );
+            *modelArquivo = Arquivo::fromRecord(query.record());
         }
         return true;
     }
@@ -83,18 +77,7 @@ std::optional<Arquivo> ArquivoRepository::buscarPorUuid(const QUuid &uuid)
     query.bindValue(":uuid", uuid);
 
     if (query.exec() && query.next()) {
-        return Arquivo::loadFromDatabase(
-            query.value("id").toInt(),
-            query.value("uuid").toUuid(),
-            query.value("caminho_arquivo").toString(),
-            query.value("nome_arquivo").toString(),
-            query.value("processado").toBool(),
-            query.value("possui_erro").toBool(),
-            query.value("mensagem_erro").isNull() ? std::nullopt : std::make_optional(query.value("mensagem_erro").toString()),
-            query.value("processar_novamente").isNull() ? std::nullopt : std::make_optional(query.value("processar_novamente").toBool()),
-            query.value("criado_em").toDateTime(),
-            query.value("atualizado_em").toDateTime()
-        );
+        return Arquivo::fromRecord(query.record());
     }
     return std::nullopt;
 }

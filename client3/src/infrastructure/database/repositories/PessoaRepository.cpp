@@ -5,31 +5,22 @@
 #include <QSqlError>
 #include "../DatabaseManager.h"
 #include <stdexcept>
+#include <QSqlRecord>
 
 PessoaRepository::PessoaRepository() {
     m_db = DatabaseManager::instance().database();
 }
 
 std::optional<Pessoa> PessoaRepository::mapToEntity(QSqlQuery &query) {
-    EnderecoRepository endRepo;
-    auto endOpt = endRepo.buscarPorId(query.value("id_endereco").toInt());
-    Endereco endereco = endOpt.has_value() ? endOpt.value() : Endereco();
+    auto pessoa = Pessoa::fromRecord(query.record());
 
-    return Pessoa::loadFromDatabase(
-        query.value("id").toInt(),
-        query.value("uuid").toUuid(),
-        query.value("id_empresa").toInt(),
-        query.value("cnpj_cpf").toString(),
-        query.value("razao_social").toString(),
-        query.value("nome_fantasia").isNull() ? std::nullopt : std::make_optional(query.value("nome_fantasia").toString()),
-        query.value("inscricao_estadual").isNull() ? std::nullopt : std::make_optional(query.value("inscricao_estadual").toString()),
-        query.value("fornecedor").toString(),
-        query.value("contabilista").toString(),
-        query.value("id_endereco").toInt(),
-        endereco,
-        query.value("criado_em").toDateTime(),
-        query.value("atualizado_em").toDateTime()
-    );
+    EnderecoRepository endRepo;
+    auto endOpt = endRepo.buscarPorId(pessoa.idEndereco());
+    if (endOpt.has_value()) {
+        pessoa.setEndereco(endOpt.value());
+    }
+
+    return pessoa;
 }
 
 void PessoaRepository::salvar(Pessoa &modelPessoa) {
@@ -62,9 +53,12 @@ void PessoaRepository::salvar(Pessoa &modelPessoa) {
 
     if (query.exec() && query.next()) {
         if (!modelPessoa.id().has_value() || modelPessoa.id().value() == -1) {
-            modelPessoa.hidratar(query.value("id").toInt(), query.value("uuid").toUuid(), query.value("id_endereco").toInt(), query.value("criado_em").toDateTime(), query.value("atualizado_em").toDateTime());
+            modelPessoa.setId(query.value("id").toInt());
+            modelPessoa.setUuid(query.value("uuid").toUuid());
+            modelPessoa.setCriadoEm(query.value("criado_em").toDateTime());
+            modelPessoa.setAtualizadoEm(query.value("atualizado_em").toDateTime());
         } else {
-            modelPessoa.hidratar(query.value("atualizado_em").toDateTime());
+            modelPessoa.setAtualizadoEm(query.value("atualizado_em").toDateTime());
         }
     } else {
         throw std::runtime_error("Erro ao salvar pessoa no banco: " + query.lastError().text().toStdString());

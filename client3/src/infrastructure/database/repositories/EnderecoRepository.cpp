@@ -2,6 +2,7 @@
 #include <QSqlQuery>
 #include <QVariant>
 #include <QSqlError>
+#include <QSqlRecord>
 #include "../DatabaseManager.h"
 #include "CidadeRepository.h"
 
@@ -12,18 +13,7 @@ EnderecoRepository::EnderecoRepository()
 
 std::optional<Endereco> EnderecoRepository::mapToEntity(QSqlQuery &query)
 {
-    auto endereco = Endereco::loadFromDatabase(
-        query.value("id").toInt(),
-        query.value("uuid").toUuid(),
-        query.value("logradouro").toString(),
-        query.value("numero").isNull() ? std::nullopt : std::make_optional(query.value("numero").toString()),
-        query.value("complemento").isNull() ? std::nullopt : std::make_optional(query.value("complemento").toString()),
-        query.value("bairro").toString(),
-        query.value("cep").toString(),
-        query.value("id_cidade").toInt(),
-        query.value("criado_em").toDateTime(),
-        query.value("atualizado_em").toDateTime()
-    );
+    auto endereco = Endereco::fromRecord(query.record());
 
     CidadeRepository cidRepo;
     auto cidade = cidRepo.buscarPorId(endereco.idCidade());
@@ -59,9 +49,12 @@ void EnderecoRepository::salvar(Endereco &modelEndereco)
 
     if (query.exec() && query.next()) {
         if (!modelEndereco.id().has_value() || modelEndereco.id().value() == -1) {
-            modelEndereco.hidratar(query.value("id").toInt(), query.value("uuid").toUuid(), query.value("criado_em").toDateTime(), query.value("atualizado_em").toDateTime());
+            modelEndereco.setId(query.value("id").toInt());
+            modelEndereco.setUuid(query.value("uuid").toUuid());
+            modelEndereco.setCriadoEm(query.value("criado_em").toDateTime());
+            modelEndereco.setAtualizadoEm(query.value("atualizado_em").toDateTime());
         } else {
-            modelEndereco.hidratar(query.value("atualizado_em").toDateTime());
+            modelEndereco.setAtualizadoEm(query.value("atualizado_em").toDateTime());
         }
     }
 }

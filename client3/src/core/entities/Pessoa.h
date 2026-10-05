@@ -4,6 +4,7 @@
 #include <QUuid>
 #include <QDateTime>
 #include <QMetaType>
+#include <QSqlRecord>
 #include <optional>
 #include "Endereco.h"
 
@@ -18,13 +19,14 @@ public:
           m_inscricaoEstadual(inscricaoEstadual), m_fornecedor(fornecedor), m_contabilista(contabilista),
           m_endereco(endereco), m_idEmpresa(idEmpresa) {}
 
-    static Pessoa loadFromDatabase(int internalId, QUuid uuid, int idEmpresa, QString cnpjCpf, QString razaoSocial,
-                                   std::optional<QString> nomeFantasia, std::optional<QString> inscricaoEstadual,
-                                   QString fornecedor, QString contabilista, int idEndereco, Endereco endereco,
-                                   QDateTime criadoEm, QDateTime atualizadoEm);
+    static Pessoa fromRecord(const QSqlRecord &record, const QString &prefix = "");
 
     std::optional<int> id() const { return m_id; }
+    void setId(int id) { m_id = id; }
+
     std::optional<QUuid> uuid() const { return m_uuid; }
+    void setUuid(const QUuid &uuid) { m_uuid = uuid; }
+
     int idEmpresa() const { return m_idEmpresa; }
 
     QString cnpjCpf() const { return m_cnpjCpf; }
@@ -47,20 +49,12 @@ public:
     void setEndereco(const Endereco &val) { m_endereco = val; if(val.id().has_value()) m_idEndereco = val.id().value(); }
 
     std::optional<QDateTime> criadoEm() const { return m_criadoEm; }
-    std::optional<QDateTime> atualizadoEm() const { return m_atualizadoEm; }
+    void setCriadoEm(const QDateTime &criadoEm) { m_criadoEm = criadoEm; }
 
-    void hidratar(int internalId, QUuid uuid, int idEndereco, QDateTime criadoEm, QDateTime atualizadoEm);
-    void hidratar(QDateTime atualizadoEm);
+    std::optional<QDateTime> atualizadoEm() const { return m_atualizadoEm; }
+    void setAtualizadoEm(const QDateTime &atualizadoEm) { m_atualizadoEm = atualizadoEm; }
 
 private:
-    Pessoa(int internalId, QUuid uuid, int idEmpresa, QString cnpjCpf, QString razaoSocial,
-           std::optional<QString> nomeFantasia, std::optional<QString> inscricaoEstadual,
-           QString fornecedor, QString contabilista, int idEndereco, Endereco endereco,
-           QDateTime criadoEm, QDateTime atualizadoEm)
-        : m_id(internalId), m_uuid(uuid), m_idEmpresa(idEmpresa), m_cnpjCpf(cnpjCpf), m_razaoSocial(razaoSocial),
-          m_nomeFantasia(nomeFantasia), m_inscricaoEstadual(inscricaoEstadual),
-          m_fornecedor(fornecedor), m_contabilista(contabilista),
-          m_idEndereco(idEndereco), m_endereco(endereco), m_criadoEm(criadoEm), m_atualizadoEm(atualizadoEm) {}
 
     std::optional<int> m_id;
     std::optional<QUuid> m_uuid;

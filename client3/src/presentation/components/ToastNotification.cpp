@@ -10,7 +10,7 @@ ToastNotification::ToastNotification(QWidget *parent, const QString &title, cons
     : QWidget(parent), m_duration(durationMs), m_elapsed(0)
 {
     // Configure window to be a frameless tooltip on top
-    setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+    setWindowFlags(Qt::Popup | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
     setAttribute(Qt::WA_TranslucentBackground);
     setAttribute(Qt::WA_ShowWithoutActivating);
     setAttribute(Qt::WA_DeleteOnClose);
@@ -56,14 +56,14 @@ ToastNotification::ToastNotification(QWidget *parent, const QString &title, cons
     // Stylesheet
     QString style = QString(
         "QWidget#toastContainer { "
-        "   background-color: #2D2D30; "
+    //     "   background-color: #2D2D30; "
         "   border-top-left-radius: 4px; "
         "   border-top-right-radius: 4px; "
         "   border-left: 4px solid %1; "
-        "   color: #FFFFFF; "
+    //     "   color: #FFFFFF; "
         "}"
         "QProgressBar { "
-        "   background-color: #2D2D30; "
+    //     "   background-color: #2D2D30; "
         "   border: none; "
         "   border-bottom-left-radius: 4px; "
         "   border-bottom-right-radius: 4px; "
@@ -117,19 +117,23 @@ void ToastNotification::paintEvent(QPaintEvent *event) {
 void ToastNotification::show(QWidget *parent, const QString &title, const QString &body, Type type, int durationMs) {
     ToastNotification *toast = new ToastNotification(parent, title, body, type, durationMs);
 
-    // Position at bottom right of the parent widget, or screen if parent is null
     int margin = 20;
-    QRect geometry;
+    int x, y;
 
-    if (parent && parent->window()) {
-        geometry = parent->window()->geometry();
+    if (parent) {
+        // Position at bottom right of the caller widget
+        QPoint globalPos = parent->mapToGlobal(QPoint(0, 0));
+        x = globalPos.x() + parent->width() - toast->width() - margin;
+        y = globalPos.y() + parent->height() - toast->height() - margin;
     } else {
-        geometry = QGuiApplication::primaryScreen()->availableGeometry();
+        // Position at bottom right of the screen
+        QRect geometry = QGuiApplication::primaryScreen()->availableGeometry();
+        x = geometry.x() + geometry.width() - toast->width() - margin;
+        y = geometry.y() + geometry.height() - toast->height() - margin;
     }
 
-    int x = geometry.x() + geometry.width() - toast->width() - margin;
-    int y = geometry.y() + geometry.height() - toast->height() - margin;
-
-    toast->move(x, y);
     toast->QWidget::show();
+    // Move must be called after show() for top-level windows with parents,
+    // otherwise Qt will automatically center the window on its parent.
+    toast->move(x, y);
 }

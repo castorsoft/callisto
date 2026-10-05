@@ -4,6 +4,7 @@
 #include <QUuid>
 #include <QDateTime>
 #include <QMetaType>
+#include <QSqlRecord>
 #include <optional>
 #include "Cidade.h"
 
@@ -16,13 +17,13 @@ public:
         : m_logradouro(logradouro), m_numero(numero), m_complemento(complemento),
           m_bairro(bairro), m_cep(cep), m_idCidade(idCidade) {}
 
-    static Endereco loadFromDatabase(int internalId, QUuid uuid, QString logradouro,
-                                     std::optional<QString> numero, std::optional<QString> complemento,
-                                     QString bairro, QString cep, int idCidade,
-                                     QDateTime criadoEm, QDateTime atualizadoEm);
+    static Endereco fromRecord(const QSqlRecord &record, const QString &prefix = "");
 
     std::optional<int> id() const { return m_id; }
+    void setId(int id) { m_id = id; }
+
     std::optional<QUuid> uuid() const { return m_uuid; }
+    void setUuid(const QUuid &uuid) { m_uuid = uuid; }
 
     QString logradouro() const { return m_logradouro; }
     std::optional<QString> numero() const { return m_numero; }
@@ -38,23 +39,16 @@ public:
     void setCep(const QString &val) { m_cep = val; }
     void setIdCidade(int val) { m_idCidade = val; }
 
-    std::optional<QDateTime> criadoEm() const { return m_criadoEm; }
-    std::optional<QDateTime> atualizadoEm() const { return m_atualizadoEm; }
-
-    void hidratar(int internalId, QUuid uuid, QDateTime criadoEm, QDateTime atualizadoEm);
-    void hidratar(QDateTime atualizadoEm);
-
     Cidade cidade() const { return m_cidade.value(); }
     void setCidade(const Cidade &cidade) { m_cidade = cidade; m_idCidade = cidade.id(); }
 
-private:
-    Endereco(int internalId, QUuid uuid, QString logradouro, std::optional<QString> numero,
-             std::optional<QString> complemento, QString bairro, QString cep, int idCidade,
-             QDateTime criadoEm, QDateTime atualizadoEm)
-        : m_id(internalId), m_uuid(uuid), m_logradouro(logradouro), m_numero(numero),
-          m_complemento(complemento), m_bairro(bairro), m_cep(cep), m_idCidade(idCidade),
-          m_criadoEm(criadoEm), m_atualizadoEm(atualizadoEm) {}
+    std::optional<QDateTime> criadoEm() const { return m_criadoEm; }
+    void setCriadoEm(const QDateTime &criadoEm) { m_criadoEm = criadoEm; }
 
+    std::optional<QDateTime> atualizadoEm() const { return m_atualizadoEm; }
+    void setAtualizadoEm(const QDateTime &atualizadoEm) { m_atualizadoEm = atualizadoEm; }
+
+private:
     std::optional<int> m_id;
     std::optional<QUuid> m_uuid;
 

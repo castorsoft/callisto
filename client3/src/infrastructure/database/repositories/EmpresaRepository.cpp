@@ -55,29 +55,23 @@ void EmpresaRepository::salvarContatos(int empresaId, const QList<int> &contatos
     query.execBatch();
 }
 
+#include <QSqlRecord>
+
 std::optional<Empresa> EmpresaRepository::mapToEntity(QSqlQuery &query)
 {
-    int id = query.value("id").toInt();
-    QList<int> contatos = carregarContatos(id);
+    auto empresa = Empresa::fromRecord(query.record());
+
+    if (empresa.id().has_value()) {
+        empresa.setContatosIds(carregarContatos(empresa.id().value()));
+    }
 
     EnderecoRepository enderecoRepo;
-    std::optional<Endereco> enderecoOpt = enderecoRepo.buscarPorId(query.value("id_endereco").toInt());
-    Endereco endereco = enderecoOpt.has_value() ? enderecoOpt.value() : Endereco();
+    std::optional<Endereco> enderecoOpt = enderecoRepo.buscarPorId(empresa.idEndereco());
+    if (enderecoOpt.has_value()) {
+        empresa.setEndereco(enderecoOpt.value());
+    }
 
-    return Empresa::loadFromDatabase(
-        id,
-        query.value("uuid").toUuid(),
-        query.value("cnpj_cpf").toString(),
-        query.value("razao_social").toString(),
-        query.value("nome_fantasia").isNull() ? std::nullopt : std::make_optional(query.value("nome_fantasia").toString()),
-        query.value("regime_tributario").toString(),
-        endereco,
-        query.value("inscricao_estadual").isNull() ? std::nullopt : std::make_optional(query.value("inscricao_estadual").toString()),
-        query.value("inscricao_municipal").isNull() ? std::nullopt : std::make_optional(query.value("inscricao_municipal").toString()),
-        contatos,
-        query.value("criado_em").toDateTime(),
-        query.value("atualizado_em").toDateTime()
-    );
+    return empresa;
 }
 
 void EmpresaRepository::salvar(Empresa &modelEmpresa)
@@ -112,9 +106,12 @@ void EmpresaRepository::salvar(Empresa &modelEmpresa)
 
     if (query.exec() && query.next()) {
         if (!modelEmpresa.id().has_value() || modelEmpresa.id().value() == -1) {
-            modelEmpresa.hidratar(query.value("id").toInt(), query.value("uuid").toUuid(), query.value("criado_em").toDateTime(), query.value("atualizado_em").toDateTime());
+            modelEmpresa.setId(query.value("id").toInt());
+            modelEmpresa.setUuid(query.value("uuid").toUuid());
+            modelEmpresa.setCriadoEm(query.value("criado_em").toDateTime());
+            modelEmpresa.setAtualizadoEm(query.value("atualizado_em").toDateTime());
         } else {
-            modelEmpresa.hidratar(query.value("atualizado_em").toDateTime());
+            modelEmpresa.setAtualizadoEm(query.value("atualizado_em").toDateTime());
         }
 
         salvarContatos(modelEmpresa.id().value(), modelEmpresa.contatosIds());
