@@ -34,6 +34,8 @@ public:
         return QAbstractTableModel::headerData(section, orientation, role);
     }
 
+    std::shared_ptr<ITableDataProvider> provider() const { return m_provider; }
+
 private:
     std::shared_ptr<ITableDataProvider> m_provider;
 };

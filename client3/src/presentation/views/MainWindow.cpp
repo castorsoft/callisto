@@ -8,7 +8,14 @@
 #include "pessoas/FormPessoas.h"
 
 #include <QListWidgetItem>
+#include <QDialog>
+#include <QVBoxLayout>
+#include <QMessageBox>
+#include <QTimer>
+#include <QApplication>
 
+#include "empresas/FormEmpresaDetalhe.h"
+#include "../components/ToastNotification.h"
 #include "../../infrastructure/database/repositories/EmpresaRepository.h"
 #include "../../core/GlobalState.h"
 
@@ -22,22 +29,55 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->listWidget,&QListWidget::itemClicked, this, &MainWindow::onListClick);
     connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this, &MainWindow::closeSubForm);
 
-    // Lógica para carregar a empresa atual ou forçar o cadastro
-    EmpresaRepository repo;
-    QList<Empresa> empresas = repo.listarTodas();
-    if (empresas.isEmpty()) {
-        auto form = new FormEmpresas(this);
-
-        form->setWindowTitle("Empresas");
-        this->addSubForm(form);
-        form->onNovoRegistro();
-    } else {
-        GlobalState::instance().setEmpresaAtual(empresas.first());
-    }
+    QTimer::singleShot(0, this, &MainWindow::verificarEmpresaInicial);
 }
 
 MainWindow::~MainWindow() {
     delete ui;
+}
+
+void MainWindow::verificarEmpresaInicial() {
+    EmpresaRepository repo;
+    QList<Empresa> empresas = repo.listarTodas();
+    if (!empresas.isEmpty()) {
+        GlobalState::instance().setEmpresaAtual(empresas.first());
+        return;
+    }
+
+    QMessageBox::information(
+        this,
+        "Boas-vindas",
+        "Seja bem-vindo ao sistema!\n\nPara iniciar a utilização, é necessário efetuar o cadastro da sua empresa."
+    );
+
+    QDialog dialog(this);
+    dialog.setWindowTitle("Cadastro da Empresa");
+    dialog.setModal(true);
+    dialog.resize(600, 520);
+
+    auto *layout = new QVBoxLayout(&dialog);
+    layout->setContentsMargins(0, 0, 0, 0);
+
+    auto *formDetalhe = new FormEmpresaDetalhe(&dialog);
+    layout->addWidget(formDetalhe);
+
+    connect(formDetalhe, &FormDetalheBase::fechar, &dialog, &QDialog::accept);
+
+    dialog.exec();
+
+    // Caso o formulário tenha sido fechado sem salvar, encerra a aplicação
+    if (!GlobalState::instance().empresaAtual().has_value()) {
+        QList<Empresa> recarregadas = repo.listarTodas();
+        if (!recarregadas.isEmpty()) {
+            GlobalState::instance().setEmpresaAtual(recarregadas.first());
+        } else {
+            close();
+            QApplication::quit();
+            return;
+        }
+    }
+
+    ToastNotification::show(this, "Sucesso", "Empresa cadastrada com sucesso! Bem-vindo.", ToastNotification::Success, 3000);
 }
 
 void MainWindow::addSubForm(QWidget *form) {

@@ -26,6 +26,7 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    void verificarEmpresaInicial();
     void loadPluginButtons();
     void loadNativeButtons();
 

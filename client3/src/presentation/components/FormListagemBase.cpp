@@ -1,5 +1,6 @@
 #include "FormListagemBase.h"
 #include "ui_FormListagemBase.h"
+#include "providers/TableDataProviderAdapter.h"
 
 FormListagemBase::FormListagemBase(QWidget *parent) :
     QWidget(parent),
@@ -27,6 +28,17 @@ void FormListagemBase::setModel(QAbstractItemModel *model)
 {
     m_model = model;
     ui->tableView->setModel(model);
+
+    if (auto adapter = qobject_cast<TableDataProviderAdapter*>(model)) {
+        if (auto provider = adapter->provider()) {
+            for (int col = 0; col < provider->columnCount(); ++col) {
+                auto width = provider->columnWidth(col);
+                if (width.has_value()) {
+                    ui->tableView->setColumnWidth(col, width.value());
+                }
+            }
+        }
+    }
 }
 
 void FormListagemBase::on_btnNew_clicked()

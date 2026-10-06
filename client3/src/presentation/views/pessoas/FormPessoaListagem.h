@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../../components/FormListagemBase.h"
-// #include "../providers/PessoaListProvider.h"
+#include "../providers/PessoaListProvider.h"
 #include <memory>
 
 class FormPessoaListagem : public FormListagemBase
@@ -16,5 +16,5 @@ public:
     int getIdSelecionado(int rowIndex);
 
 private:
-    // std::shared_ptr<PessoaListProvider> m_provider;
+    std::shared_ptr<PessoaListProvider> m_provider;
 };

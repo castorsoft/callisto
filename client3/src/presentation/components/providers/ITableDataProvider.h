@@ -1,6 +1,7 @@
 #pragma once
 #include <QString>
 #include <QVariant>
+#include <optional>
 
 class ITableDataProvider {
 public:
@@ -10,4 +11,8 @@ public:
     virtual int columnCount() const = 0;
     virtual QVariant data(int row, int column) const = 0;
     virtual QString headerData(int column) const = 0;
+
+    virtual std::optional<int> columnWidth(int /*column*/) const {
+        return std::nullopt;
+    }
 };

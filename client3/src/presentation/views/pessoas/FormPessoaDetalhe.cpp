@@ -7,6 +7,7 @@
 #include "../../../infrastructure/database/repositories/EstadoRepository.h"
 #include "../../../infrastructure/database/repositories/CidadeRepository.h"
 #include "../../../infrastructure/services/CnpjService.h"
+#include "../../../core/GlobalState.h"
 #include <QVariant>
 
 FormPessoaDetalhe::FormPessoaDetalhe(QWidget *parent)
@@ -137,7 +138,7 @@ void FormPessoaDetalhe::onSalvar() {
         p.setContabilista(contabilista);
         p.setEndereco(endereco);
 
-        p.setIdEmpresa(1); // Mocado por enquanto conforme constraint id_empresa
+        p.setIdEmpresa(GlobalState::instance().empresaAtual()->id().value());
 
         PessoaRepository repo;
         repo.salvar(p);

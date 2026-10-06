@@ -4,6 +4,7 @@
 
 FormEmpresas::FormEmpresas(QWidget *parent) : FormMultiViewBase(parent) {
     setListagem(new FormEmpresaListagem(this));
+
 }
 
 FormDetalheBase* FormEmpresas::criarFormDetalhe() {

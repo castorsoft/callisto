@@ -43,12 +43,12 @@ BEGIN
 		CALL pr_criar_pessoa_alteracao(OLD.id, 'cnpj_cpf', OLD.cnpj_cpf, NEW.cnpj_cpf);
 	END IF;
 
-	IF OLD.nome <> NEW.nome THEN
-		CALL pr_criar_pessoa_alteracao(OLD.id, 'nome', OLD.nome, NEW.nome);
+	IF OLD.razao_social <> NEW.razao_social THEN
+		CALL pr_criar_pessoa_alteracao(OLD.id, 'razao_social', OLD.razao_social, NEW.razao_social);
 	END IF;
 
-	IF OLD.fantasia <> NEW.fantasia THEN
-		CALL pr_criar_pessoa_alteracao(OLD.id, 'fantasia', OLD.fantasia, NEW.fantasia);
+	IF OLD.nome_fantasia <> NEW.nome_fantasia THEN
+		CALL pr_criar_pessoa_alteracao(OLD.id, 'nome_fantasia', OLD.nome_fantasia, NEW.nome_fantasia);
 	END IF;
 
 	IF OLD.id_endereco <> NEW.id_endereco THEN
