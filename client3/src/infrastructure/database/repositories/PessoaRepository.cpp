@@ -8,7 +8,6 @@
 #include <QSqlRecord>
 
 PessoaRepository::PessoaRepository() {
-    m_db = DatabaseManager::instance().database();
 }
 
 std::optional<Pessoa> PessoaRepository::mapToEntity(QSqlQuery &query) {
@@ -29,7 +28,7 @@ void PessoaRepository::salvar(Pessoa &modelPessoa) {
     endRepo.salvar(end);
     modelPessoa.setEndereco(end);
 
-    QSqlQuery query(m_db);
+    QSqlQuery query(DatabaseManager::instance().database());
 
     if (!modelPessoa.id().has_value() || modelPessoa.id().value() == -1) {
         query.prepare("INSERT INTO pessoas (id_empresa, cnpj_cpf, razao_social, nome_fantasia, inscricao_estadual, fornecedor, contabilista, id_endereco) "
@@ -66,7 +65,7 @@ void PessoaRepository::salvar(Pessoa &modelPessoa) {
 }
 
 std::optional<Pessoa> PessoaRepository::buscarPorId(int id) {
-    QSqlQuery query(m_db);
+    QSqlQuery query(DatabaseManager::instance().database());
     query.prepare("SELECT * FROM pessoas WHERE id = :id");
     query.bindValue(":id", id);
 
@@ -75,7 +74,7 @@ std::optional<Pessoa> PessoaRepository::buscarPorId(int id) {
 }
 
 std::optional<Pessoa> PessoaRepository::buscarPorUuid(const QUuid &uuid) {
-    QSqlQuery query(m_db);
+    QSqlQuery query(DatabaseManager::instance().database());
     query.prepare("SELECT * FROM pessoas WHERE uuid = :uuid");
     query.bindValue(":uuid", uuid);
 
@@ -84,9 +83,12 @@ std::optional<Pessoa> PessoaRepository::buscarPorUuid(const QUuid &uuid) {
 }
 
 std::optional<Pessoa> PessoaRepository::buscarPorCnpjCpf(const QString &cnpjCpf) {
-    QSqlQuery query(m_db);
+    auto cnpjCpfTratado = cnpjCpf;
+    cnpjCpfTratado.remove('.').remove('-').remove('/');
+
+    QSqlQuery query(DatabaseManager::instance().database());
     query.prepare("SELECT * FROM pessoas WHERE cnpj_cpf = :cnpj_cpf");
-    query.bindValue(":cnpj_cpf", cnpjCpf);
+    query.bindValue(":cnpj_cpf", cnpjCpfTratado);
 
     if (query.exec() && query.next()) return mapToEntity(query);
     return std::nullopt;
@@ -94,7 +96,7 @@ std::optional<Pessoa> PessoaRepository::buscarPorCnpjCpf(const QString &cnpjCpf)
 
 QList<Pessoa> PessoaRepository::listarTodas() {
     QList<Pessoa> lista;
-    QSqlQuery query(m_db);
+    QSqlQuery query(DatabaseManager::instance().database());
     query.prepare("SELECT * FROM pessoas ORDER BY razao_social");
 
     if (query.exec()) {
@@ -106,7 +108,7 @@ QList<Pessoa> PessoaRepository::listarTodas() {
 }
 
 bool PessoaRepository::deletar(int id) {
-    QSqlQuery query(m_db);
+    QSqlQuery query(DatabaseManager::instance().database());
     query.prepare("DELETE FROM pessoas WHERE id = :id");
     query.bindValue(":id", id);
     return query.exec();

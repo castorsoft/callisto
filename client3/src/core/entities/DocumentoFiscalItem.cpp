@@ -2,7 +2,7 @@
 #include <QJsonValue>
 
 DocumentoFiscalItem::DocumentoFiscalItem(int idDocumentoFiscal, int numeroItem, QString codigoProduto, QString descricao,
-                                         QString ncm, std::optional<int> cfop, QString unidadeMedida, double quantidade,
+                                         QString ncm, QString cfop, QString unidadeMedida, double quantidade,
                                          double valorUnitario, double valorTotal, double valorDesconto, QJsonObject dados)
     : m_idDocumentoFiscal(idDocumentoFiscal), m_numeroItem(numeroItem), m_codigoProduto(codigoProduto),
       m_descricao(descricao), m_ncm(ncm), m_cfop(cfop), m_unidadeMedida(unidadeMedida), m_quantidade(quantidade),
@@ -11,7 +11,7 @@ DocumentoFiscalItem::DocumentoFiscalItem(int idDocumentoFiscal, int numeroItem, 
 }
 
 DocumentoFiscalItem::DocumentoFiscalItem(int id, int idDocumentoFiscal, int numeroItem, QString codigoProduto,
-                                         QString descricao, QString ncm, std::optional<int> cfop, QString unidadeMedida,
+                                         QString descricao, QString ncm, QString cfop, QString unidadeMedida,
                                          double quantidade, double valorUnitario, double valorTotal, double valorDesconto,
                                          QJsonObject dados, QDateTime criadoEm, QDateTime atualizadoEm)
     : m_id(id), m_idDocumentoFiscal(idDocumentoFiscal), m_numeroItem(numeroItem), m_codigoProduto(codigoProduto),
@@ -23,7 +23,7 @@ DocumentoFiscalItem::DocumentoFiscalItem(int id, int idDocumentoFiscal, int nume
 
 DocumentoFiscalItem DocumentoFiscalItem::loadFromDatabase(int id, int idDocumentoFiscal, int numeroItem,
                                                           QString codigoProduto, QString descricao, QString ncm,
-                                                          std::optional<int> cfop, QString unidadeMedida,
+                                                          QString cfop, QString unidadeMedida,
                                                           double quantidade, double valorUnitario, double valorTotal,
                                                           double valorDesconto, QJsonObject dados,
                                                           QDateTime criadoEm, QDateTime atualizadoEm)

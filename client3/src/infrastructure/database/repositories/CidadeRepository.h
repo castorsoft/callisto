@@ -10,6 +10,4 @@ public:
     QList<Cidade> listarPorEstado(int idEstado) override;
     std::optional<Cidade> buscarPorId(int id);
     std::optional<Cidade> buscarPorIbge(int idIbge);
-private:
-    QSqlDatabase m_db;
 };

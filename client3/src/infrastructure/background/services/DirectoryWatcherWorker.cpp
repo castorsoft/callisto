@@ -11,7 +11,6 @@
 DirectoryWatcherWorker::DirectoryWatcherWorker(const QString &watchPath, QObject *parent)
     : IService(parent), m_watchPath(watchPath)
 {
-    m_arquivoRepository = new ArquivoRepository();
 }
 
 DirectoryWatcherWorker::~DirectoryWatcherWorker()

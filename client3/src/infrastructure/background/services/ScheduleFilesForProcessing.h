@@ -2,7 +2,7 @@
 
 #include "IService.h"
 #include "../../../core/entities/Arquivo.h"
-#include "../../../core/interfaces/IArquivoRepository.h"
+#include <QThreadPool>
 
 class ScheduleFilesForProcessing: public IService {
     Q_OBJECT
@@ -11,7 +11,7 @@ public:
     explicit ScheduleFilesForProcessing(QObject *parent = nullptr);
     ~ScheduleFilesForProcessing() override;
 
-    QString serviceName() const override { return "Serviço de reprocessamento de arquivos"; }
+    QString serviceName() const override { return "Serviço de agendamento e pré-processamento de arquivos"; }
     bool isRunning() const override;
 
 public slots:
@@ -23,9 +23,8 @@ signals:
     void requestFileProcess(const QUuid &uuid);
 
 private:
-    // void execute();
+    void preProcessFile(const QString &filePath);
 
-    bool m_isRunning;
-    IArquivoRepository *m_arquivoRepository;
-
+    bool m_isRunning{false};
+    QThreadPool m_preProcessPool;
 };

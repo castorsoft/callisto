@@ -28,7 +28,7 @@ bool DocumentoFiscalRepository::salvar(DocumentoFiscal& documentoFiscal)
             modelo, serie, numero, dh_emissao, dados
         ) VALUES (
             :chave_acesso, :tipo_operacao::tipo_dfe_operacao, :tipo_emissao::tipo_dfe_emissao, :id_pessoa,
-            :modelo, :serie, :numero, :dh_emissao, :dados
+            :modelo, :serie, :numero, :dh_emissao, :dados::jsonb
         ) RETURNING id, criado_em, atualizado_em
     )");
 
@@ -48,8 +48,12 @@ bool DocumentoFiscalRepository::salvar(DocumentoFiscal& documentoFiscal)
     query.bindValue(":numero", documentoFiscal.numero());
     query.bindValue(":dh_emissao", documentoFiscal.dhEmissao());
 
-    QJsonDocument doc(documentoFiscal.dados());
-    query.bindValue(":dados", doc.toJson(QJsonDocument::Compact));
+    if (documentoFiscal.dados().isEmpty()) {
+        query.bindValue(":dados", QVariant(QMetaType::fromType<QString>()));
+    } else {
+        QJsonDocument doc(documentoFiscal.dados());
+        query.bindValue(":dados", QString::fromUtf8(doc.toJson(QJsonDocument::Compact)));
+    }
 
     if (!query.exec()) {
         qCritical() << "[DocumentoFiscalRepository] Erro ao inserir documento fiscal:" << query.lastError().text();
@@ -93,7 +97,7 @@ bool DocumentoFiscalRepository::inserirItens(const std::vector<DocumentoFiscalIt
             cfop, unidade_medida, quantidade, valor_unitario, valor_total, valor_desconto, dados
         ) VALUES (
             :id_documento_fiscal, :numero_item, :codigo_produto, :descricao, :ncm,
-            :cfop, :unidade_medida, :quantidade, :valor_unitario, :valor_total, :valor_desconto, :dados
+            :cfop, :unidade_medida, :quantidade, :valor_unitario, :valor_total, :valor_desconto, :dados::jsonb
         ) RETURNING id, criado_em, atualizado_em
     )");
 
@@ -102,14 +106,8 @@ bool DocumentoFiscalRepository::inserirItens(const std::vector<DocumentoFiscalIt
         query.bindValue(":numero_item", item.numeroItem());
         query.bindValue(":codigo_produto", item.codigoProduto());
         query.bindValue(":descricao", item.descricao());
-
         query.bindValue(":ncm", item.ncm().isEmpty() ? QVariant(QMetaType::fromType<QString>()) : item.ncm());
-
-        if (item.cfop().has_value()) {
-            query.bindValue(":cfop", item.cfop().value());
-        } else {
-            query.bindValue(":cfop", QVariant(QMetaType::fromType<int>())); // NULL
-        }
+        query.bindValue(":cfop", item.cfop());
 
         query.bindValue(":unidade_medida", item.unidadeMedida().isEmpty() ? QVariant(QMetaType::fromType<QString>()) : item.unidadeMedida());
 
@@ -118,8 +116,12 @@ bool DocumentoFiscalRepository::inserirItens(const std::vector<DocumentoFiscalIt
         query.bindValue(":valor_total", item.valorTotal());
         query.bindValue(":valor_desconto", item.valorDesconto());
 
-        QJsonDocument docDados(item.dados());
-        query.bindValue(":dados", docDados.toJson(QJsonDocument::Compact));
+        if (item.dados().isEmpty()) {
+            query.bindValue(":dados", QVariant(QMetaType::fromType<QString>()));
+        } else {
+            QJsonDocument docDados(item.dados());
+            query.bindValue(":dados", QString::fromUtf8(docDados.toJson(QJsonDocument::Compact)));
+        }
 
         if (!query.exec()) {
             qCritical() << "[DocumentoFiscalRepository] Erro ao inserir item do documento fiscal:" << query.lastError().text();
@@ -140,40 +142,27 @@ bool DocumentoFiscalRepository::inserirItens(const std::vector<DocumentoFiscalIt
 
 bool DocumentoFiscalRepository::inserirTributacoesItem(const DocumentoFiscalItem& item, int idItem, QSqlDatabase& db)
 {
-    // Funcao auxiliar para inserir um imposto generico
-    auto inserirTributo = [&](const QString& tipoTributo, const QString& nomeObjetoJson) -> bool {
-        if (item.dados().contains("impostos") && item.dados()["impostos"].isObject()) {
-            auto impostos = item.dados()["impostos"].toObject();
-            if (impostos.contains(nomeObjetoJson) && impostos[nomeObjetoJson].isObject()) {
-                QSqlQuery query(db);
-                query.prepare(R"(
-                    INSERT INTO public.documentos_fiscais_itens_tributacoes (
-                        id_item, tipo_tributo, dados
-                    ) VALUES (
-                        :id_item, :tipo_tributo::tipo_produto_tributacao, :dados
-                    )
-                )");
+    for (const auto& tributo: item.tributos()) {
+        QSqlQuery query(db);
 
-                query.bindValue(":id_item", idItem);
-                query.bindValue(":tipo_tributo", tipoTributo); // ex: 'icms', 'pis', 'cofins', 'ipi'
+        query.prepare(R"(
+            INSERT INTO public.documentos_fiscais_itens_tributacoes (
+                id_item, tipo_tributo, dados
+            ) VALUES (
+                :id_item, :tipo_tributo::tipo_produto_tributacao, :dados::jsonb
+            )
+        )");
 
-                QJsonDocument docTributo(impostos[nomeObjetoJson].toObject());
-                query.bindValue(":dados", docTributo.toJson(QJsonDocument::Compact));
+        query.bindValue(":id_item", idItem);
+        query.bindValue(":tipo_tributo", tributo.tipoTributo());
+        QJsonDocument docTributo(tributo.dados());
+        query.bindValue(":dados", QString::fromUtf8(docTributo.toJson(QJsonDocument::Compact)));
 
-                if (!query.exec()) {
-                    qCritical() << "[DocumentoFiscalRepository] Erro ao inserir tributacao (" << tipoTributo << "):" << query.lastError().text();
-                    return false;
-                }
-            }
+        if (!query.exec()) {
+            qCritical() << "[DocumentoFiscalRepository] Erro ao inserir tributacao (" << tributo.tipoTributo() << "):" << query.lastError().text();
+            return false;
         }
-        return true;
-    };
-
-    if (!inserirTributo("icms", "icms")) return false;
-    if (!inserirTributo("pis", "pis")) return false;
-    if (!inserirTributo("cofins", "cofins")) return false;
-    if (!inserirTributo("ipi", "ipi")) return false;
-
+    }
     return true;
 }
 

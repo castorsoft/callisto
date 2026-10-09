@@ -16,6 +16,5 @@ public:
     bool deletar(int id) override;
 
 private:
-    QSqlDatabase m_db;
     std::optional<Pessoa> mapToEntity(class QSqlQuery &query);
 };

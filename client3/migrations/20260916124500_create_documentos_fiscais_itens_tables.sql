@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS public.documentos_fiscais_itens
     codigo_produto character varying(60) COLLATE pg_catalog."default" NOT NULL,
     descricao character varying(120) COLLATE pg_catalog."default" NOT NULL,
     ncm character varying(10) COLLATE pg_catalog."default",
-    cfop integer,
+    cfop character(4),
     unidade_medida character varying(10) COLLATE pg_catalog."default",
     quantidade numeric(15,4) NOT NULL,
     valor_unitario numeric(15,4) NOT NULL,

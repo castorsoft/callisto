@@ -8,6 +8,4 @@ class EstadoRepository : public IEstadoRepository {
 public:
     EstadoRepository();
     QList<Estado> listarTodos() override;
-private:
-    QSqlDatabase m_db;
 };

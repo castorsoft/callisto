@@ -8,7 +8,6 @@
 
 EnderecoRepository::EnderecoRepository()
 {
-    m_db = DatabaseManager::instance().database();
 }
 
 std::optional<Endereco> EnderecoRepository::mapToEntity(QSqlQuery &query)
@@ -26,7 +25,7 @@ std::optional<Endereco> EnderecoRepository::mapToEntity(QSqlQuery &query)
 
 void EnderecoRepository::salvar(Endereco &modelEndereco)
 {
-    QSqlQuery query(m_db);
+    QSqlQuery query(DatabaseManager::instance().database());
 
     if (!modelEndereco.id().has_value() || modelEndereco.id().value() == -1) {
         query.prepare("INSERT INTO enderecos (logradouro, numero, complemento, bairro, cep, id_cidade) "
@@ -61,7 +60,7 @@ void EnderecoRepository::salvar(Endereco &modelEndereco)
 
 std::optional<Endereco> EnderecoRepository::buscarPorId(int id)
 {
-    QSqlQuery query(m_db);
+    QSqlQuery query(DatabaseManager::instance().database());
     query.prepare("SELECT * FROM enderecos WHERE id = :id");
     query.bindValue(":id", id);
 
@@ -73,7 +72,7 @@ std::optional<Endereco> EnderecoRepository::buscarPorId(int id)
 
 std::optional<Endereco> EnderecoRepository::buscarPorUuid(const QUuid &uuid)
 {
-    QSqlQuery query(m_db);
+    QSqlQuery query(DatabaseManager::instance().database());
     query.prepare("SELECT * FROM enderecos WHERE uuid = :uuid");
     query.bindValue(":uuid", uuid);
 
@@ -85,7 +84,7 @@ std::optional<Endereco> EnderecoRepository::buscarPorUuid(const QUuid &uuid)
 
 bool EnderecoRepository::deletar(int id)
 {
-    QSqlQuery query(m_db);
+    QSqlQuery query(DatabaseManager::instance().database());
     query.prepare("DELETE FROM enderecos WHERE id = :id");
     query.bindValue(":id", id);
     return query.exec();

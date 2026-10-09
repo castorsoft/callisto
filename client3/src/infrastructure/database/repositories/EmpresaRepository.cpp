@@ -7,12 +7,11 @@
 
 EmpresaRepository::EmpresaRepository()
 {
-    m_db = DatabaseManager::instance().database();
 }
 
 QList<int> EmpresaRepository::carregarContatos(int empresaId)
 {
-    QSqlQuery query(m_db);
+    QSqlQuery query(DatabaseManager::instance().database());
     query.prepare("SELECT id_contato FROM empresa_contatos WHERE id_empresa = :id_empresa");
     query.bindValue(":id_empresa", empresaId);
 
@@ -27,7 +26,7 @@ QList<int> EmpresaRepository::carregarContatos(int empresaId)
 
 void EmpresaRepository::limparContatos(int empresaId)
 {
-    QSqlQuery query(m_db);
+    QSqlQuery query(DatabaseManager::instance().database());
     query.prepare("DELETE FROM empresa_contatos WHERE id_empresa = :id_empresa");
     query.bindValue(":id_empresa", empresaId);
     query.exec();
@@ -39,7 +38,7 @@ void EmpresaRepository::salvarContatos(int empresaId, const QList<int> &contatos
 
     if (contatosIds.isEmpty()) return;
 
-    QSqlQuery query(m_db);
+    QSqlQuery query(DatabaseManager::instance().database());
     query.prepare("INSERT INTO empresa_contatos (id_empresa, id_contato) VALUES (:id_empresa, :id_contato)");
 
     QVariantList empresas;
@@ -81,7 +80,7 @@ void EmpresaRepository::salvar(Empresa &modelEmpresa)
     enderecoRepo.salvar(endereco);
     modelEmpresa.setEndereco(endereco);
 
-    QSqlQuery query(m_db);
+    QSqlQuery query(DatabaseManager::instance().database());
 
     if (!modelEmpresa.id().has_value() || modelEmpresa.id().value() == -1) {
         query.prepare("INSERT INTO empresas (cnpj_cpf, razao_social, nome_fantasia, regime_tributario, id_endereco, inscricao_estadual, inscricao_municipal) "
@@ -122,7 +121,7 @@ void EmpresaRepository::salvar(Empresa &modelEmpresa)
 
 std::optional<Empresa> EmpresaRepository::buscarPorId(int id)
 {
-    QSqlQuery query(m_db);
+    QSqlQuery query(DatabaseManager::instance().database());
     query.prepare("SELECT * FROM empresas WHERE id = :id");
     query.bindValue(":id", id);
 
@@ -134,7 +133,7 @@ std::optional<Empresa> EmpresaRepository::buscarPorId(int id)
 
 std::optional<Empresa> EmpresaRepository::buscarPorUuid(const QUuid &uuid)
 {
-    QSqlQuery query(m_db);
+    QSqlQuery query(DatabaseManager::instance().database());
     query.prepare("SELECT * FROM empresas WHERE uuid = :uuid");
     query.bindValue(":uuid", uuid);
 
@@ -146,7 +145,7 @@ std::optional<Empresa> EmpresaRepository::buscarPorUuid(const QUuid &uuid)
 
 std::optional<Empresa> EmpresaRepository::buscarPorCnpjCpf(const QString &cnpjCpf)
 {
-    QSqlQuery query(m_db);
+    QSqlQuery query(DatabaseManager::instance().database());
     query.prepare("SELECT * FROM empresas WHERE cnpj_cpf = :cnpj_cpf");
     query.bindValue(":cnpj_cpf", cnpjCpf);
 
@@ -159,7 +158,7 @@ std::optional<Empresa> EmpresaRepository::buscarPorCnpjCpf(const QString &cnpjCp
 QList<Empresa> EmpresaRepository::listarTodas()
 {
     QList<Empresa> lista;
-    QSqlQuery query(m_db);
+    QSqlQuery query(DatabaseManager::instance().database());
     query.prepare("SELECT * FROM empresas ORDER BY razao_social");
 
     if (query.exec()) {
@@ -175,7 +174,7 @@ QList<Empresa> EmpresaRepository::listarTodas()
 bool EmpresaRepository::deletar(int id)
 {
     limparContatos(id);
-    QSqlQuery query(m_db);
+    QSqlQuery query(DatabaseManager::instance().database());
     query.prepare("DELETE FROM empresas WHERE id = :id");
     query.bindValue(":id", id);
     return query.exec();

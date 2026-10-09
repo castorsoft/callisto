@@ -6,18 +6,20 @@
 #include <QMetaType>
 #include <optional>
 
+#include "DocumentoFiscalItemTributo.h"
+
 class DocumentoFiscalItem {
 public:
     DocumentoFiscalItem() = default;
 
     // Construtor principal para criação antes de salvar no banco
     DocumentoFiscalItem(int idDocumentoFiscal, int numeroItem, QString codigoProduto, QString descricao,
-                        QString ncm, std::optional<int> cfop, QString unidadeMedida, double quantidade,
+                        QString ncm, QString cfop, QString unidadeMedida, double quantidade,
                         double valorUnitario, double valorTotal, double valorDesconto, QJsonObject dados);
 
     static DocumentoFiscalItem loadFromDatabase(int id, int idDocumentoFiscal, int numeroItem,
                                                 QString codigoProduto, QString descricao, QString ncm,
-                                                std::optional<int> cfop, QString unidadeMedida,
+                                                QString cfop, QString unidadeMedida,
                                                 double quantidade, double valorUnitario, double valorTotal,
                                                 double valorDesconto, QJsonObject dados,
                                                 QDateTime criadoEm, QDateTime atualizadoEm);
@@ -28,7 +30,7 @@ public:
     QString codigoProduto() const { return m_codigoProduto; }
     QString descricao() const { return m_descricao; }
     QString ncm() const { return m_ncm; }
-    std::optional<int> cfop() const { return m_cfop; }
+    QString cfop() const { return m_cfop; }
     QString unidadeMedida() const { return m_unidadeMedida; }
     double quantidade() const { return m_quantidade; }
     double valorUnitario() const { return m_valorUnitario; }
@@ -49,11 +51,13 @@ public:
     double valorIcms() const;
     double aliquotaIcms() const;
 
+    const std::vector<DocumentoFiscalItemTributo>& tributos() const { return m_tributos; }
+    void adicionarTributo(const DocumentoFiscalItemTributo& tributo) { m_tributos.push_back(tributo); }
     void hidratar(int id, QDateTime criadoEm, QDateTime atualizadoEm);
 
 private:
     DocumentoFiscalItem(int id, int idDocumentoFiscal, int numeroItem, QString codigoProduto,
-                        QString descricao, QString ncm, std::optional<int> cfop, QString unidadeMedida,
+                        QString descricao, QString ncm, QString cfop, QString unidadeMedida,
                         double quantidade, double valorUnitario, double valorTotal, double valorDesconto,
                         QJsonObject dados, QDateTime criadoEm, QDateTime atualizadoEm);
 
@@ -64,7 +68,7 @@ private:
     QString m_codigoProduto;
     QString m_descricao;
     QString m_ncm;
-    std::optional<int> m_cfop;
+    QString m_cfop;
     QString m_unidadeMedida;
 
     double m_quantidade = 0.0;
@@ -76,6 +80,8 @@ private:
 
     std::optional<QDateTime> m_criadoEm;
     std::optional<QDateTime> m_atualizadoEm;
+
+    std::vector<DocumentoFiscalItemTributo> m_tributos;
 };
 
 Q_DECLARE_METATYPE(DocumentoFiscalItem)

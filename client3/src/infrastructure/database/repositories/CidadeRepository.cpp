@@ -2,14 +2,14 @@
 #include <QSqlQuery>
 #include <QVariant>
 #include <QSqlError>
+#include "../DatabaseManager.h"
 
 CidadeRepository::CidadeRepository() {
-    m_db = QSqlDatabase::database();
 }
 
 QList<Cidade> CidadeRepository::listarPorEstado(int idEstado) {
     QList<Cidade> cidades;
-    QSqlQuery query(m_db);
+    QSqlQuery query(DatabaseManager::instance().database());
     query.prepare("SELECT id, nome, id_ibge, id_estado FROM cidades WHERE id_estado = :id_estado ORDER BY nome");
     query.bindValue(":id_estado", idEstado);
 
@@ -27,7 +27,7 @@ QList<Cidade> CidadeRepository::listarPorEstado(int idEstado) {
 }
 
 std::optional<Cidade> CidadeRepository::buscarPorId(int id) {
-    QSqlQuery query(m_db);
+    QSqlQuery query(DatabaseManager::instance().database());
     query.prepare("SELECT id, nome, id_ibge, id_estado FROM cidades WHERE id = :id");
     query.bindValue(":id", id);
 
@@ -43,7 +43,7 @@ std::optional<Cidade> CidadeRepository::buscarPorId(int id) {
 }
 
 std::optional<Cidade> CidadeRepository::buscarPorIbge(int idIbge) {
-    QSqlQuery query(m_db);
+    QSqlQuery query(DatabaseManager::instance().database());
     query.prepare("SELECT id, nome, id_ibge, id_estado FROM cidades WHERE id_ibge = :id_ibge");
     query.bindValue(":id_ibge", idIbge);
 

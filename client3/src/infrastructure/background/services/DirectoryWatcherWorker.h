@@ -33,7 +33,6 @@ private:
     QSet<QString> m_knownFiles;
     bool m_isRunning{false};
     QMutex m_mutex;
-    IArquivoRepository *m_arquivoRepository;
 
     void updateKnownFiles();
     // void syncFiles();

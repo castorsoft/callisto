@@ -16,8 +16,6 @@ public:
     bool deletar(int id) override;
 
 private:
-    QSqlDatabase m_db;
-
     QList<int> carregarContatos(int empresaId);
     void salvarContatos(int empresaId, const QList<int> &contatosIds);
     void limparContatos(int empresaId);
