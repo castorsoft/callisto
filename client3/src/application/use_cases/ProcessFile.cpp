@@ -8,6 +8,9 @@
 #include "../../infrastructure/database/repositories/DocumentoFiscalRepository.h"
 #include "../../infrastructure/database/repositories/DocumentoFiscalArquivoRepository.h"
 #include "../../infrastructure/database/repositories/PessoaRepository.h"
+#include "../../infrastructure/database/repositories/ProdutoRepository.h"
+#include "../../infrastructure/database/repositories/UnidadeMedidaRepository.h"
+#include "../../infrastructure/database/repositories/NCMRepository.h"
 #include "../../infrastructure/database/repositories/CidadeRepository.h"
 #include "../../core/GlobalState.h"
 #include <QFile>
@@ -122,22 +125,22 @@ void ProcessFile::processarNFe(const zafra::document::NFeDocument &doc, const QS
     DocumentoFiscalRepository repo;
     PessoaRepository pesRepo;
 
-    if (repo.existeDocumento(QString::fromStdString(doc.getChaveAcesso()))) {
+    QString chaveAcesso = QString::fromStdString(doc.getChaveAcesso());
+    if (repo.existeDocumento(chaveAcesso)) {
         qInfo() << "[ProcessarNFe] Documento ja existe no banco de dados.";
         return;
     }
 
-    QString chaveAcesso = QString::fromStdString(doc.getChaveAcesso());
     QString tipoOperacao = (doc.getTipoOperacao() == zafra::core::TipoOperacao::Saida) ? "saida" : "entrada";
 
-    QString tipoEmissao = "terceiro";
+    QString tipoEmissao = TipoEmissao::Terceiro;
     if (GlobalState::instance().empresaAtual().has_value() && doc.GetEmit()) {
         QString cnpjEmitente = QString::fromStdString(doc.GetEmit()->GetCnpjCpf());
         QString cnpjEmpresa = GlobalState::instance().empresaAtual().value().cnpjCpf();
         cnpjEmitente.remove('.').remove('-').remove('/');
         cnpjEmpresa.remove('.').remove('-').remove('/');
         if (!cnpjEmitente.isEmpty() && cnpjEmitente == cnpjEmpresa) {
-            tipoEmissao = "propria";
+            tipoEmissao = TipoEmissao::Propria;
         }
     }
 
@@ -156,8 +159,6 @@ void ProcessFile::processarNFe(const zafra::document::NFeDocument &doc, const QS
     }
 
     QJsonObject dadosDoc;
-    // Opcionalmente podemos salvar o XML inteiro
-    // dadosDoc["xml"] = QString::fromStdString(rootNode->GetValue());
 
     DocumentoFiscal documento(chaveAcesso, tipoOperacao, tipoEmissao, idPessoa, modelo, serie, numero, dhEmissao, dadosDoc);
 
@@ -165,13 +166,15 @@ void ProcessFile::processarNFe(const zafra::document::NFeDocument &doc, const QS
     for (const auto& det: dets) {
         if (!det) continue;
 
+        if (tipoEmissao == TipoEmissao::Propria) {
+            carregarOuCriarProduto(*det);
+        }
+
         int nItem = det->GetNItem();
         auto prod = det->GetProd();
 
         QString cProd = QString::fromStdString(prod->GetCProd());
         QString xProd = QString::fromStdString(prod->GetXProd());
-        QString ncm = QString::fromStdString(prod->GetNCM());
-        QString cfop = QString::fromStdString(prod->GetCFOP());
         QString uCom = QString::fromStdString(prod->GetUCom());
         double qCom = prod->GetQCom();
         double vUnCom = prod->GetVUnCom();
@@ -184,11 +187,15 @@ void ProcessFile::processarNFe(const zafra::document::NFeDocument &doc, const QS
             dadosItem["ncm"] = QString::fromStdString(prod->GetNCM());
         }
 
+        if (prod->GetCFOP() != "") {
+            dadosItem["cfop"] = QString::fromStdString(prod->GetCFOP());
+        }
+
         if (prod->GetCEAN() != "") {
             dadosItem["cest"] = QString::fromStdString(prod->GetCEST());
         }
 
-        DocumentoFiscalItem item(-1, nItem, cProd, xProd, ncm, cfop, uCom, qCom, vUnCom, vProd, vDesc, dadosItem);
+        DocumentoFiscalItem item(-1, nItem, cProd, xProd, uCom, qCom, vUnCom, vProd, vDesc, dadosItem);
 
         auto imposto = det->GetImposto();
         if (imposto) {
@@ -293,7 +300,7 @@ void ProcessFile::processarNFe(const zafra::document::NFeDocument &doc, const QS
     }
 
     if (repo.salvar(documento)) {
-        qInfo() << "[ProcessarNFe] NFe salva com sucesso. ID:" << documento.id().value_or(0);
+        qInfo() << "[ProcessarNFe] NFe salva com sucesso. ID:" << documento.id().value();
 
         if (documento.id().has_value() && !filePath.isEmpty()) {
             QFile fileXml(filePath);
@@ -304,7 +311,7 @@ void ProcessFile::processarNFe(const zafra::document::NFeDocument &doc, const QS
                 DocumentoFiscalArquivo docArquivo(documento.id().value(), conteudoXml, "DOCUMENTO_FISCAL");
                 DocumentoFiscalArquivoRepository arquivoRepo;
                 if (arquivoRepo.salvar(docArquivo)) {
-                    qInfo() << "[ProcessarNFe] Arquivo XML salvo com sucesso no banco. ID:" << docArquivo.id().value_or(0);
+                    qInfo() << "[ProcessarNFe] Arquivo XML salvo com sucesso no banco. ID:" << docArquivo.id().value();
                 } else {
                     qWarning() << "[ProcessarNFe] Falha ao salvar arquivo XML no banco para documento ID:" << documento.id().value();
                 }
@@ -323,7 +330,6 @@ int ProcessFile::carregarOuCriarPessoa(const zafra::document::NFeDocument &doc, 
 
     PessoaRepository pessoaRepo;
 
-    // 1. Identifica se a contraparte é o Emitente (nota de terceiro) ou Destinatário (emissão própria)
     QString cnpjCpf;
     QString razaoSocial;
     std::optional<QString> nomeFantasia;
@@ -331,7 +337,8 @@ int ProcessFile::carregarOuCriarPessoa(const zafra::document::NFeDocument &doc, 
     const zafra::document::NFeDocumentEndereco* enderXml = nullptr;
     QString isFornecedor = "N";
 
-    if (tipoEmissao == "terceiro" && doc.GetEmit()) {
+    // 1. Identifica se a outra pessoa é o emitente ou o destinatário da nota
+    if (tipoEmissao == "terceiro") {
         auto emitente = doc.GetEmit();
         cnpjCpf = QString::fromStdString(emitente->GetCnpjCpf());
         razaoSocial = QString::fromStdString(emitente->GetRazaoSocial());
@@ -343,7 +350,7 @@ int ProcessFile::carregarOuCriarPessoa(const zafra::document::NFeDocument &doc, 
         }
         enderXml = emitente->GetEnderEmit();
         isFornecedor = "S";
-    } else if (doc.GetDest()) {
+    } else {
         auto dest = doc.GetDest();
         cnpjCpf = QString::fromStdString(dest->GetCnpjCpf());
         razaoSocial = QString::fromStdString(dest->GetNome());
@@ -356,7 +363,7 @@ int ProcessFile::carregarOuCriarPessoa(const zafra::document::NFeDocument &doc, 
     // 2. Verifica se a Pessoa já existe cadastrada no banco
     if (!cnpjCpf.isEmpty()) {
         auto optExistente = pessoaRepo.buscarPorCnpjCpf(cnpjCpf);
-        if (optExistente.has_value() && optExistente.value().id().has_value()) {
+        if (optExistente.has_value()) {
             return optExistente.value().id().value();
         }
     }
@@ -366,7 +373,7 @@ int ProcessFile::carregarOuCriarPessoa(const zafra::document::NFeDocument &doc, 
     if (enderXml && enderXml->GetCodMunicipio() > 0) {
         CidadeRepository cidadeRepo;
         auto optCidade = cidadeRepo.buscarPorIbge(enderXml->GetCodMunicipio());
-        if (optCidade.has_value() && optCidade.value().id() > 0) {
+        if (optCidade.has_value()) {
             idCidade = optCidade.value().id();
         }
     }
@@ -401,6 +408,67 @@ int ProcessFile::carregarOuCriarPessoa(const zafra::document::NFeDocument &doc, 
     // 7. Salva no banco (o repositório salva o endereço e preenche o id da pessoa)
     pessoaRepo.salvar(novaPessoa);
 
-    qInfo() << "[ProcessFile] Nova Pessoa cadastrada automaticamente. ID:" << novaPessoa.id().value_or(0);
-    return novaPessoa.id().value_or(1);
+    qInfo() << "[ProcessFile] Nova Pessoa cadastrada automaticamente. ID:" << novaPessoa.id().value();
+    return novaPessoa.id().value();
+}
+
+int ProcessFile::carregarOuCriarProduto(const zafra::document::NFeDocumentDet &det) {
+    static QMutex s_produtoMutex;
+    QMutexLocker locker(&s_produtoMutex);
+
+    ProdutoRepository prodRepo;
+
+    std::optional<Produto> optProduto = prodRepo.buscarPorCodigoInterno(QString::fromStdString(det.GetProd()->GetCProd()));
+    if (optProduto.has_value()) {
+        return optProduto.value().id().value();
+    }
+
+    auto prod = det.GetProd();
+
+    int idUnidadeMedida = carregarOuCriarUnidadeMedida(QString::fromStdString(prod->GetUCom()));
+    int idNcm = carregarOuCriarNCM(QString::fromStdString(prod->GetNCM()));
+
+    Produto novoProduto(
+        QString::fromStdString(prod->GetXProd()),
+        idUnidadeMedida,
+        idNcm,
+        TipoProdutoAtividade::MercadoriaRevenda,
+        QString::fromStdString(prod->GetCEAN()),
+        QString::fromStdString(prod->GetCProd())
+    );
+    prodRepo.salvar(novoProduto);
+
+    return novoProduto.id().value();
+}
+
+int ProcessFile::carregarOuCriarUnidadeMedida(const QString &sigla) {
+    UnidadeMedidaRepository unMedidaRepo;
+
+    auto optUnMedida = unMedidaRepo.buscarPorSigla(sigla);
+    if (optUnMedida.has_value()) {
+        return optUnMedida.value().id().value();
+    }
+
+    UnidadeMedida novaUnMedida(sigla, sigla);
+    unMedidaRepo.salvar(novaUnMedida);
+
+    qInfo() << "[ProcessFile] Nova Unidade de Medida cadastrada automaticamente. ID:" << novaUnMedida.id().value();
+    return novaUnMedida.id().value();
+}
+
+int ProcessFile::carregarOuCriarNCM(const QString &codigo)
+{
+    NCMRepository ncmRepo;
+
+    auto optNCM = ncmRepo.buscarPorCodigo(codigo);
+    if (optNCM.has_value()) {
+        return optNCM.value().id().value();
+    }
+
+    NCM novoNCM(codigo, "CADASTRO AUTOMATICO", 0, 0, 0, QDate::currentDate(), QDate::currentDate().addYears(1));
+    ncmRepo.salvar(novoNCM);
+
+    qInfo() << "[ProcessFile] Novo NCM cadastrado automaticamente. ID:" << novoNCM.id().value();
+
+    return novoNCM.id().value();
 }

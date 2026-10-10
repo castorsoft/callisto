@@ -5,15 +5,14 @@
 #include <QDateTime>
 #include <QMetaType>
 #include <optional>
+#include <QSqlRecord>
 
 class DocumentoFiscalArquivo {
 public:
     DocumentoFiscalArquivo() = default;
     DocumentoFiscalArquivo(int idDocumento, const QString &conteudoXml, const QString &tipoArquivo = "DOCUMENTO_FISCAL");
 
-    static DocumentoFiscalArquivo loadFromDatabase(int id, const QUuid &uuid, int idDocumento,
-                                                  const QString &conteudoXml, const QString &tipoArquivo,
-                                                  const QDateTime &criadoEm, const QDateTime &atualizadoEm);
+    static DocumentoFiscalArquivo fromRecord(const QSqlRecord &record, const QString &prefix = "");
 
     std::optional<int> id() const { return m_id; }
     void setId(int id) { m_id = id; }
@@ -36,13 +35,7 @@ public:
     std::optional<QDateTime> atualizadoEm() const { return m_atualizadoEm; }
     void setAtualizadoEm(const QDateTime &atualizadoEm) { m_atualizadoEm = atualizadoEm; }
 
-    void hidratar(int id, const QUuid &uuid, const QDateTime &criadoEm, const QDateTime &atualizadoEm);
-
 private:
-    DocumentoFiscalArquivo(int id, const QUuid &uuid, int idDocumento,
-                          const QString &conteudoXml, const QString &tipoArquivo,
-                          const QDateTime &criadoEm, const QDateTime &atualizadoEm);
-
     std::optional<int> m_id;
     std::optional<QUuid> m_uuid;
     int m_idDocumento = -1;

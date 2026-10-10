@@ -26,6 +26,9 @@ private:
     void processFileTask(const QUuid &uuid);
     void processarNFe(const zafra::document::NFeDocument &doc, const QString &filePath);
     int carregarOuCriarPessoa(const zafra::document::NFeDocument &doc, const QString &tipoEmissao);
+    int carregarOuCriarProduto(const zafra::document::NFeDocumentDet &det);
+    int carregarOuCriarUnidadeMedida(const QString &sigla);
+    int carregarOuCriarNCM(const QString &ncm);
 
     QThreadPool m_processPool;
 };

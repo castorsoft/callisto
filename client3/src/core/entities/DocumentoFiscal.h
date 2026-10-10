@@ -6,7 +6,18 @@
 #include <QMetaType>
 #include <optional>
 #include <vector>
+#include <QSqlRecord>
 #include "DocumentoFiscalItem.h"
+
+namespace TipoOperacao {
+    inline const QString Saida      = "saida";
+    inline const QString Entrada    = "entrada";
+}
+
+namespace TipoEmissao {
+    inline const QString Propria    = "propria";
+    inline const QString Terceiro   = "terceiro";
+}
 
 class DocumentoFiscal {
 public:
@@ -15,12 +26,11 @@ public:
     DocumentoFiscal(QString chaveAcesso, QString tipoOperacao, QString tipoEmissao, int idPessoa,
                     QString modelo, QString serie, int numero, QDateTime dhEmissao, QJsonObject dados);
 
-    static DocumentoFiscal loadFromDatabase(int id, QString chaveAcesso, QString tipoOperacao,
-                                            QString tipoEmissao, int idPessoa, QString modelo,
-                                            QString serie, int numero, QDateTime dhEmissao,
-                                            QJsonObject dados, QDateTime criadoEm, QDateTime atualizadoEm);
+    static DocumentoFiscal fromRecord(const QSqlRecord &record, const QString &prefix = "");
 
     std::optional<int> id() const { return m_id; }
+    void setId(int id) { m_id = id; }
+
     QString chaveAcesso() const { return m_chaveAcesso; }
     QString tipoOperacao() const { return m_tipoOperacao; }
     QString tipoEmissao() const { return m_tipoEmissao; }
@@ -32,19 +42,16 @@ public:
     QJsonObject dados() const { return m_dados; }
 
     std::optional<QDateTime> criadoEm() const { return m_criadoEm; }
+    void setCriadoEm(const QDateTime &criadoEm) { m_criadoEm = criadoEm; }
+
     std::optional<QDateTime> atualizadoEm() const { return m_atualizadoEm; }
+    void setAtualizadoEm(const QDateTime &atualizadoEm) { m_atualizadoEm = atualizadoEm; }
 
     const std::vector<DocumentoFiscalItem>& itens() const { return m_itens; }
     void adicionarItem(const DocumentoFiscalItem& item) { m_itens.push_back(item); }
     void setItens(const std::vector<DocumentoFiscalItem>& itens) { m_itens = itens; }
 
-    void hidratar(int id, QDateTime criadoEm, QDateTime atualizadoEm);
-
 private:
-    DocumentoFiscal(int id, QString chaveAcesso, QString tipoOperacao, QString tipoEmissao,
-                    int idPessoa, QString modelo, QString serie, int numero, QDateTime dhEmissao,
-                    QJsonObject dados, QDateTime criadoEm, QDateTime atualizadoEm);
-
     int m_id = -1;
     QString m_chaveAcesso;
     QString m_tipoOperacao;

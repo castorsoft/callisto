@@ -8,7 +8,7 @@ class PessoaRepository : public IPessoaRepository {
 public:
     PessoaRepository();
 
-    void salvar(Pessoa &modelPessoa) override;
+    bool salvar(Pessoa &modelPessoa) override;
     std::optional<Pessoa> buscarPorId(int id) override;
     std::optional<Pessoa> buscarPorUuid(const QUuid &uuid) override;
     std::optional<Pessoa> buscarPorCnpjCpf(const QString &cnpjCpf) override;

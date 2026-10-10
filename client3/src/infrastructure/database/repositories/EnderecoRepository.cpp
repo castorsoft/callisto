@@ -23,37 +23,43 @@ std::optional<Endereco> EnderecoRepository::mapToEntity(QSqlQuery &query)
     return endereco;
 }
 
-void EnderecoRepository::salvar(Endereco &modelEndereco)
+void EnderecoRepository::salvar(Endereco &endereco)
 {
     QSqlQuery query(DatabaseManager::instance().database());
 
-    if (!modelEndereco.id().has_value() || modelEndereco.id().value() == -1) {
-        query.prepare("INSERT INTO enderecos (logradouro, numero, complemento, bairro, cep, id_cidade) "
+    if (!endereco.id().has_value()) {
+        query.prepare("INSERT INTO public.enderecos (logradouro, numero, complemento, bairro, cep, id_cidade) "
                       "VALUES (:logradouro, :numero, :complemento, :bairro, :cep, :id_cidade) "
                       "RETURNING id, uuid, criado_em, atualizado_em");
     } else {
-        query.prepare("UPDATE enderecos SET logradouro = :logradouro, numero = :numero, complemento = :complemento, "
-                      "bairro = :bairro, cep = :cep, id_cidade = :id_cidade, atualizado_em = CURRENT_TIMESTAMP "
-                      "WHERE id = :id "
-                      "RETURNING atualizado_em");
-        query.bindValue(":id", modelEndereco.id().value());
+        query.prepare(  "UPDATE public.enderecos SET "
+                        "logradouro = :logradouro, "
+                        "numero = :numero, "
+                        "complemento = :complemento, "
+                        "bairro = :bairro, "
+                        "cep = :cep, "
+                        "id_cidade = :id_cidade "
+                        "WHERE id = :id "
+                        "RETURNING atualizado_em");
+
+        query.bindValue(":id", endereco.id().value());
     }
 
-    query.bindValue(":logradouro", modelEndereco.logradouro());
-    query.bindValue(":numero", modelEndereco.numero().has_value() ? modelEndereco.numero().value() : QVariant());
-    query.bindValue(":complemento", modelEndereco.complemento().has_value() ? modelEndereco.complemento().value() : QVariant());
-    query.bindValue(":bairro", modelEndereco.bairro());
-    query.bindValue(":cep", modelEndereco.cep());
-    query.bindValue(":id_cidade", modelEndereco.idCidade());
+    query.bindValue(":logradouro", endereco.logradouro());
+    query.bindValue(":numero", endereco.numero().has_value() ? endereco.numero().value() : QVariant());
+    query.bindValue(":complemento", endereco.complemento().has_value() ? endereco.complemento().value() : QVariant());
+    query.bindValue(":bairro", endereco.bairro());
+    query.bindValue(":cep", endereco.cep());
+    query.bindValue(":id_cidade", endereco.idCidade());
 
     if (query.exec() && query.next()) {
-        if (!modelEndereco.id().has_value() || modelEndereco.id().value() == -1) {
-            modelEndereco.setId(query.value("id").toInt());
-            modelEndereco.setUuid(query.value("uuid").toUuid());
-            modelEndereco.setCriadoEm(query.value("criado_em").toDateTime());
-            modelEndereco.setAtualizadoEm(query.value("atualizado_em").toDateTime());
+        if (!endereco.id().has_value() || endereco.id().value() == -1) {
+            endereco.setId(query.value("id").toInt());
+            endereco.setUuid(query.value("uuid").toUuid());
+            endereco.setCriadoEm(query.value("criado_em").toDateTime());
+            endereco.setAtualizadoEm(query.value("atualizado_em").toDateTime());
         } else {
-            modelEndereco.setAtualizadoEm(query.value("atualizado_em").toDateTime());
+            endereco.setAtualizadoEm(query.value("atualizado_em").toDateTime());
         }
     }
 }

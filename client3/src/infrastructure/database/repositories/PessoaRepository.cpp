@@ -22,7 +22,7 @@ std::optional<Pessoa> PessoaRepository::mapToEntity(QSqlQuery &query) {
     return pessoa;
 }
 
-void PessoaRepository::salvar(Pessoa &modelPessoa) {
+bool PessoaRepository::salvar(Pessoa &modelPessoa) {
     Endereco end = modelPessoa.endereco();
     EnderecoRepository endRepo;
     endRepo.salvar(end);
@@ -31,13 +31,22 @@ void PessoaRepository::salvar(Pessoa &modelPessoa) {
     QSqlQuery query(DatabaseManager::instance().database());
 
     if (!modelPessoa.id().has_value() || modelPessoa.id().value() == -1) {
-        query.prepare("INSERT INTO pessoas (id_empresa, cnpj_cpf, razao_social, nome_fantasia, inscricao_estadual, fornecedor, contabilista, id_endereco) "
-                      "VALUES (:id_empresa, :cnpj_cpf, :razao_social, :nome_fantasia, :inscricao_estadual, :fornecedor, :contabilista, :id_endereco) "
-                      "RETURNING id, uuid, criado_em, atualizado_em");
+        query.prepare(  "INSERT INTO pessoas (id_empresa, cnpj_cpf, razao_social, nome_fantasia, inscricao_estadual, fornecedor, contabilista, id_endereco) "
+                        "VALUES (:id_empresa, :cnpj_cpf, :razao_social, :nome_fantasia, :inscricao_estadual, :fornecedor, :contabilista, :id_endereco) "
+                        "RETURNING id, uuid, criado_em, atualizado_em");
     } else {
-        query.prepare("UPDATE pessoas SET id_empresa = :id_empresa, cnpj_cpf = :cnpj_cpf, razao_social = :razao_social, nome_fantasia = :nome_fantasia, "
-                      "inscricao_estadual = :inscricao_estadual, fornecedor = :fornecedor, contabilista = :contabilista, id_endereco = :id_endereco, atualizado_em = CURRENT_TIMESTAMP "
-                      "WHERE id = :id RETURNING atualizado_em");
+        query.prepare(  "UPDATE pessoas SET "
+                        "id_empresa = :id_empresa, "
+                        "cnpj_cpf = :cnpj_cpf, "
+                        "razao_social = :razao_social, "
+                        "nome_fantasia = :nome_fantasia, "
+                        "inscricao_estadual = :inscricao_estadual, "
+                        "fornecedor = :fornecedor, "
+                        "contabilista = :contabilista, "
+                        "id_endereco = :id_endereco "
+                        "WHERE id = :id "
+                        "RETURNING atualizado_em");
+
         query.bindValue(":id", modelPessoa.id().value());
     }
 
@@ -51,16 +60,18 @@ void PessoaRepository::salvar(Pessoa &modelPessoa) {
     query.bindValue(":id_endereco", modelPessoa.idEndereco());
 
     if (query.exec() && query.next()) {
-        if (!modelPessoa.id().has_value() || modelPessoa.id().value() == -1) {
+        modelPessoa.setAtualizadoEm(query.value("atualizado_em").toDateTime());
+        if (!modelPessoa.id().has_value()) {
             modelPessoa.setId(query.value("id").toInt());
             modelPessoa.setUuid(query.value("uuid").toUuid());
             modelPessoa.setCriadoEm(query.value("criado_em").toDateTime());
-            modelPessoa.setAtualizadoEm(query.value("atualizado_em").toDateTime());
-        } else {
-            modelPessoa.setAtualizadoEm(query.value("atualizado_em").toDateTime());
         }
+
+        return true;
     } else {
-        throw std::runtime_error("Erro ao salvar pessoa no banco: " + query.lastError().text().toStdString());
+        qCritical() << "[PessoaRepository] Erro ao inserir/atualizar pessoa:" << query.lastError().text();
+
+        return false;
     }
 }
 
@@ -96,13 +107,16 @@ std::optional<Pessoa> PessoaRepository::buscarPorCnpjCpf(const QString &cnpjCpf)
 
 QList<Pessoa> PessoaRepository::listarTodas() {
     QList<Pessoa> lista;
+
     QSqlQuery query(DatabaseManager::instance().database());
     query.prepare("SELECT * FROM pessoas ORDER BY razao_social");
 
     if (query.exec()) {
         while (query.next()) {
-            if (auto p = mapToEntity(query)) lista.append(p.value());
+            lista.append(Pessoa::fromRecord(query.record()));
         }
+    } else {
+        qCritical() << "[PessoaRepository] Erro ao listar pessoas:" << query.lastError().text();
     }
     return lista;
 }

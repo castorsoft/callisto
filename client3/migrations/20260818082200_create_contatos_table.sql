@@ -14,4 +14,5 @@ CREATE TABLE IF NOT EXISTS public.contatos
     CONSTRAINT contatos_unique UNIQUE (uuid)
 )
 
+
 TABLESPACE pg_default;

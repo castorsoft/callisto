@@ -82,16 +82,17 @@ void EmpresaRepository::salvar(Empresa &modelEmpresa)
 
     QSqlQuery query(DatabaseManager::instance().database());
 
-    if (!modelEmpresa.id().has_value() || modelEmpresa.id().value() == -1) {
-        query.prepare("INSERT INTO empresas (cnpj_cpf, razao_social, nome_fantasia, regime_tributario, id_endereco, inscricao_estadual, inscricao_municipal) "
+    if (!modelEmpresa.id().has_value()) {
+        query.prepare("INSERT INTO public.empresas (cnpj_cpf, razao_social, nome_fantasia, regime_tributario, id_endereco, inscricao_estadual, inscricao_municipal) "
                       "VALUES (:cnpj_cpf, :razao_social, :nome_fantasia, :regime_tributario, :id_endereco, :inscricao_estadual, :inscricao_municipal) "
                       "RETURNING id, uuid, criado_em, atualizado_em");
     } else {
-        query.prepare("UPDATE empresas SET cnpj_cpf = :cnpj_cpf, razao_social = :razao_social, nome_fantasia = :nome_fantasia, "
+        query.prepare("UPDATE public.empresas SET cnpj_cpf = :cnpj_cpf, razao_social = :razao_social, nome_fantasia = :nome_fantasia, "
                       "regime_tributario = :regime_tributario, id_endereco = :id_endereco, inscricao_estadual = :inscricao_estadual, "
                       "inscricao_municipal = :inscricao_municipal, atualizado_em = CURRENT_TIMESTAMP "
                       "WHERE id = :id "
                       "RETURNING atualizado_em");
+
         query.bindValue(":id", modelEmpresa.id().value());
     }
 
@@ -104,13 +105,11 @@ void EmpresaRepository::salvar(Empresa &modelEmpresa)
     query.bindValue(":inscricao_municipal", modelEmpresa.inscricaoMunicipal().has_value() ? modelEmpresa.inscricaoMunicipal().value() : QVariant());
 
     if (query.exec() && query.next()) {
-        if (!modelEmpresa.id().has_value() || modelEmpresa.id().value() == -1) {
+        modelEmpresa.setAtualizadoEm(query.value("atualizado_em").toDateTime());
+        if (!modelEmpresa.id().has_value()) {
             modelEmpresa.setId(query.value("id").toInt());
             modelEmpresa.setUuid(query.value("uuid").toUuid());
             modelEmpresa.setCriadoEm(query.value("criado_em").toDateTime());
-            modelEmpresa.setAtualizadoEm(query.value("atualizado_em").toDateTime());
-        } else {
-            modelEmpresa.setAtualizadoEm(query.value("atualizado_em").toDateTime());
         }
 
         salvarContatos(modelEmpresa.id().value(), modelEmpresa.contatosIds());
@@ -155,18 +154,18 @@ std::optional<Empresa> EmpresaRepository::buscarPorCnpjCpf(const QString &cnpjCp
     return std::nullopt;
 }
 
-QList<Empresa> EmpresaRepository::listarTodas()
-{
+QList<Empresa> EmpresaRepository::listarTodas() {
     QList<Empresa> lista;
+
     QSqlQuery query(DatabaseManager::instance().database());
     query.prepare("SELECT * FROM empresas ORDER BY razao_social");
 
     if (query.exec()) {
         while (query.next()) {
-            if (auto empresa = mapToEntity(query)) {
-                lista.append(empresa.value());
-            }
+            lista.append(Empresa::fromRecord(query.record()));
         }
+    } else {
+        qCritical() << "[EmpresaRepository] Erro ao listar empresas:" << query.lastError().text();
     }
     return lista;
 }

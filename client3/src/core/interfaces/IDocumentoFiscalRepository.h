@@ -10,7 +10,7 @@ public:
     virtual ~IDocumentoFiscalRepository() = default;
 
     // Salva o documento fiscal e seus itens no banco de dados, utilizando transação
-    // Retorna true em caso de sucesso e preenche o m_id através do método hidratar.
+    // Retorna true em caso de sucesso e preenche o m_id.
     virtual bool salvar(DocumentoFiscal& documentoFiscal) = 0;
 
     // Busca um documento pelo ID, opcionalmente carregando também os itens

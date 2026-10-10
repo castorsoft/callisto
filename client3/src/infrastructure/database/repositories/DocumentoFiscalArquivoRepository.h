@@ -14,7 +14,4 @@ public:
     std::optional<DocumentoFiscalArquivo> buscarPorId(int id) override;
     std::optional<DocumentoFiscalArquivo> buscarPrincipalPorIdDocumento(int idDocumento) override;
     QList<DocumentoFiscalArquivo> listarPorIdDocumento(int idDocumento) override;
-
-private:
-    DocumentoFiscalArquivo mapFromQuery(const QSqlQuery &query) const;
 };
