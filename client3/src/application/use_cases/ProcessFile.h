@@ -1,34 +1,41 @@
 #pragma once
 
-#include "../../core/entities/Arquivo.h"
-
 #include <zafra/document/documents/nfe_document.hpp>
 
-#include <QObject>
-#include <QThreadPool>
+#include <QString>
+#include <QMetaType>
 
-class ProcessFile: public QObject {
-    Q_OBJECT
+/**
+ * @brief Resultado do processamento de um único arquivo XML.
+ */
+struct ResultadoProcessamento {
+    enum class Status { Sucesso, JaImportado, Erro };
 
+    Status status = Status::Erro;
+    QString chaveAcesso;
+    QString modelo;
+    QString mensagem;
+    int idDocumentoFiscal = -1;
+};
+
+Q_DECLARE_METATYPE(ResultadoProcessamento)
+
+/**
+ * @brief Caso de uso responsável por ler um arquivo XML fiscal e persisti-lo no banco.
+ *
+ * A execução é síncrona: quem chama decide em qual thread ela ocorre.
+ * O arquivo físico não é movido nem alterado.
+ */
+class ProcessFile {
 public:
-    explicit ProcessFile(QObject *parent = nullptr);
-    ~ProcessFile() override;
+    ProcessFile() = default;
 
-public slots:
-    void execute(const QUuid &uuid);
-
-signals:
-    void processingStarted(const Arquivo &arquivo);
-    void processingFinished(const Arquivo &arquivo, bool success);
-    void fileError(const Arquivo &arquivo, const QString &errorMessage);
+    ResultadoProcessamento processarArquivo(const QString &filePath);
 
 private:
-    void processFileTask(const QUuid &uuid);
-    void processarNFe(const zafra::document::NFeDocument &doc, const QString &filePath);
+    ResultadoProcessamento processarNFe(const zafra::document::NFeDocument &doc, const QString &filePath);
     int carregarOuCriarPessoa(const zafra::document::NFeDocument &doc, const QString &tipoEmissao);
     int carregarOuCriarProduto(const zafra::document::NFeDocumentDet &det);
     int carregarOuCriarUnidadeMedida(const QString &sigla);
     int carregarOuCriarNCM(const QString &ncm);
-
-    QThreadPool m_processPool;
 };

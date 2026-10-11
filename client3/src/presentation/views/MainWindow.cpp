@@ -6,6 +6,7 @@
 
 #include "empresas/FormEmpresas.h"
 #include "pessoas/FormPessoas.h"
+#include "documentos_fiscais/FormProcessarXml.h"
 
 #include <QListWidgetItem>
 #include <QDialog>
@@ -115,6 +116,11 @@ void MainWindow::loadNativeButtons() {
     connect(actionListarPessoas, &QAction::triggered, this, &MainWindow::onClickPessoas);
 
     addActionToList(actionListarPessoas);
+
+    QAction *actionProcessarXml = new QAction("Processar XMLs", this);
+    connect(actionProcessarXml, &QAction::triggered, this, &MainWindow::onClickProcessarXml);
+
+    addActionToList(actionProcessarXml);
 }
 
 void MainWindow::addActionToList(QAction *action) {
@@ -159,5 +165,13 @@ void MainWindow::onClickPessoas() {
 
     auto form = new FormPessoas(this);
     form->setWindowTitle("Pessoas");
+    this->addSubForm(form);
+}
+
+void MainWindow::onClickProcessarXml() {
+    if (existeFormulario<FormProcessarXml>()) return;
+
+    auto form = new FormProcessarXml(this);
+    form->setWindowTitle("Processar XMLs");
     this->addSubForm(form);
 }

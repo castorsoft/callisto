@@ -19,117 +19,119 @@
 #include <QDateTime>
 #include <QMutex>
 #include <QMutexLocker>
-#include <QThread>
+#include <QSet>
 #include <optional>
-#include <algorithm>
 
-#include "../../infrastructure/database/repositories/ArquivoRepository.h"
+namespace {
 
-ProcessFile::ProcessFile(QObject *parent): QObject(parent)
-{
-    m_processPool.setMaxThreadCount(std::max(2, QThread::idealThreadCount() / 2));
-    qInfo() << "[ProcessFile] Pool de processamento fiscal iniciado com"
-            << m_processPool.maxThreadCount() << "threads.";
-}
-
-ProcessFile::~ProcessFile()
-{
-    m_processPool.clear();
-    m_processPool.waitForDone(5000);
-}
-
-void ProcessFile::execute(const QUuid &uuid)
-{
-    m_processPool.start([this, uuid]() {
-        processFileTask(uuid);
-    });
-}
-
-void ProcessFile::processFileTask(const QUuid &uuid)
-{
-    ArquivoRepository repo;
-    auto optArquivo = repo.buscarPorUuid(uuid);
-    if (!optArquivo) {
-        qCritical() << "[ProcessFile] Arquivo nao encontrado no banco para o uuid:" << uuid;
-        return;
-    }
-    Arquivo modelArquivo = optArquivo.value();
-
-    emit processingStarted(modelArquivo);
-
-    // QtConcurrent::run([this, filePath]() {
-        QString filePath = modelArquivo.caminhoArquivo();
-        try {
-            qInfo() << "[ProcessFile] Processando arquivo" << filePath << " modelArquivo path:" << modelArquivo.caminhoArquivo();
-            QFileInfo arquivo = QFileInfo(filePath);
-            // Arquivo modelArquivo;
-
-            // if (ArquivoRepository::existeArquivo(filePath, &modelArquivo)) {
-            //     qInfo() << "[ProcessFile] Arquivo ja processado anteriormente:" << filePath;
-            //     return;
-            // }
-
-            // auto modelArquivo = Arquivo(arquivo.absoluteFilePath(), arquivo.fileName(), false)
-            // ArquivoRepository::salvar(&modelArquivo);
-
-            zafra::xml::XmlDocument xmlReader;
-            xmlReader.LoadFromFile(filePath.toStdString());
-            qInfo() << "Nome primeiro node:" << xmlReader.GetRoot()->GetName();
-            auto doc = zafra::document::DocumentFactory::DetectAndCreate(xmlReader.GetRoot().get());
-            if (!doc) {
-                qCritical() << "[ProcessFile] Falha ao decodificar arquivo, nulo retornado:" << filePath;
-                emit fileError(modelArquivo, "Estrutura XML não reconhecida.");
-                return;
-            }
-
-            if (doc->GetType() == zafra::core::DocumentType::Unknown) {
-            // auto modelo = zafra::identificarModelo(filePath.toStdString());
-            // if (doc == zafra::NAO_IDENTIFICADO) {
-                // Modelo não catalogado.
-                qInfo() << "[ProcessFile] Documento possui uma estrutura nao suportada:" << filePath;
-                return;
-            }
-
-            switch (doc->GetType())
-            {
-                case zafra::core::DocumentType::NFe:
-                    processarNFe(static_cast<const zafra::document::NFeDocument&>(*doc), filePath);
-                    break;
-                default:
-                    break;
-            }
-
-            // auto documentoFiscal = zafra::carregarDocumento(filepath.toStdString(), modelo);
-
-            // auto modelDocumentoFiscalArquivo = DocumentoFiscalArquivo(documentoFiscal.xml(), documentoFiscal.chaveAcesso(), jsonCabulosoAqui, modelo);
-
-            // Primeiro verifica se é um arquivo suportado (.xml ou .json) - Já vem filtrado do Watcher
-            // Registramos o arquivo na tabela arquivos, para indicar que já pegamos o arquivo para processar
-            // Depois usamos a lib pra identificar qual o modelo do documento (Se é nfe, nfce, nfse [padrão nacional, abrasf, ou IPM inicialmente])
-            // Carregamos o documento, registramos ele na documentos_fiscais_arquivo com os dados necessários (chave e modelo do xml);
-            // Registramos os demais dados nas tabelas documentos_fiscais e documentos_fiscais_itens.
-            // Caso a nota seja de um terceiro e haja produtos, devemos preencher a tabela dos produtos do fornecedor para posterior associação
-
-            emit processingFinished(modelArquivo, true);
-
-        } catch(const std::exception &e) {
-            emit fileError(modelArquivo, QString::fromLocal8Bit(e.what()));
+/**
+ * Impede que dois arquivos com a mesma chave de acesso sejam gravados
+ * simultaneamente por threads diferentes do pool (a tabela documentos_fiscais
+ * não possui restrição de unicidade na chave_acesso).
+ */
+class ChaveEmProcessamentoGuard {
+public:
+    explicit ChaveEmProcessamentoGuard(const QString &chave): m_chave(chave)
+    {
+        QMutexLocker locker(&s_mutex);
+        if (s_chaves.contains(m_chave)) {
+            m_adquirida = false;
+        } else {
+            s_chaves.insert(m_chave);
+            m_adquirida = true;
         }
-    // });
+    }
+
+    ~ChaveEmProcessamentoGuard()
+    {
+        if (!m_adquirida) return;
+        QMutexLocker locker(&s_mutex);
+        s_chaves.remove(m_chave);
+    }
+
+    bool adquirida() const { return m_adquirida; }
+
+private:
+    QString m_chave;
+    bool m_adquirida = false;
+
+    static inline QMutex s_mutex;
+    static inline QSet<QString> s_chaves;
+};
+
+} // namespace
+
+ResultadoProcessamento ProcessFile::processarArquivo(const QString &filePath)
+{
+    ResultadoProcessamento resultado;
+
+    try {
+        qInfo() << "[ProcessFile] Processando arquivo" << filePath;
+
+        if (!QFileInfo::exists(filePath)) {
+            resultado.mensagem = "Arquivo não encontrado.";
+            return resultado;
+        }
+
+        zafra::xml::XmlDocument xmlReader;
+        xmlReader.LoadFromFile(filePath.toStdString());
+        if (!xmlReader.GetRoot()) {
+            resultado.mensagem = "Não foi possível ler o XML.";
+            return resultado;
+        }
+
+        auto doc = zafra::document::DocumentFactory::DetectAndCreate(xmlReader.GetRoot().get());
+        if (!doc) {
+            qCritical() << "[ProcessFile] Falha ao decodificar arquivo, nulo retornado:" << filePath;
+            resultado.mensagem = "Estrutura XML não reconhecida.";
+            return resultado;
+        }
+
+        switch (doc->GetType())
+        {
+            case zafra::core::DocumentType::NFe:
+                return processarNFe(static_cast<const zafra::document::NFeDocument&>(*doc), filePath);
+            default:
+                qInfo() << "[ProcessFile] Documento possui uma estrutura nao suportada:" << filePath;
+                resultado.mensagem = "Tipo de documento não suportado.";
+                return resultado;
+        }
+    } catch (const std::exception &e) {
+        qCritical() << "[ProcessFile] Erro ao processar" << filePath << ":" << e.what();
+        resultado.status = ResultadoProcessamento::Status::Erro;
+        resultado.mensagem = QString::fromLocal8Bit(e.what());
+        return resultado;
+    }
 }
 
-void ProcessFile::processarNFe(const zafra::document::NFeDocument &doc, const QString &filePath)
+ResultadoProcessamento ProcessFile::processarNFe(const zafra::document::NFeDocument &doc, const QString &filePath)
 {
+    ResultadoProcessamento resultado;
+
     qInfo() << "[ProcessarNFe] << Processando NFe" << QString::fromStdString(doc.getChaveAcesso());
 
     DocumentoFiscalRepository repo;
-    PessoaRepository pesRepo;
 
     QString chaveAcesso = QString::fromStdString(doc.getChaveAcesso());
-    if (repo.existeDocumento(chaveAcesso)) {
+    resultado.chaveAcesso = chaveAcesso;
+    resultado.modelo = doc.GetIde() ? QString::fromStdString(doc.GetIde()->GetMod()) : "55";
+
+    ChaveEmProcessamentoGuard guard(chaveAcesso);
+    if (!guard.adquirida() || repo.existeDocumento(chaveAcesso)) {
         qInfo() << "[ProcessarNFe] Documento ja existe no banco de dados.";
-        return;
+        resultado.status = ResultadoProcessamento::Status::JaImportado;
+        resultado.mensagem = "Documento já importado anteriormente.";
+        return resultado;
     }
+
+    // Lê o XML antes de gravar, para não deixar um documento sem o arquivo associado
+    QFile fileXml(filePath);
+    if (!fileXml.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        resultado.mensagem = "Não foi possível abrir o arquivo para leitura.";
+        return resultado;
+    }
+    QString conteudoXml = QString::fromUtf8(fileXml.readAll());
+    fileXml.close();
 
     QString tipoOperacao = (doc.getTipoOperacao() == zafra::core::TipoOperacao::Saida) ? "saida" : "entrada";
 
@@ -299,29 +301,27 @@ void ProcessFile::processarNFe(const zafra::document::NFeDocument &doc, const QS
         documento.adicionarItem(item);
     }
 
-    if (repo.salvar(documento)) {
-        qInfo() << "[ProcessarNFe] NFe salva com sucesso. ID:" << documento.id().value();
-
-        if (documento.id().has_value() && !filePath.isEmpty()) {
-            QFile fileXml(filePath);
-            if (fileXml.open(QIODevice::ReadOnly | QIODevice::Text)) {
-                QString conteudoXml = QString::fromUtf8(fileXml.readAll());
-                fileXml.close();
-
-                DocumentoFiscalArquivo docArquivo(documento.id().value(), conteudoXml, "DOCUMENTO_FISCAL");
-                DocumentoFiscalArquivoRepository arquivoRepo;
-                if (arquivoRepo.salvar(docArquivo)) {
-                    qInfo() << "[ProcessarNFe] Arquivo XML salvo com sucesso no banco. ID:" << docArquivo.id().value();
-                } else {
-                    qWarning() << "[ProcessarNFe] Falha ao salvar arquivo XML no banco para documento ID:" << documento.id().value();
-                }
-            } else {
-                qWarning() << "[ProcessarNFe] Nao foi possivel abrir o arquivo para leitura do XML:" << filePath;
-            }
-        }
-    } else {
+    if (!repo.salvar(documento) || !documento.id().has_value()) {
         qCritical() << "[ProcessarNFe] Falha ao salvar NFe.";
+        resultado.mensagem = "Falha ao gravar o documento no banco de dados.";
+        return resultado;
     }
+
+    qInfo() << "[ProcessarNFe] NFe salva com sucesso. ID:" << documento.id().value();
+    resultado.idDocumentoFiscal = documento.id().value();
+    resultado.status = ResultadoProcessamento::Status::Sucesso;
+    resultado.mensagem = QString("Documento ID %1").arg(resultado.idDocumentoFiscal);
+
+    DocumentoFiscalArquivo docArquivo(documento.id().value(), conteudoXml, "DOCUMENTO_FISCAL");
+    DocumentoFiscalArquivoRepository arquivoRepo;
+    if (arquivoRepo.salvar(docArquivo)) {
+        qInfo() << "[ProcessarNFe] Arquivo XML salvo com sucesso no banco. ID:" << docArquivo.id().value();
+    } else {
+        qWarning() << "[ProcessarNFe] Falha ao salvar arquivo XML no banco para documento ID:" << documento.id().value();
+        resultado.mensagem += " (aviso: XML não foi armazenado)";
+    }
+
+    return resultado;
 }
 
 int ProcessFile::carregarOuCriarPessoa(const zafra::document::NFeDocument &doc, const QString &tipoEmissao) {
@@ -442,6 +442,9 @@ int ProcessFile::carregarOuCriarProduto(const zafra::document::NFeDocumentDet &d
 }
 
 int ProcessFile::carregarOuCriarUnidadeMedida(const QString &sigla) {
+    static QMutex s_unidadeMutex;
+    QMutexLocker locker(&s_unidadeMutex);
+
     UnidadeMedidaRepository unMedidaRepo;
 
     auto optUnMedida = unMedidaRepo.buscarPorSigla(sigla);
@@ -458,6 +461,9 @@ int ProcessFile::carregarOuCriarUnidadeMedida(const QString &sigla) {
 
 int ProcessFile::carregarOuCriarNCM(const QString &codigo)
 {
+    static QMutex s_ncmMutex;
+    QMutexLocker locker(&s_ncmMutex);
+
     NCMRepository ncmRepo;
 
     auto optNCM = ncmRepo.buscarPorCodigo(codigo);

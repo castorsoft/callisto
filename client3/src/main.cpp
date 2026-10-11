@@ -1,8 +1,4 @@
-#include "application/use_cases/ProcessFile.h"
-
 #include "infrastructure/background/ServiceManager.h"
-#include "infrastructure/background/services/DirectoryWatcherWorker.h"
-#include "infrastructure/background/services/ScheduleFilesForProcessing.h"
 #include "infrastructure/config/ConfigManager.h"
 #include "infrastructure/database/DatabaseManager.h"
 #include "infrastructure/database/MigrationRunner.h"
@@ -21,20 +17,6 @@
 #include <QEventLoop>
 #include <QTimer>
 
-void startDirectoryWatcherService() {
-    auto watcherService = new DirectoryWatcherWorker(ConfigManager::instance().searchPaths()[0]);
-    ServiceManager::instance().registerService(watcherService);
-
-    auto scheduler = new ScheduleFilesForProcessing();
-    ServiceManager::instance().registerService(scheduler);
-
-    auto fileProcessor = new ProcessFile();
-
-    QObject::connect(scheduler, &ScheduleFilesForProcessing::requestFileProcess, fileProcessor, &ProcessFile::execute, Qt::QueuedConnection);
-    QObject::connect(watcherService, &DirectoryWatcherWorker::fileAdded, scheduler, &ScheduleFilesForProcessing::onFileAdded, Qt::QueuedConnection);
-
-}
-
 void logToFile(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
     QString message = qFormatLogMessage(type, context, msg);
@@ -50,7 +32,6 @@ int main(int argc, char *argv[])
 #else
     QApplication a(argc, argv);
 #endif
-    qRegisterMetaType<Arquivo>("Arquivo");
 
 #ifndef HEADLESS_MODE
     QPixmap q("://assets/splash_620x300.png");
@@ -110,8 +91,6 @@ int main(int argc, char *argv[])
 
     showMessage("Inicializando serviços");
     // Adicionar demais services aqui
-    startDirectoryWatcherService();
-
     ServiceManager::instance().startAll();
 
     showMessage("O sistema está sendo iniciado.");
