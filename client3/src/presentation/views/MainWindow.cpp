@@ -7,6 +7,7 @@
 #include "empresas/FormEmpresas.h"
 #include "pessoas/FormPessoas.h"
 #include "documentos_fiscais/FormProcessarXml.h"
+#include "documentos_fiscais/FormVincularProdutos.h"
 
 #include <QListWidgetItem>
 #include <QDialog>
@@ -121,6 +122,11 @@ void MainWindow::loadNativeButtons() {
     connect(actionProcessarXml, &QAction::triggered, this, &MainWindow::onClickProcessarXml);
 
     addActionToList(actionProcessarXml);
+
+    QAction *actionVincularProdutos = new QAction("Vincular Produtos de Terceiros", this);
+    connect(actionVincularProdutos, &QAction::triggered, this, &MainWindow::onClickVincularProdutos);
+
+    addActionToList(actionVincularProdutos);
 }
 
 void MainWindow::addActionToList(QAction *action) {
@@ -173,5 +179,13 @@ void MainWindow::onClickProcessarXml() {
 
     auto form = new FormProcessarXml(this);
     form->setWindowTitle("Processar XMLs");
+    this->addSubForm(form);
+}
+
+void MainWindow::onClickVincularProdutos() {
+    if (existeFormulario<FormVincularProdutos>()) return;
+
+    auto form = new FormVincularProdutos(this);
+    form->setWindowTitle("Vincular Produtos de Terceiros");
     this->addSubForm(form);
 }

@@ -9,6 +9,7 @@
 #include "../../infrastructure/database/repositories/DocumentoFiscalArquivoRepository.h"
 #include "../../infrastructure/database/repositories/PessoaRepository.h"
 #include "../../infrastructure/database/repositories/ProdutoRepository.h"
+#include "../../infrastructure/database/repositories/ProdutoFornecedorRepository.h"
 #include "../../infrastructure/database/repositories/UnidadeMedidaRepository.h"
 #include "../../infrastructure/database/repositories/NCMRepository.h"
 #include "../../infrastructure/database/repositories/CidadeRepository.h"
@@ -199,6 +200,7 @@ ResultadoProcessamento ProcessFile::processarNFe(const zafra::document::NFeDocum
         }
 
         int nItem = det->GetNItem();
+
         auto prod = det->GetProd();
 
         QString cProd = QString::fromStdString(prod->GetCProd());
@@ -219,11 +221,44 @@ ResultadoProcessamento ProcessFile::processarNFe(const zafra::document::NFeDocum
             dadosItem["cfop"] = QString::fromStdString(prod->GetCFOP());
         }
 
-        if (prod->GetCEAN() != "") {
+        QString cEAN = QString::fromStdString(prod->GetCEAN()).trimmed();
+        if (cEAN.compare("SEM GTIN", Qt::CaseInsensitive) == 0) {
+            cEAN.clear();
+        }
+
+        if (prod->GetCEST() != "") {
             dadosItem["cest"] = QString::fromStdString(prod->GetCEST());
         }
 
-        DocumentoFiscalItem item(-1, nItem, cProd, xProd, uCom, qCom, vUnCom, vProd, vDesc, dadosItem);
+        if (!cEAN.isEmpty()) {
+            dadosItem["cEAN"] = cEAN;
+        }
+
+        DocumentoFiscalItem item(-1, nItem, cProd, xProd, uCom, qCom, vUnCom, vProd, vDesc, dadosItem, cEAN);
+
+        if (tipoEmissao == TipoEmissao::Terceiro) {
+            ProdutoFornecedorRepository pfRepo;
+            auto optPf = pfRepo.buscarPorFornecedorECodigo(idPessoa, cProd);
+            if (!optPf.has_value() && !cEAN.isEmpty()) {
+                ProdutoRepository prodRepo;
+                auto optProd = prodRepo.buscarPorCodigoBarra(cEAN);
+                if (optProd.has_value()) {
+                    Produto prodExistente = optProd.value();
+                    ProdutoFornecedor pf(
+                        prodExistente.id().value(),
+                        idPessoa,
+                        cProd,
+                        prodExistente.idUnidadeMedida(),
+                        1.0,
+                        std::nullopt
+                    );
+                    if (pfRepo.salvar(pf)) {
+                        qInfo() << "[ProcessFile] Auto-associacao criada com sucesso via codigo de barras para produto:"
+                                << prodExistente.descricao() << "e fornecedor:" << idPessoa;
+                    }
+                }
+            }
+        }
 
         auto imposto = det->GetImposto();
         if (imposto) {
@@ -298,7 +333,6 @@ ResultadoProcessamento ProcessFile::processarNFe(const zafra::document::NFeDocum
 
                 item.adicionarTributo(tributoCofins);
             }
-
             if (imposto->GetIPI().has_value()) {
                 QJsonObject ipiObj;
                 auto ipi = imposto->GetIPI().value();

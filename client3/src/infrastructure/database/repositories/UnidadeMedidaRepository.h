@@ -11,6 +11,7 @@ public:
     UnidadeMedidaRepository() = default;
     ~UnidadeMedidaRepository() override = default;
 
-    bool salvar(UnidadeMedida &unidadeMedida);
-    std::optional<UnidadeMedida> buscarPorSigla(const QString &sigla);
+    bool salvar(UnidadeMedida &unidadeMedida) override;
+    std::optional<UnidadeMedida> buscarPorSigla(const QString &sigla) override;
+    QList<UnidadeMedida> listarTodas() override;
 };

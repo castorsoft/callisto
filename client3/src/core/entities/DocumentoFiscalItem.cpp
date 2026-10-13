@@ -3,9 +3,10 @@
 
 DocumentoFiscalItem::DocumentoFiscalItem(int idDocumentoFiscal, int numeroItem, QString codigoProduto, QString descricao,
                                          QString unidadeMedida, double quantidade,
-                                         double valorUnitario, double valorTotal, double valorDesconto, QJsonObject dados)
+                                         double valorUnitario, double valorTotal, double valorDesconto, QJsonObject dados,
+                                         QString codigoBarras)
     : m_idDocumentoFiscal(idDocumentoFiscal), m_numeroItem(numeroItem), m_codigoProduto(codigoProduto),
-      m_descricao(descricao), m_unidadeMedida(unidadeMedida), m_quantidade(quantidade),
+      m_codigoBarras(codigoBarras), m_descricao(descricao), m_unidadeMedida(unidadeMedida), m_quantidade(quantidade),
       m_valorUnitario(valorUnitario), m_valorTotal(valorTotal), m_valorDesconto(valorDesconto), m_dados(dados)
 {
 }
@@ -25,6 +26,9 @@ DocumentoFiscalItem DocumentoFiscalItem::fromRecord(const QSqlRecord &record, co
 
     if (record.contains(prefix + "codigo_produto") && !record.isNull(prefix + "codigo_produto"))
         dfi.m_codigoProduto = record.value(prefix + "codigo_produto").toString();
+
+    if (record.contains(prefix + "codigo_barras") && !record.isNull(prefix + "codigo_barras"))
+        dfi.m_codigoBarras = record.value(prefix + "codigo_barras").toString();
 
     if (record.contains(prefix + "descricao") && !record.isNull(prefix + "descricao"))
         dfi.m_descricao = record.value(prefix + "descricao").toString();

@@ -20,12 +20,6 @@ struct ResultadoProcessamento {
 
 Q_DECLARE_METATYPE(ResultadoProcessamento)
 
-/**
- * @brief Caso de uso responsável por ler um arquivo XML fiscal e persisti-lo no banco.
- *
- * A execução é síncrona: quem chama decide em qual thread ela ocorre.
- * O arquivo físico não é movido nem alterado.
- */
 class ProcessFile {
 public:
     ProcessFile() = default;

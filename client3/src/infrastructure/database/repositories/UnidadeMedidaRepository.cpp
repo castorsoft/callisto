@@ -57,3 +57,19 @@ std::optional<UnidadeMedida> UnidadeMedidaRepository::buscarPorSigla(const QStri
     }
     return std::nullopt;
 }
+
+QList<UnidadeMedida> UnidadeMedidaRepository::listarTodas()
+{
+    QList<UnidadeMedida> lista;
+    QSqlQuery query(DatabaseManager::instance().database());
+    query.prepare("SELECT * FROM public.unidades_medida ORDER BY sigla ASC");
+
+    if (query.exec()) {
+        while (query.next()) {
+            lista.append(UnidadeMedida::fromRecord(query.record()));
+        }
+    } else {
+        qCritical() << "[UnidadeMedidaRepository] Erro ao listar unidades de medida:" << query.lastError().text();
+    }
+    return lista;
+}

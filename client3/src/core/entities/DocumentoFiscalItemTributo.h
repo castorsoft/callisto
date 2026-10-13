@@ -28,7 +28,7 @@ public:
     void setAtualizadoEm(const QDateTime& atualizadoEm) { m_atualizadoEm = atualizadoEm; }
 
 private:
-    int m_id = -1;
+    std::optional<int> m_id;
     int m_idItem = -1;
 
     QString m_tipoTributo;

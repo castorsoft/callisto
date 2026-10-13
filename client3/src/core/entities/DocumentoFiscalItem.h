@@ -16,7 +16,8 @@ public:
     // Construtor principal para criação antes de salvar no banco
     DocumentoFiscalItem(int idDocumentoFiscal, int numeroItem, QString codigoProduto, QString descricao,
                         QString unidadeMedida, double quantidade,
-                        double valorUnitario, double valorTotal, double valorDesconto, QJsonObject dados);
+                        double valorUnitario, double valorTotal, double valorDesconto, QJsonObject dados,
+                        QString codigoBarras = QString());
 
     static DocumentoFiscalItem fromRecord(const QSqlRecord &record, const QString &prefix = "");
 
@@ -26,6 +27,8 @@ public:
     int idDocumentoFiscal() const { return m_idDocumentoFiscal; }
     int numeroItem() const { return m_numeroItem; }
     QString codigoProduto() const { return m_codigoProduto; }
+    QString codigoBarras() const { return m_codigoBarras; }
+    void setCodigoBarras(const QString &codigoBarras) { m_codigoBarras = codigoBarras; }
     QString descricao() const { return m_descricao; }
     QString unidadeMedida() const { return m_unidadeMedida; }
     double quantidade() const { return m_quantidade; }
@@ -54,11 +57,12 @@ public:
     void adicionarTributo(const DocumentoFiscalItemTributo& tributo) { m_tributos.push_back(tributo); }
 
 private:
-    int m_id = -1;
+    std::optional<int> m_id;
     int m_idDocumentoFiscal = -1;
     int m_numeroItem = 0;
 
     QString m_codigoProduto;
+    QString m_codigoBarras;
     QString m_descricao;
     QString m_unidadeMedida;
 

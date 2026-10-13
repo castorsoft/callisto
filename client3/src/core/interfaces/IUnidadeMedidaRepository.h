@@ -13,5 +13,5 @@ public:
     // virtual std::optional<UnidadeMedida> buscarPorId(int id) = 0;
     // virtual std::optional<UnidadeMedida> buscarPorUuid(const QUuid &uuid) = 0;
     virtual std::optional<UnidadeMedida> buscarPorSigla(const QString &sigla) = 0;
-    // virtual QList<UnidadeMedida> listarTodos() = 0;
+    virtual QList<UnidadeMedida> listarTodas() = 0;
 };

@@ -101,14 +101,15 @@ bool DocumentoFiscalRepository::inserirItens(const std::vector<DocumentoFiscalIt
 
         if (!item.id().has_value()) {
             query.prepare(  "INSERT INTO public.documentos_fiscais_itens "
-                            "(id_documento_fiscal, numero_item, codigo_produto, descricao, unidade_medida, quantidade, valor_unitario, valor_total, valor_desconto, dados) "
-                            "VALUES (:id_documento_fiscal, :numero_item, :codigo_produto, :descricao, :unidade_medida, :quantidade, :valor_unitario, :valor_total, :valor_desconto, :dados::jsonb) "
+                            "(id_documento_fiscal, numero_item, codigo_produto, codigo_barras, descricao, unidade_medida, quantidade, valor_unitario, valor_total, valor_desconto, dados) "
+                            "VALUES (:id_documento_fiscal, :numero_item, :codigo_produto, :codigo_barras, :descricao, :unidade_medida, :quantidade, :valor_unitario, :valor_total, :valor_desconto, :dados::jsonb) "
                             "RETURNING id, criado_em, atualizado_em");
         } else {
             query.prepare(  "UPDATE public.documentos_fiscais_itens SET "
                             "id_documento_fiscal = :id_documento_fiscal, "
                             "numero_item = :numero_item, "
                             "codigo_produto = :codigo_produto, "
+                            "codigo_barras = :codigo_barras, "
                             "descricao = :descricao, "
                             "unidade_medida = :unidade_medida, "
                             "quantidade = :quantidade, "
@@ -124,6 +125,7 @@ bool DocumentoFiscalRepository::inserirItens(const std::vector<DocumentoFiscalIt
         query.bindValue(":id_documento_fiscal", idDocumentoFiscal);
         query.bindValue(":numero_item", item.numeroItem());
         query.bindValue(":codigo_produto", item.codigoProduto());
+        query.bindValue(":codigo_barras", item.codigoBarras().isEmpty() ? QVariant(QMetaType::fromType<QString>()) : item.codigoBarras());
         query.bindValue(":descricao", item.descricao());
 
         query.bindValue(":unidade_medida", item.unidadeMedida().isEmpty() ? QVariant(QMetaType::fromType<QString>()) : item.unidadeMedida());
@@ -145,7 +147,7 @@ bool DocumentoFiscalRepository::inserirItens(const std::vector<DocumentoFiscalIt
             return false;
         }
 
-        if (query.exec() && query.next()) {
+        if (query.next()) {
             int idItem = query.value("id").toInt();
             item.setAtualizadoEm(query.value("atualizado_em").toDateTime());
             if (!item.id().has_value()) {
@@ -232,4 +234,141 @@ bool DocumentoFiscalRepository::existeDocumento(const QString& chaveAcesso)
         return true;
     }
     return false;
+}
+
+QList<NotaTerceiroResumo> DocumentoFiscalRepository::listarNotasTerceirosResumo(bool apenasPendentes)
+{
+    QList<NotaTerceiroResumo> lista;
+    auto db = DatabaseManager::instance().database();
+    if (!db.isOpen()) return lista;
+
+    QSqlQuery query(db);
+    QString sql =
+        "SELECT "
+        "    df.id, "
+        "    df.chave_acesso, "
+        "    df.modelo, "
+        "    df.serie, "
+        "    df.numero, "
+        "    df.dh_emissao AS data_emissao, "
+        "    df.id_pessoa, "
+        "    p.razao_social AS fornecedor_nome, "
+        "    p.cnpj_cpf AS fornecedor_cnpj, "
+        "    COUNT(dfi.id) AS total_itens, "
+        "    COUNT(dfi.id) FILTER (WHERE pf.id IS NULL) AS itens_pendentes "
+        "FROM public.documentos_fiscais df "
+        "INNER JOIN public.pessoas p ON p.id = df.id_pessoa "
+        "LEFT JOIN public.documentos_fiscais_itens dfi ON dfi.id_documento_fiscal = df.id "
+        "LEFT JOIN public.produtos_fornecedores pf "
+        "    ON pf.id_fornecedor = df.id_pessoa "
+        "    AND pf.codigo_fornecedor = dfi.codigo_produto "
+        "WHERE df.tipo_emissao = 'terceiro' "
+        "GROUP BY df.id, df.chave_acesso, df.modelo, df.serie, df.numero, df.dh_emissao, df.id_pessoa, p.razao_social, p.cnpj_cpf ";
+
+    if (apenasPendentes) {
+        sql += "HAVING COUNT(dfi.id) FILTER (WHERE pf.id IS NULL) > 0 ";
+    }
+
+    sql += "ORDER BY df.dh_emissao DESC, df.id DESC";
+
+    query.prepare(sql);
+
+    if (query.exec()) {
+        while (query.next()) {
+            NotaTerceiroResumo r;
+            r.idDocumentoFiscal = query.value("id").toInt();
+            r.chaveAcesso = query.value("chave_acesso").toString();
+            r.modelo = query.value("modelo").toString();
+            r.serie = query.value("serie").toString();
+            r.numero = query.value("numero").toInt();
+            r.dataEmissao = query.value("data_emissao").toDateTime();
+            r.idFornecedor = query.value("id_pessoa").toInt();
+            r.fornecedorNome = query.value("fornecedor_nome").toString();
+            r.fornecedorCnpj = query.value("fornecedor_cnpj").toString();
+            r.totalItens = query.value("total_itens").toInt();
+            r.itensPendentes = query.value("itens_pendentes").toInt();
+            lista.append(r);
+        }
+    } else {
+        qCritical() << "[DocumentoFiscalRepository] Erro ao listar notas de terceiros:" << query.lastError().text();
+    }
+
+    return lista;
+}
+
+QList<ItemNotaTerceiroInfo> DocumentoFiscalRepository::carregarItensNotaTerceiro(int idDocumentoFiscal)
+{
+    QList<ItemNotaTerceiroInfo> lista;
+    auto db = DatabaseManager::instance().database();
+    if (!db.isOpen()) return lista;
+
+    QSqlQuery query(db);
+    query.prepare(
+        "SELECT "
+        "    dfi.id AS id_item, "
+        "    dfi.id_documento_fiscal, "
+        "    dfi.numero_item, "
+        "    dfi.codigo_produto, "
+        "    dfi.codigo_barras, "
+        "    dfi.descricao, "
+        "    dfi.unidade_medida, "
+        "    dfi.quantidade, "
+        "    dfi.valor_unitario, "
+        "    dfi.valor_total, "
+        "    pf.id AS id_produto_fornecedor, "
+        "    pf.id_produto, "
+        "    pf.multiplicador, "
+        "    pf.id_unidade_medida AS id_unidade_interna, "
+        "    prod.codigo_interno AS produto_codigo_interno, "
+        "    prod.descricao AS produto_descricao, "
+        "    um.sigla AS unidade_sigla "
+        "FROM public.documentos_fiscais_itens dfi "
+        "INNER JOIN public.documentos_fiscais df ON df.id = dfi.id_documento_fiscal "
+        "LEFT JOIN public.produtos_fornecedores pf "
+        "    ON pf.id_fornecedor = df.id_pessoa "
+        "    AND pf.codigo_fornecedor = dfi.codigo_produto "
+        "LEFT JOIN public.produtos prod ON prod.id = pf.id_produto "
+        "LEFT JOIN public.unidades_medida um ON um.id = pf.id_unidade_medida "
+        "WHERE dfi.id_documento_fiscal = :id_documento_fiscal "
+        "ORDER BY dfi.numero_item ASC"
+    );
+    query.bindValue(":id_documento_fiscal", idDocumentoFiscal);
+
+    if (query.exec()) {
+        while (query.next()) {
+            ItemNotaTerceiroInfo info;
+            info.idItem = query.value("id_item").toInt();
+            info.idDocumentoFiscal = query.value("id_documento_fiscal").toInt();
+            info.numeroItem = query.value("numero_item").toInt();
+            info.codigoProduto = query.value("codigo_produto").toString();
+            info.codigoBarras = query.value("codigo_barras").toString();
+            info.descricao = query.value("descricao").toString();
+            info.unidadeMedida = query.value("unidade_medida").toString();
+            info.quantidade = query.value("quantidade").toDouble();
+            info.valorUnitario = query.value("valor_unitario").toDouble();
+            info.valorTotal = query.value("valor_total").toDouble();
+
+            if (!query.isNull("id_produto_fornecedor")) {
+                info.vinculado = true;
+                info.idProdutoFornecedor = query.value("id_produto_fornecedor").toInt();
+                info.idProduto = query.value("id_produto").toInt();
+                info.multiplicador = query.value("multiplicador").toDouble();
+                if (!query.isNull("id_unidade_interna")) {
+                    info.idUnidadeMedidaInterna = query.value("id_unidade_interna").toInt();
+                }
+                info.produtoCodigoInterno = query.value("produto_codigo_interno").toString();
+                info.produtoDescricao = query.value("produto_descricao").toString();
+                info.siglaUnidadeMedidaInterna = query.value("unidade_sigla").toString();
+            } else {
+                info.vinculado = false;
+                info.multiplicador = 1.0;
+            }
+
+            lista.append(info);
+        }
+    } else {
+        qCritical() << "[DocumentoFiscalRepository] Erro ao carregar itens da nota de terceiro:" << query.lastError().text();
+    }
+
+    return lista;
 }

@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DialogNovoProdutoRapido</class>
+ <widget class="QDialog" name="DialogNovoProdutoRapido">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>550</width>
+    <height>430</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Cadastrar Novo Produto</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QGroupBox" name="groupProduto">
+     <property name="title">
+      <string>Dados do Novo Produto</string>
+     </property>
+     <layout class="QFormLayout" name="formLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="lblDescricao">
+        <property name="text">
+         <string>Descrição:*</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="editDescricao"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="lblCodigoInterno">
+        <property name="text">
+         <string>Código Interno:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="editCodigoInterno"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="lblCodigoBarra">
+        <property name="text">
+         <string>Código de Barras:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="editCodigoBarra"/>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="lblUnidade">
+        <property name="text">
+         <string>Unidade de Medida:*</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QComboBox" name="comboUnidade"/>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="lblNcm">
+        <property name="text">
+         <string>NCM:*</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QLineEdit" name="editNcm"/>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="lblTipoAtividade">
+        <property name="text">
+         <string>Tipo de Atividade:*</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QComboBox" name="comboTipoAtividade"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupVinculo">
+     <property name="title">
+      <string>Parâmetros do Vínculo com o Fornecedor</string>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QLabel" name="lblMultiplicador">
+        <property name="text">
+         <string>Multiplicador (Fator de Conversão):</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QDoubleSpinBox" name="spinMultiplicador">
+        <property name="decimals">
+         <number>4</number>
+        </property>
+        <property name="minimum">
+         <double>0.000100000000000</double>
+        </property>
+        <property name="maximum">
+         <double>999999.000000000000000</double>
+        </property>
+        <property name="value">
+         <double>1.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnCancelar">
+       <property name="text">
+        <string>Cancelar</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnSalvar">
+       <property name="text">
+        <string>Salvar e Vincular</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
+
