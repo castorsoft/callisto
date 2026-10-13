@@ -22,7 +22,7 @@ bool DocumentoFiscalRepository::salvar(DocumentoFiscal& documentoFiscal)
     if (!documentoFiscal.id().has_value()) {
         query.prepare(  "INSERT INTO public.documentos_fiscais "
                         "(chave_acesso, tipo_operacao, tipo_emissao, id_pessoa, modelo, serie, numero, dh_emissao, dados) "
-                        "VALUES (:chave_acesso, :tipo_operacao::tipo_dfe_operacao, tipo_emissao::tipo_dfe_emissao, :id_pessoa, :modelo, :serie, :numero, :dh_emissao, :dados::jsonb)"
+                        "VALUES (:chave_acesso, :tipo_operacao::tipo_dfe_operacao, :tipo_emissao::tipo_dfe_emissao, :id_pessoa, :modelo, :serie, :numero, :dh_emissao, :dados::jsonb)"
                         "RETURNING id, criado_em, atualizado_em");
     } else {
         query.prepare(  "UPDATE public.documentos_fiscais SET"
@@ -44,7 +44,7 @@ bool DocumentoFiscalRepository::salvar(DocumentoFiscal& documentoFiscal)
     query.bindValue(":chave_acesso", documentoFiscal.chaveAcesso());
     query.bindValue(":tipo_operacao", documentoFiscal.tipoOperacao());
     query.bindValue(":tipo_emissao", documentoFiscal.tipoEmissao());
-    query.bindValue(":id_pessoa", documentoFiscal.idPessoa());
+    query.bindValue(":id_pessoa", documentoFiscal.idPessoa().value());
     query.bindValue(":modelo", documentoFiscal.modelo());
 
     if (documentoFiscal.serie().isEmpty()) {

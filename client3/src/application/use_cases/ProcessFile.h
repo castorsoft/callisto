@@ -31,9 +31,10 @@ public:
     ProcessFile() = default;
 
     ResultadoProcessamento processarArquivo(const QString &filePath);
+    ResultadoProcessamento processarXml(const QString &conteudoXml);
 
 private:
-    ResultadoProcessamento processarNFe(const zafra::document::NFeDocument &doc, const QString &filePath);
+    ResultadoProcessamento processarNFe(const zafra::document::NFeDocument &doc, const QString &filePath = QString());
     int carregarOuCriarPessoa(const zafra::document::NFeDocument &doc, const QString &tipoEmissao);
     int carregarOuCriarProduto(const zafra::document::NFeDocumentDet &det);
     int carregarOuCriarUnidadeMedida(const QString &sigla);

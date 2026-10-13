@@ -31,11 +31,14 @@ private slots:
     void onIniciarClicked();
     void onCancelarClicked();
     void onSubpastasToggled(bool checked);
+    void onFiltroStatusChanged(int index);
+    void onTabelaDoubleClicked(int row, int column);
 
 private:
     void configurarTabela();
     void carregarArquivosDaPasta();
     void atualizarContadores();
+    void aplicarFiltroTabela();
     void finalizarProcessamento(bool cancelado);
 
     Ui::FormProcessarXml *ui;

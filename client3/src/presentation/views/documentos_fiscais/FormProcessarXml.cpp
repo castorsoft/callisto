@@ -10,6 +10,8 @@
 #include <QBrush>
 #include <QFont>
 #include <QThread>
+#include <QDesktopServices>
+#include <QUrl>
 
 #include "../../components/ToastNotification.h"
 
@@ -68,6 +70,8 @@ FormProcessarXml::FormProcessarXml(QWidget *parent)
     connect(ui->btnIniciar, &QPushButton::clicked, this, &FormProcessarXml::onIniciarClicked);
     connect(ui->btnCancelar, &QPushButton::clicked, this, &FormProcessarXml::onCancelarClicked);
     connect(ui->chkSubpastas, &QCheckBox::toggled, this, &FormProcessarXml::onSubpastasToggled);
+    connect(ui->cbFiltroStatus, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &FormProcessarXml::onFiltroStatusChanged);
+    connect(ui->tableArquivos, &QTableWidget::cellDoubleClicked, this, &FormProcessarXml::onTabelaDoubleClicked);
 
     int maxWorkers = qBound(1, QThread::idealThreadCount() / 2, 4);
     m_threadPool.setMaxThreadCount(maxWorkers);
@@ -114,36 +118,40 @@ void FormProcessarXml::onSelecionarPastaClicked()
     }
 
     m_pastaSelecionada = dir;
-    ui->editCaminho->setText(dir);
+    ui->editCaminho->setText(m_pastaSelecionada);
+
     carregarArquivosDaPasta();
 }
 
 void FormProcessarXml::onSubpastasToggled(bool /*checked*/)
 {
-    if (!m_pastaSelecionada.isEmpty() && !m_isProcessing) {
+    if (!m_pastaSelecionada.isEmpty()) {
         carregarArquivosDaPasta();
     }
 }
 
 void FormProcessarXml::carregarArquivosDaPasta()
 {
-    ui->tableArquivos->setRowCount(0);
-    m_arquivos.clear();
+    if (m_isProcessing) {
+        return;
+    }
 
-    m_total = 0;
+    m_arquivos.clear();
+    ui->tableArquivos->setRowCount(0);
     m_concluidos = 0;
     m_sucessos = 0;
     m_jaImportados = 0;
     m_erros = 0;
-    atualizarContadores();
     ui->progressBar->setValue(0);
 
-    if (m_pastaSelecionada.isEmpty() || !QDir(m_pastaSelecionada).exists()) {
+    if (m_pastaSelecionada.isEmpty()) {
+        m_total = 0;
+        atualizarContadores();
         ui->btnIniciar->setEnabled(false);
         return;
     }
 
-    QStringList nameFilters = {"*.xml", "*.json", "*.XML", "*.JSON"};
+    QStringList nameFilters = {"*.xml", "*.XML", "*.json", "*.JSON"};
     QDirIterator::IteratorFlags flags = QDirIterator::NoIteratorFlags;
     if (ui->chkSubpastas->isChecked()) {
         flags = QDirIterator::Subdirectories;
@@ -166,7 +174,7 @@ void FormProcessarXml::carregarArquivosDaPasta()
         itemNum->setTextAlignment(Qt::AlignCenter);
 
         auto *itemNome = new QTableWidgetItem(info.fileName());
-        itemNome->setToolTip(info.absoluteFilePath());
+        itemNome->setToolTip(QString("%1\n(Duplo clique para abrir)").arg(info.absoluteFilePath()));
         itemNome->setData(Qt::UserRole, info.absoluteFilePath());
 
         auto *itemChave = new QTableWidgetItem("-");
@@ -187,6 +195,7 @@ void FormProcessarXml::carregarArquivosDaPasta()
     }
 
     atualizarContadores();
+    aplicarFiltroTabela();
     ui->btnIniciar->setEnabled(m_total > 0);
 
     if (m_total == 0) {
@@ -200,6 +209,58 @@ void FormProcessarXml::atualizarContadores()
     ui->lblProcessados->setText(QString("Sucessos: %1").arg(m_sucessos));
     ui->lblJaImportados->setText(QString("Já Importados: %1").arg(m_jaImportados));
     ui->lblErros->setText(QString("Erros: %1").arg(m_erros));
+}
+
+void FormProcessarXml::onFiltroStatusChanged(int /*index*/)
+{
+    aplicarFiltroTabela();
+}
+
+void FormProcessarXml::aplicarFiltroTabela()
+{
+    QString filtro = ui->cbFiltroStatus->currentText().trimmed();
+    int rowCount = ui->tableArquivos->rowCount();
+
+    for (int r = 0; r < rowCount; ++r) {
+        if (filtro == "Todos") {
+            ui->tableArquivos->setRowHidden(r, false);
+            continue;
+        }
+
+        auto *itemStatus = ui->tableArquivos->item(r, 3);
+        if (!itemStatus) {
+            ui->tableArquivos->setRowHidden(r, false);
+            continue;
+        }
+
+        QString statusText = itemStatus->text().trimmed();
+        bool match = false;
+
+        if (filtro == "Pendentes" && (statusText == "Pendente" || statusText == "Processando...")) {
+            match = true;
+        } else if (filtro == "Sucessos" && statusText == "Sucesso") {
+            match = true;
+        } else if (filtro == "Já Importados" && statusText == "Já Importado") {
+            match = true;
+        } else if (filtro == "Erros" && (statusText == "Erro" || statusText == "Cancelado")) {
+            match = true;
+        }
+
+        ui->tableArquivos->setRowHidden(r, !match);
+    }
+}
+
+void FormProcessarXml::onTabelaDoubleClicked(int row, int /*column*/)
+{
+    if (row < 0 || row >= ui->tableArquivos->rowCount()) return;
+
+    auto *itemNome = ui->tableArquivos->item(row, 1);
+    if (!itemNome) return;
+
+    QString filePath = itemNome->data(Qt::UserRole).toString();
+    if (!filePath.isEmpty() && QFileInfo::exists(filePath)) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(filePath));
+    }
 }
 
 void FormProcessarXml::onIniciarClicked()
@@ -237,6 +298,8 @@ void FormProcessarXml::onIniciarClicked()
         }
     }
 
+    aplicarFiltroTabela();
+
     ToastNotification::show(this, "Iniciando", QString("Processando lote de %1 arquivo(s)...").arg(m_total), ToastNotification::Info, 2500);
 
     for (int i = 0; i < m_arquivos.size(); ++i) {
@@ -272,6 +335,7 @@ void FormProcessarXml::onCancelarClicked()
         }
     }
 
+    aplicarFiltroTabela();
     finalizarProcessamento(true);
 }
 
@@ -288,6 +352,11 @@ void FormProcessarXml::onItemStarted(int row)
     }
     if (auto *itemDetalhes = ui->tableArquivos->item(row, 4)) {
         itemDetalhes->setText("Lendo arquivo...");
+    }
+
+    // Se estiver filtrando, pode precisar ajustar visibilidade se mudou de estado
+    if (ui->cbFiltroStatus->currentIndex() != 0) {
+        aplicarFiltroTabela();
     }
 }
 
@@ -356,6 +425,10 @@ void FormProcessarXml::onItemFinished(int row, const ResultadoProcessamento &res
     m_concluidos++;
     ui->progressBar->setValue(m_concluidos);
     atualizarContadores();
+
+    if (ui->cbFiltroStatus->currentIndex() != 0) {
+        aplicarFiltroTabela();
+    }
 
     if (m_concluidos >= m_total) {
         finalizarProcessamento(false);

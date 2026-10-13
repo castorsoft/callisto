@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>900</width>
-    <height>600</height>
+    <width>950</width>
+    <height>650</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Processar XMLs</string>
+   <string>Processar Documentos Fiscais</string>
   </property>
   <layout class="QVBoxLayout" name="mainLayout">
    <item>
@@ -49,7 +49,7 @@
         <item>
          <widget class="QCheckBox" name="chkSubpastas">
           <property name="text">
-           <string>Incluir subpastas</string>
+           <string>Incluir subpastas (busca recursiva)</string>
           </property>
          </widget>
         </item>
@@ -64,7 +64,7 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>160</width>
+            <width>170</width>
             <height>32</height>
            </size>
           </property>
@@ -203,6 +203,48 @@
            </size>
           </property>
          </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="lblFiltro">
+          <property name="text">
+           <string>Exibir:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="cbFiltroStatus">
+          <property name="minimumSize">
+           <size>
+            <width>140</width>
+            <height>0</height>
+           </size>
+          </property>
+          <item>
+           <property name="text">
+            <string>Todos</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Pendentes</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Sucessos</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Já Importados</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Erros</string>
+           </property>
+          </item>
+         </widget>
         </item>
        </layout>
       </item>

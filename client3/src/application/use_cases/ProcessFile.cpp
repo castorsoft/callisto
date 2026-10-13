@@ -73,16 +73,36 @@ ResultadoProcessamento ProcessFile::processarArquivo(const QString &filePath)
             return resultado;
         }
 
-        zafra::xml::XmlDocument xmlReader;
-        xmlReader.LoadFromFile(filePath.toStdString());
-        if (!xmlReader.GetRoot()) {
-            resultado.mensagem = "Não foi possível ler o XML.";
+        QFile fileXml(filePath);
+        if (!fileXml.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            resultado.mensagem = "Não foi possível abrir o arquivo para leitura.";
+            return resultado;
+        }
+        QString conteudoXml = QString::fromUtf8(fileXml.readAll());
+        fileXml.close();
+
+        return processarXml(conteudoXml);
+    } catch (const std::exception &e) {
+        qCritical() << "[ProcessFile] Erro ao processar" << filePath << ":" << e.what();
+        resultado.status = ResultadoProcessamento::Status::Erro;
+        resultado.mensagem = QString::fromLocal8Bit(e.what());
+        return resultado;
+    }
+}
+
+ResultadoProcessamento ProcessFile::processarXml(const QString &conteudoXml)
+{
+    ResultadoProcessamento resultado;
+
+    try {
+        if (conteudoXml.trimmed().isEmpty()) {
+            resultado.mensagem = "Conteúdo XML vazio.";
             return resultado;
         }
 
-        auto doc = zafra::document::DocumentFactory::DetectAndCreate(xmlReader.GetRoot().get());
+        auto doc = zafra::document::DocumentFactory::DetectAndCreate(conteudoXml.toStdString());
         if (!doc) {
-            qCritical() << "[ProcessFile] Falha ao decodificar arquivo, nulo retornado:" << filePath;
+            qCritical() << "[ProcessFile] Falha ao decodificar XML, nulo retornado.";
             resultado.mensagem = "Estrutura XML não reconhecida.";
             return resultado;
         }
@@ -90,14 +110,14 @@ ResultadoProcessamento ProcessFile::processarArquivo(const QString &filePath)
         switch (doc->GetType())
         {
             case zafra::core::DocumentType::NFe:
-                return processarNFe(static_cast<const zafra::document::NFeDocument&>(*doc), filePath);
+                return processarNFe(static_cast<const zafra::document::NFeDocument&>(*doc));
             default:
-                qInfo() << "[ProcessFile] Documento possui uma estrutura nao suportada:" << filePath;
+                qInfo() << "[ProcessFile] Documento possui uma estrutura nao suportada.";
                 resultado.mensagem = "Tipo de documento não suportado.";
                 return resultado;
         }
     } catch (const std::exception &e) {
-        qCritical() << "[ProcessFile] Erro ao processar" << filePath << ":" << e.what();
+        qCritical() << "[ProcessFile] Erro ao processar XML:" << e.what();
         resultado.status = ResultadoProcessamento::Status::Erro;
         resultado.mensagem = QString::fromLocal8Bit(e.what());
         return resultado;
@@ -124,14 +144,20 @@ ResultadoProcessamento ProcessFile::processarNFe(const zafra::document::NFeDocum
         return resultado;
     }
 
-    // Lê o XML antes de gravar, para não deixar um documento sem o arquivo associado
-    QFile fileXml(filePath);
-    if (!fileXml.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        resultado.mensagem = "Não foi possível abrir o arquivo para leitura.";
+    // Obtém o conteúdo do XML diretamente do documento (SetXML/getXML)
+    QString conteudoXml = QString::fromStdString(doc.getXML());
+    if (conteudoXml.isEmpty() && !filePath.isEmpty()) {
+        QFile fileXml(filePath);
+        if (fileXml.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            conteudoXml = QString::fromUtf8(fileXml.readAll());
+            fileXml.close();
+        }
+    }
+
+    if (conteudoXml.isEmpty()) {
+        resultado.mensagem = "Conteúdo XML do documento está vazio.";
         return resultado;
     }
-    QString conteudoXml = QString::fromUtf8(fileXml.readAll());
-    fileXml.close();
 
     QString tipoOperacao = (doc.getTipoOperacao() == zafra::core::TipoOperacao::Saida) ? "saida" : "entrada";
 

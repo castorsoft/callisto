@@ -34,7 +34,7 @@ public:
     QString chaveAcesso() const { return m_chaveAcesso; }
     QString tipoOperacao() const { return m_tipoOperacao; }
     QString tipoEmissao() const { return m_tipoEmissao; }
-    int idPessoa() const { return m_idPessoa; }
+    std::optional<int> idPessoa() const { return m_idPessoa; }
     QString modelo() const { return m_modelo; }
     QString serie() const { return m_serie; }
     int numero() const { return m_numero; }
@@ -52,11 +52,11 @@ public:
     void setItens(const std::vector<DocumentoFiscalItem>& itens) { m_itens = itens; }
 
 private:
-    int m_id = -1;
+    std::optional<int> m_id;
     QString m_chaveAcesso;
     QString m_tipoOperacao;
     QString m_tipoEmissao;
-    int m_idPessoa = -1;
+    std::optional<int> m_idPessoa;
     QString m_modelo;
     QString m_serie;
     int m_numero = 0;
