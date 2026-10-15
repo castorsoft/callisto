@@ -67,3 +67,19 @@ std::optional<NCM> NCMRepository::buscarPorCodigo(const QString &codigo)
     }
     return std::nullopt;
 }
+
+QList<NCM> NCMRepository::buscarPorTermo(const QString &termo)
+{
+    QList<NCM> ncms;
+    QSqlQuery query(DatabaseManager::instance().database());
+    query.prepare("SELECT * FROM public.ncms WHERE codigo ILIKE :termo OR descricao ILIKE :termo");
+    query.bindValue(":termo", "%" + termo + "%");
+
+    if (query.exec()) {
+        while (query.next()) {
+            ncms.append(NCM::fromRecord(query.record()));
+        }
+    }
+
+    return ncms;
+}

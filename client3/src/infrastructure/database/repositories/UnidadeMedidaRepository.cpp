@@ -58,6 +58,22 @@ std::optional<UnidadeMedida> UnidadeMedidaRepository::buscarPorSigla(const QStri
     return std::nullopt;
 }
 
+QList<UnidadeMedida> UnidadeMedidaRepository::buscarPorTermo(const QString &termo)
+{
+    QList<UnidadeMedida> unMedidas;
+    QSqlQuery query(DatabaseManager::instance().database());
+    query.prepare("SELECT * FROM public.unidades_medida WHERE sigla ILIKE :termo OR descricao ILIKE :termo");
+    query.bindValue(":termo", "%" + termo + "%");
+
+    if (query.exec()) {
+        while (query.next()) {
+            unMedidas.append(UnidadeMedida::fromRecord(query.record()));
+        }
+    }
+
+    return unMedidas;
+}
+
 QList<UnidadeMedida> UnidadeMedidaRepository::listarTodas()
 {
     QList<UnidadeMedida> lista;

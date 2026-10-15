@@ -13,4 +13,5 @@ public:
 
     bool salvar(NCM &ncm);
     std::optional<NCM> buscarPorCodigo(const QString &codigo);
+    QList<NCM> buscarPorTermo(const QString &termo) override;
 };

@@ -18,8 +18,8 @@ CREATE TABLE IF NOT EXISTS public.empresas
     CONSTRAINT empresas_pk PRIMARY KEY (id),
     CONSTRAINT empresas_unique UNIQUE (uuid),
     CONSTRAINT empresas_unique_1 UNIQUE (cnpj_cpf),
-    CONSTRAINT empresas_cidades_fk FOREIGN KEY (id_endereco)
-        REFERENCES public.cidades (id) MATCH SIMPLE
+    CONSTRAINT empresas_enderecos_fk FOREIGN KEY (id_endereco)
+        REFERENCES public.enderecos (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
 )

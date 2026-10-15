@@ -86,6 +86,7 @@ endif()
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/files)
 
 add_subdirectory(external_plugins/test_plugin)
+add_subdirectory(qt_plugins)
 
 # qt_generate_deploy_app_script(
 #     TARGET client2

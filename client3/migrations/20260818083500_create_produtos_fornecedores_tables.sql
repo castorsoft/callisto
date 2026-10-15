@@ -12,13 +12,14 @@ CREATE TABLE IF NOT EXISTS public.produtos_fornecedores
     criado_em timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     atualizado_em timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     id_unidade_medida integer NOT NULL,
-    multiplicador double precision NOT NULL,
+    multiplicador double precision NOT NULL DEFAULT 1.0,
     codigo_barra_caixa character varying(20) COLLATE pg_catalog."default",
-    CONSTRAINT produtos_fornecedores_pkey PRIMARY KEY (id_produto),
+    CONSTRAINT produtos_fornecedores_pkey PRIMARY KEY (id),
+    CONSTRAINT unq_produtos_fornecedores_fornecedor_codigo UNIQUE (id_fornecedor, codigo_fornecedor),
     CONSTRAINT fk_produtos_fornecedores_fornecedor FOREIGN KEY (id_fornecedor)
-        REFERENCES public.pessoas_fornecedor (id) MATCH SIMPLE
+        REFERENCES public.pessoas (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE NO ACTION,
+        ON DELETE CASCADE,
     CONSTRAINT fk_produtos_fornecedores_produto FOREIGN KEY (id_produto)
         REFERENCES public.produtos (id) MATCH SIMPLE
         ON UPDATE NO ACTION

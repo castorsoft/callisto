@@ -35,6 +35,7 @@ private:
 
     void onClickEmpresas();
     void onClickPessoas();
+    void onClickProdutos();
     void onClickProcessarXml();
     void onClickVincularProdutos();
 };

@@ -6,6 +6,7 @@
 
 #include "empresas/FormEmpresas.h"
 #include "pessoas/FormPessoas.h"
+#include "produtos/FormProdutos.h"
 #include "documentos_fiscais/FormProcessarXml.h"
 #include "documentos_fiscais/FormVincularProdutos.h"
 
@@ -118,6 +119,11 @@ void MainWindow::loadNativeButtons() {
 
     addActionToList(actionListarPessoas);
 
+    QAction *actionListarProdutos = new QAction("Produtos", this);
+    connect(actionListarProdutos, &QAction::triggered, this, &MainWindow::onClickProdutos);
+
+    addActionToList(actionListarProdutos);
+
     QAction *actionProcessarXml = new QAction("Processar XMLs", this);
     connect(actionProcessarXml, &QAction::triggered, this, &MainWindow::onClickProcessarXml);
 
@@ -171,6 +177,14 @@ void MainWindow::onClickPessoas() {
 
     auto form = new FormPessoas(this);
     form->setWindowTitle("Pessoas");
+    this->addSubForm(form);
+}
+
+void MainWindow::onClickProdutos() {
+    if (existeFormulario<FormProdutos>()) return;
+
+    auto form = new FormProdutos(this);
+    form->setWindowTitle("Produtos");
     this->addSubForm(form);
 }
 
