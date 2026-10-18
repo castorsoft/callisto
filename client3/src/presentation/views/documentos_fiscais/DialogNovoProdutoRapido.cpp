@@ -129,7 +129,7 @@ void DialogNovoProdutoRapido::onSalvarClicked()
         idUm = obterOuCriarUnidadeMedida(m_itemInfo.unidadeMedida);
     }
 
-    int idNcm = obterOuCriarNCM(ui->editNcm->text());
+    int idNCM = obterOuCriarNCM(ui->editNcm->text());
     QString tipoAtividade = ui->comboTipoAtividade->currentData().toString();
 
     std::optional<QString> codBarra;
@@ -140,7 +140,7 @@ void DialogNovoProdutoRapido::onSalvarClicked()
     QString ci = ui->editCodigoInterno->text().trimmed();
     if (!ci.isEmpty()) codInterno = ci;
 
-    Produto novoProduto(descricao, idUm, idNcm, tipoAtividade, codBarra, codInterno, std::nullopt);
+    Produto novoProduto(descricao, idUm, idNCM, tipoAtividade, codBarra, codInterno, std::nullopt);
     ProdutoRepository prodRepo;
 
     if (!prodRepo.salvar(novoProduto) || !novoProduto.id().has_value()) {
@@ -161,4 +161,3 @@ int DialogNovoProdutoRapido::idUnidadeMedida() const
 {
     return ui->comboUnidade->currentData().toInt();
 }
-

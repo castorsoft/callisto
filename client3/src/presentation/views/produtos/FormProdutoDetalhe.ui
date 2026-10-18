@@ -77,7 +77,7 @@
             <string>Digite para buscar...</string>
            </property>
            <property name="minSearchChars">
-            <number>5</number>
+            <number>2</number>
            </property>
           </widget>
          </item>

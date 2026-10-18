@@ -486,12 +486,12 @@ int ProcessFile::carregarOuCriarProduto(const zafra::document::NFeDocumentDet &d
     auto prod = det.GetProd();
 
     int idUnidadeMedida = carregarOuCriarUnidadeMedida(QString::fromStdString(prod->GetUCom()));
-    int idNcm = carregarOuCriarNCM(QString::fromStdString(prod->GetNCM()));
+    int idNCM = carregarOuCriarNCM(QString::fromStdString(prod->GetNCM()));
 
     Produto novoProduto(
         QString::fromStdString(prod->GetXProd()),
         idUnidadeMedida,
-        idNcm,
+        idNCM,
         TipoProdutoAtividade::MercadoriaRevenda,
         QString::fromStdString(prod->GetCEAN()),
         QString::fromStdString(prod->GetCProd())

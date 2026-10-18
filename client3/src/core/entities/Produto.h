@@ -28,7 +28,7 @@ public:
 
     Produto(const QString &descricao,
             int idUnidadeMedida,
-            int idNcm,
+            int idNCM,
             const QString &tipoAtividade = TipoProdutoAtividade::MercadoriaRevenda,
             const std::optional<QString> &codigoBarra = std::nullopt,
             const std::optional<QString> &codigoInterno = std::nullopt,
@@ -54,8 +54,8 @@ public:
     QString tipoAtividade() const { return m_tipoAtividade; }
     void setTipoAtividade(const QString &tipoAtividade) { m_tipoAtividade = tipoAtividade; }
 
-    int idNcm() const { return m_idNcm; }
-    void setIdNcm(int idNcm) { m_idNcm = idNcm; }
+    int idNCM() const { return m_idNcm; }
+    void setIdNcm(int idNCM) { m_idNcm = idNCM; }
 
     std::optional<QString> codigoInterno() const { return m_codigoInterno; }
     void setCodigoInterno(const std::optional<QString> &codigoInterno) { m_codigoInterno = codigoInterno; }
@@ -75,6 +75,7 @@ private:
     QString m_descricao;
     std::optional<QString> m_codigoBarra;
     int m_idUnidadeMedida;
+
     QString m_tipoAtividade{TipoProdutoAtividade::MercadoriaRevenda};
     int m_idNcm;
     std::optional<QString> m_codigoInterno;

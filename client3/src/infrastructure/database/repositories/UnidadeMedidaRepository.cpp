@@ -46,6 +46,17 @@ bool UnidadeMedidaRepository::salvar(UnidadeMedida &unidadeMedida)
     }
 }
 
+std::optional<UnidadeMedida> UnidadeMedidaRepository::buscarPorId(int id) {
+    QSqlQuery query(DatabaseManager::instance().database());
+    query.prepare("SELECT * FROM public.unidades_medida WHERE id = :id");
+    query.bindValue(":id", id);
+
+    if (query.exec() && query.next()) {
+        return UnidadeMedida::fromRecord(query.record());
+    }
+    return std::nullopt;
+}
+
 std::optional<UnidadeMedida> UnidadeMedidaRepository::buscarPorSigla(const QString &sigla)
 {
     QSqlQuery query(DatabaseManager::instance().database());

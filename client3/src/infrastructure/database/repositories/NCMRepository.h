@@ -12,6 +12,7 @@ public:
     ~NCMRepository() override = default;
 
     bool salvar(NCM &ncm);
+    std::optional<NCM> buscarPorId(int id);
     std::optional<NCM> buscarPorCodigo(const QString &codigo);
     QList<NCM> buscarPorTermo(const QString &termo) override;
 };

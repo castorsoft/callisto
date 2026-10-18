@@ -55,6 +55,8 @@ public:
     std::optional<QDateTime> atualizadoEm() const { return m_atualizadoEm; }
     void setAtualizadoEm(const QDateTime &atualizadoEm) { m_atualizadoEm = atualizadoEm; }
 
+    QString textoExibicao() const { return QString("%1 - %2").arg(codigo(), descricao()); }
+
 private:
     std::optional<int> m_id;
     std::optional<QUuid> m_uuid;

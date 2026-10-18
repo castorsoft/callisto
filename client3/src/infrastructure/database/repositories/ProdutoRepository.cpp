@@ -41,7 +41,7 @@ bool ProdutoRepository::salvar(Produto &produto)
     }
     query.bindValue(":tipo_atividade", tipoAtividade);
 
-    query.bindValue(":id_ncm", produto.idNcm());
+    query.bindValue(":id_ncm", produto.idNCM());
 
     query.bindValue(":codigo_interno", produto.codigoInterno().value());
 

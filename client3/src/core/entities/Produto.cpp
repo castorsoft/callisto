@@ -3,7 +3,7 @@
 
 Produto::Produto(const QString &descricao,
                  int idUnidadeMedida,
-                 int idNcm,
+                 int idNCM,
                  const QString &tipoAtividade,
                  const std::optional<QString> &codigoBarra,
                  const std::optional<QString> &codigoInterno,
@@ -12,7 +12,7 @@ Produto::Produto(const QString &descricao,
       m_codigoBarra(codigoBarra),
       m_idUnidadeMedida(idUnidadeMedida),
       m_tipoAtividade(tipoAtividade),
-      m_idNcm(idNcm),
+      m_idNcm(idNCM),
       m_codigoInterno(codigoInterno),
       m_idAnp(idAnp) { }
 

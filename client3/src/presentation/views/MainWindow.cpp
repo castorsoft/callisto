@@ -16,16 +16,46 @@
 #include <QMessageBox>
 #include <QTimer>
 #include <QApplication>
+#include <QPainter>
+#include <QPalette>
 
 #include "empresas/FormEmpresaDetalhe.h"
 #include "../components/ToastNotification.h"
 #include "../../infrastructure/database/repositories/EmpresaRepository.h"
 #include "../../core/GlobalState.h"
 
+namespace {
+
+QPixmap renderColoredPixmap(const QString &resourcePath, const QSize &size, const QColor &color) {
+    QPixmap pixmap = QIcon(resourcePath).pixmap(size);
+    if (pixmap.isNull()) return QPixmap();
+
+    QPainter painter(&pixmap);
+    painter.setCompositionMode(QPainter::CompositionMode_SourceIn);
+    painter.fillRect(pixmap.rect(), color);
+    painter.end();
+
+    return pixmap;
+}
+
+QIcon createThemedIcon(const QString &resourcePath, const QPalette &palette, const QSize &size = QSize(20, 20)) {
+    QIcon icon;
+
+    icon.addPixmap(renderColoredPixmap(resourcePath, size, palette.color(QPalette::Text)), QIcon::Normal);
+
+    icon.addPixmap(renderColoredPixmap(resourcePath, size, palette.color(QPalette::HighlightedText)), QIcon::Selected);
+    return icon;
+}
+
+}
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow) {
     ui->setupUi(this);
+
+    ui->listWidget->setIconSize(QSize(20, 20));
+    ui->listWidget->setSpacing(2);
 
     loadNativeButtons();
     loadPluginButtons();
@@ -109,17 +139,19 @@ void MainWindow::loadPluginButtons() {
 }
 
 void MainWindow::loadNativeButtons() {
-    QAction *actionListarEmpresas = new QAction("Empresas", this);
+    const QPalette &pal = ui->listWidget->palette();
+
+    QAction *actionListarEmpresas = new QAction(createThemedIcon("://icons/empresa.svg", pal), "Empresas", this);
     connect(actionListarEmpresas, &QAction::triggered, this, &MainWindow::onClickEmpresas);
 
     addActionToList(actionListarEmpresas);
 
-    QAction *actionListarPessoas = new QAction("Pessoas", this);
+    QAction *actionListarPessoas = new QAction(createThemedIcon("://icons/pessoa.svg", pal), "Pessoas", this);
     connect(actionListarPessoas, &QAction::triggered, this, &MainWindow::onClickPessoas);
 
     addActionToList(actionListarPessoas);
 
-    QAction *actionListarProdutos = new QAction("Produtos", this);
+    QAction *actionListarProdutos = new QAction(createThemedIcon("://icons/produto.svg", pal), "Produtos", this);
     connect(actionListarProdutos, &QAction::triggered, this, &MainWindow::onClickProdutos);
 
     addActionToList(actionListarProdutos);
@@ -129,7 +161,7 @@ void MainWindow::loadNativeButtons() {
 
     addActionToList(actionProcessarXml);
 
-    QAction *actionVincularProdutos = new QAction("Vincular Produtos de Terceiros", this);
+    QAction *actionVincularProdutos = new QAction(createThemedIcon("://icons/vincular.svg", pal), "Vincular Produtos de Terceiros", this);
     connect(actionVincularProdutos, &QAction::triggered, this, &MainWindow::onClickVincularProdutos);
 
     addActionToList(actionVincularProdutos);

@@ -29,6 +29,8 @@ FormProdutoDetalhe::FormProdutoDetalhe(QWidget *parent)
     connect(ui->lookupNCM, &InputLookup::searchRequested, this, &FormProdutoDetalhe::buscarNCM);
     connect(ui->lookupUnMedida, &InputLookup::searchRequested, this, &FormProdutoDetalhe::buscarUnMedida);
 
+
+
     // preencherUF();
     // atualizarCidades(1);
 
@@ -57,8 +59,7 @@ void FormProdutoDetalhe::buscarNCM(QString aTermo) {
 
     QList<QPair<QString, QVariant>> resultados;
     for (const auto &ncm: lista) {
-        QString textoExibicao = QString("%1 - %2").arg(ncm.codigo(), ncm.descricao());
-        resultados.append({textoExibicao, ncm.id().value()});
+        resultados.append({ncm.textoExibicao(), ncm.id().value()});
     }
     ui->lookupNCM->setResults(resultados);
 }
@@ -70,8 +71,7 @@ void FormProdutoDetalhe::buscarUnMedida(QString aTermo) {
 
     QList<QPair<QString, QVariant>> resultados;
     for (const auto& unMedida: lista) {
-        QString textoExibicao = QString("%1 - %2").arg(unMedida.sigla(), unMedida.descricao());
-        resultados.append({textoExibicao, unMedida.id().value()});
+        resultados.append({unMedida.textoExibicao(), unMedida.id().value()});
     }
     ui->lookupUnMedida->setResults(resultados);
 }
@@ -94,11 +94,28 @@ bool FormProdutoDetalhe::validar() {
 void FormProdutoDetalhe::carregarDados() {
     if (!m_idRegistro.has_value()) return;
 
-    // ProdutoRepository repo;
-    // m_ProdutoAtual = repo.buscarPorId(m_idRegistro.value());
+    ProdutoRepository prodRepo;
+    UnidadeMedidaRepository unRepo;
+    NCMRepository ncmRepo;
 
-    // if (m_ProdutoAtual.has_value()) {
-    //     const Produto& p = m_ProdutoAtual.value();
+    m_ProdutoAtual = prodRepo.buscarPorId(m_idRegistro.value());
+
+    if (m_ProdutoAtual.has_value()) {
+        const Produto& p = m_ProdutoAtual.value();
+
+        ui->edtDescricao->setText(p.descricao());
+        if (p.codigoBarra().has_value())
+        ui->edtCodBarras->setText(p.codigoBarra().value());
+
+        auto unMedida = unRepo.buscarPorId(p.idUnidadeMedida());
+        if (unMedida.has_value()) {
+            ui->lookupUnMedida->setCurrentData(p.idUnidadeMedida(), unMedida.value().textoExibicao());
+        }
+
+        auto ncm = ncmRepo.buscarPorId(p.idNCM());
+        if (ncm.has_value()) {
+            ui->lookupNCM->setCurrentData(p.idNCM(), ncm.value().textoExibicao());
+        }
 
     //     bool isJuridica = p.cnpjCpf().length() > 11;
     //     ui->rgProduto->setCurrentIndex(isJuridica ? 1 : 0);
@@ -126,7 +143,7 @@ void FormProdutoDetalhe::carregarDados() {
 
     //     int indexCidade = ui->cbCidade->findIndex(end.idCidade());
     //     if (indexCidade >= 0) ui->cbCidade->setCurrentIndex(indexCidade);
-    // }
+    }
 }
 
 void FormProdutoDetalhe::onSalvar() {

@@ -56,6 +56,18 @@ bool NCMRepository::salvar(NCM &ncm)
     }
 }
 
+std::optional<NCM> NCMRepository::buscarPorId(int id)
+{
+    QSqlQuery query(DatabaseManager::instance().database());
+    query.prepare("SELECT * FROM public.ncms WHERE id = :id");
+    query.bindValue(":id", id);
+
+    if (query.exec() && query.next()) {
+        return NCM::fromRecord(query.record());
+    }
+    return std::nullopt;
+}
+
 std::optional<NCM> NCMRepository::buscarPorCodigo(const QString &codigo)
 {
     QSqlQuery query(DatabaseManager::instance().database());

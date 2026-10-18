@@ -47,8 +47,8 @@ std::optional<int> ProdutoListProvider::columnWidth(int column) const
 {
     switch (column) {
         case 0: return 60;   // ID
-        case 1: return 160;  // Descricão
-        case 2: return 260;  // Cód Barras
+        case 1: return 300;  // Descricão
+        case 2: return 160;  // Cód Barras
         case 3: return 150;  // Criado Em
         default: return std::nullopt;
     }
