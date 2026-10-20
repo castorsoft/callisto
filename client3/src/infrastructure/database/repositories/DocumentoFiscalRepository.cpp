@@ -275,19 +275,7 @@ QList<NotaTerceiroResumo> DocumentoFiscalRepository::listarNotasTerceirosResumo(
 
     if (query.exec()) {
         while (query.next()) {
-            NotaTerceiroResumo r;
-            r.idDocumentoFiscal = query.value("id").toInt();
-            r.chaveAcesso = query.value("chave_acesso").toString();
-            r.modelo = query.value("modelo").toString();
-            r.serie = query.value("serie").toString();
-            r.numero = query.value("numero").toInt();
-            r.dataEmissao = query.value("data_emissao").toDateTime();
-            r.idFornecedor = query.value("id_pessoa").toInt();
-            r.fornecedorNome = query.value("fornecedor_nome").toString();
-            r.fornecedorCnpj = query.value("fornecedor_cnpj").toString();
-            r.totalItens = query.value("total_itens").toInt();
-            r.itensPendentes = query.value("itens_pendentes").toInt();
-            lista.append(r);
+            lista.append(NotaTerceiroResumo::fromRecord(query.record()));
         }
     } else {
         qCritical() << "[DocumentoFiscalRepository] Erro ao listar notas de terceiros:" << query.lastError().text();
@@ -296,9 +284,9 @@ QList<NotaTerceiroResumo> DocumentoFiscalRepository::listarNotasTerceirosResumo(
     return lista;
 }
 
-QList<ItemNotaTerceiroInfo> DocumentoFiscalRepository::carregarItensNotaTerceiro(int idDocumentoFiscal)
+QList<NotaTerceiroItem> DocumentoFiscalRepository::carregarItensNotaTerceiro(int idDocumentoFiscal)
 {
-    QList<ItemNotaTerceiroInfo> lista;
+    QList<NotaTerceiroItem> lista;
     auto db = DatabaseManager::instance().database();
     if (!db.isOpen()) return lista;
 
@@ -315,6 +303,7 @@ QList<ItemNotaTerceiroInfo> DocumentoFiscalRepository::carregarItensNotaTerceiro
         "    dfi.quantidade, "
         "    dfi.valor_unitario, "
         "    dfi.valor_total, "
+        "    dfi.dados->>'ncm' AS ncm, "
         "    pf.id AS id_produto_fornecedor, "
         "    pf.id_produto, "
         "    pf.multiplicador, "
@@ -336,35 +325,7 @@ QList<ItemNotaTerceiroInfo> DocumentoFiscalRepository::carregarItensNotaTerceiro
 
     if (query.exec()) {
         while (query.next()) {
-            ItemNotaTerceiroInfo info;
-            info.idItem = query.value("id_item").toInt();
-            info.idDocumentoFiscal = query.value("id_documento_fiscal").toInt();
-            info.numeroItem = query.value("numero_item").toInt();
-            info.codigoProduto = query.value("codigo_produto").toString();
-            info.codigoBarras = query.value("codigo_barras").toString();
-            info.descricao = query.value("descricao").toString();
-            info.unidadeMedida = query.value("unidade_medida").toString();
-            info.quantidade = query.value("quantidade").toDouble();
-            info.valorUnitario = query.value("valor_unitario").toDouble();
-            info.valorTotal = query.value("valor_total").toDouble();
-
-            if (!query.isNull("id_produto_fornecedor")) {
-                info.vinculado = true;
-                info.idProdutoFornecedor = query.value("id_produto_fornecedor").toInt();
-                info.idProduto = query.value("id_produto").toInt();
-                info.multiplicador = query.value("multiplicador").toDouble();
-                if (!query.isNull("id_unidade_interna")) {
-                    info.idUnidadeMedidaInterna = query.value("id_unidade_interna").toInt();
-                }
-                info.produtoCodigoInterno = query.value("produto_codigo_interno").toString();
-                info.produtoDescricao = query.value("produto_descricao").toString();
-                info.siglaUnidadeMedidaInterna = query.value("unidade_sigla").toString();
-            } else {
-                info.vinculado = false;
-                info.multiplicador = 1.0;
-            }
-
-            lista.append(info);
+            lista.append(NotaTerceiroItem::fromRecord(query.record()));
         }
     } else {
         qCritical() << "[DocumentoFiscalRepository] Erro ao carregar itens da nota de terceiro:" << query.lastError().text();

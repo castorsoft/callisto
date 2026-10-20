@@ -3,7 +3,7 @@
 #include <QDialog>
 #include <QList>
 #include "../../../core/entities/Produto.h"
-#include "../../../core/interfaces/IDocumentoFiscalRepository.h"
+#include "../../../core/entities/virtual/NotaTerceiroItem.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -17,7 +17,7 @@ class DialogSelecionarProduto : public QDialog {
 public:
     explicit DialogSelecionarProduto(int idFornecedor,
                                     const QString &nomeFornecedor,
-                                    const ItemNotaTerceiroInfo &itemInfo,
+                                    const NotaTerceiroItem &itemInfo,
                                     QWidget *parent = nullptr);
     ~DialogSelecionarProduto() override;
 
@@ -39,8 +39,7 @@ private:
     Ui::DialogSelecionarProduto *ui;
 
     int m_idFornecedor{0};
-    ItemNotaTerceiroInfo m_itemInfo;
+    NotaTerceiroItem m_itemInfo;
     QList<Produto> m_produtosFiltrados;
     int m_idProdutoSelecionado{-1};
 };
-

@@ -8,6 +8,7 @@
 #include "../../../infrastructure/database/repositories/CidadeRepository.h"
 #include "../../../infrastructure/services/CnpjService.h"
 #include "../../../core/GlobalState.h"
+#include "../../../core/constants/Mensagens.h"
 #include <QVariant>
 
 FormPessoaDetalhe::FormPessoaDetalhe(QWidget *parent)
@@ -46,8 +47,13 @@ bool FormPessoaDetalhe::validar() {
 
     cpfCnpj.remove('.').remove('-').remove('/');
 
-    if (cpfCnpj.isEmpty() || razaoSocial.isEmpty()) {
-        ToastNotification::show(this, "Aviso", "Preencha os campos obrigatórios (CPF/CNPJ e Razão Social).", ToastNotification::Warning, 3000);
+    if (cpfCnpj.isEmpty()) {
+        ToastNotification::show(this, "Aviso", Mensagens::Validacao::campoInvalido("CNPJ/CPF"), ToastNotification::Warning, 3000);
+        return false;
+    }
+
+    if (razaoSocial.isEmpty()) {
+        ToastNotification::show(this, "Aviso", Mensagens::Validacao::campoInvalido(ui->edtRazaoSocial->labelText()), ToastNotification::Warning, 3000);
         return false;
     }
 

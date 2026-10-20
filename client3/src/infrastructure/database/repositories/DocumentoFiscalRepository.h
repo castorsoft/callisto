@@ -16,7 +16,7 @@ public:
     bool existeDocumento(const QString& chaveAcesso) override;
 
     QList<NotaTerceiroResumo> listarNotasTerceirosResumo(bool apenasPendentes = true) override;
-    QList<ItemNotaTerceiroInfo> carregarItensNotaTerceiro(int idDocumentoFiscal) override;
+    QList<NotaTerceiroItem> carregarItensNotaTerceiro(int idDocumentoFiscal) override;
 
 private:
     bool inserirItens(const std::vector<DocumentoFiscalItem>& itens, int idDocumentoFiscal, QSqlDatabase& db);

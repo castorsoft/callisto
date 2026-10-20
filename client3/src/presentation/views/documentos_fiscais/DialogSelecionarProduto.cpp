@@ -10,7 +10,7 @@
 
 DialogSelecionarProduto::DialogSelecionarProduto(int idFornecedor,
                                                  const QString &nomeFornecedor,
-                                                 const ItemNotaTerceiroInfo &itemInfo,
+                                                 const NotaTerceiroItem &itemInfo,
                                                  QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::DialogSelecionarProduto)
@@ -21,12 +21,12 @@ DialogSelecionarProduto::DialogSelecionarProduto(int idFornecedor,
 
     // Preenche labels do item
     ui->lblFornecedor->setText(nomeFornecedor);
-    ui->lblCodigoFornecedor->setText(itemInfo.codigoProduto);
-    ui->lblDescricaoXml->setText(itemInfo.descricao);
-    ui->lblCodigoBarrasXml->setText(itemInfo.codigoBarras.isEmpty() ? "Sem código de barras" : itemInfo.codigoBarras);
-    ui->lblUnidadeXml->setText(itemInfo.unidadeMedida);
+    ui->lblCodigoFornecedor->setText(itemInfo.codigoProduto());
+    ui->lblDescricaoXml->setText(itemInfo.descricao());
+    ui->lblCodigoBarrasXml->setText(itemInfo.codigoBarras().isEmpty() ? "Sem código de barras" : itemInfo.codigoBarras());
+    ui->lblUnidadeXml->setText(itemInfo.unidadeMedida());
 
-    ui->spinMultiplicador->setValue(itemInfo.multiplicador > 0 ? itemInfo.multiplicador : 1.0);
+    ui->spinMultiplicador->setValue(itemInfo.multiplicador() > 0 ? itemInfo.multiplicador() : 1.0);
 
     configurarTabela();
     carregarUnidades();
@@ -51,6 +51,7 @@ void DialogSelecionarProduto::configurarTabela()
     ui->tableProdutos->setHorizontalHeaderLabels(headers);
 
     auto *header = ui->tableProdutos->horizontalHeader();
+    header->setStretchLastSection(false);
     header->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     header->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     header->setSectionResizeMode(2, QHeaderView::Stretch);
@@ -69,9 +70,9 @@ void DialogSelecionarProduto::carregarUnidades()
         const auto &um = unidades[i];
         ui->comboUnidade->addItem(um.sigla(), um.id().value_or(0));
 
-        if (m_itemInfo.idUnidadeMedidaInterna.has_value() && um.id() == m_itemInfo.idUnidadeMedidaInterna.value()) {
+        if (m_itemInfo.idUnidadeMedidaInterna().has_value() && um.id() == m_itemInfo.idUnidadeMedidaInterna().value()) {
             defaultIndex = i;
-        } else if (defaultIndex == -1 && um.sigla().compare(m_itemInfo.unidadeMedida, Qt::CaseInsensitive) == 0) {
+        } else if (defaultIndex == -1 && um.sigla().compare(m_itemInfo.unidadeMedida(), Qt::CaseInsensitive) == 0) {
             defaultIndex = i;
         }
     }
@@ -130,7 +131,7 @@ void DialogSelecionarProduto::carregarProdutos(const QString &filtro)
         ui->tableProdutos->setItem(i, 3, itemEan);
         ui->tableProdutos->setItem(i, 4, itemUn);
 
-        if (m_itemInfo.idProduto.has_value() && p.id() == m_itemInfo.idProduto.value()) {
+        if (m_itemInfo.idProduto().has_value() && p.id() == m_itemInfo.idProduto().value()) {
             selectRow = i;
         }
     }
@@ -192,4 +193,3 @@ int DialogSelecionarProduto::idUnidadeMedida() const
 {
     return ui->comboUnidade->currentData().toInt();
 }
-

@@ -1,45 +1,12 @@
 #pragma once
 
 #include <QString>
+#include <QList>
 #include <vector>
 #include <optional>
 #include "../entities/DocumentoFiscal.h"
-
-struct NotaTerceiroResumo {
-    int idDocumentoFiscal{0};
-    QString chaveAcesso;
-    QString modelo;
-    QString serie;
-    int numero{0};
-    QDateTime dataEmissao;
-    int idFornecedor{0};
-    QString fornecedorNome;
-    QString fornecedorCnpj;
-    int totalItens{0};
-    int itensPendentes{0};
-};
-
-struct ItemNotaTerceiroInfo {
-    int idItem{0};
-    int idDocumentoFiscal{0};
-    int numeroItem{0};
-    QString codigoProduto;
-    QString codigoBarras;
-    QString descricao;
-    QString unidadeMedida;
-    double quantidade{0.0};
-    double valorUnitario{0.0};
-    double valorTotal{0.0};
-
-    bool vinculado{false};
-    std::optional<int> idProdutoFornecedor;
-    std::optional<int> idProduto;
-    QString produtoCodigoInterno;
-    QString produtoDescricao;
-    double multiplicador{1.0};
-    std::optional<int> idUnidadeMedidaInterna;
-    QString siglaUnidadeMedidaInterna;
-};
+#include "../entities/virtual/NotaTerceiroResumo.h"
+#include "../entities/virtual/NotaTerceiroItem.h"
 
 class IDocumentoFiscalRepository {
 public:
@@ -62,5 +29,5 @@ public:
     virtual QList<NotaTerceiroResumo> listarNotasTerceirosResumo(bool apenasPendentes = true) = 0;
 
     // Carrega itens de uma nota de terceiro detalhando o status de vínculo com produtos
-    virtual QList<ItemNotaTerceiroInfo> carregarItensNotaTerceiro(int idDocumentoFiscal) = 0;
+    virtual QList<NotaTerceiroItem> carregarItensNotaTerceiro(int idDocumentoFiscal) = 0;
 };

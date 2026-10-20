@@ -53,6 +53,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow) {
     ui->setupUi(this);
+    setWindowIcon(QIcon(":/icons/icon.png"));
 
     ui->listWidget->setIconSize(QSize(20, 20));
     ui->listWidget->setSpacing(2);

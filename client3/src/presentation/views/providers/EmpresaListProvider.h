@@ -13,6 +13,7 @@ public:
     QVariant data(int row, int column) const override;
     QString headerData(int column) const override;
     std::optional<int> columnWidth(int column) const override;
+    std::optional<QHeaderView::ResizeMode> columnResizeMode(int column) const override;
 
     std::optional<Empresa> getEmpresaAt(int row) const;
 

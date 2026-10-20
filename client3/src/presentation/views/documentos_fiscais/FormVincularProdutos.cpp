@@ -2,7 +2,7 @@
 #include "ui_FormVincularProdutos.h"
 
 #include "DialogSelecionarProduto.h"
-#include "DialogNovoProdutoRapido.h"
+#include "../produtos/FormProdutoDetalhe.h"
 #include "../../components/ToastNotification.h"
 
 #include "../../../infrastructure/database/repositories/DocumentoFiscalRepository.h"
@@ -11,6 +11,8 @@
 #include <QHeaderView>
 #include <QTableWidgetItem>
 #include <QMessageBox>
+#include <QDialog>
+#include <QVBoxLayout>
 #include <QColor>
 #include <QBrush>
 #include <QFont>
@@ -56,6 +58,7 @@ void FormVincularProdutos::configurarTabelas()
     ui->tableNotas->setHorizontalHeaderLabels(headersNotas);
 
     auto *hNotas = ui->tableNotas->horizontalHeader();
+    hNotas->setStretchLastSection(false);
     hNotas->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     hNotas->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     hNotas->setSectionResizeMode(2, QHeaderView::ResizeToContents);
@@ -72,6 +75,7 @@ void FormVincularProdutos::configurarTabelas()
     ui->tableItens->setHorizontalHeaderLabels(headersItens);
 
     auto *hItens = ui->tableItens->horizontalHeader();
+    hItens->setStretchLastSection(false);
     hItens->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     hItens->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     hItens->setSectionResizeMode(2, QHeaderView::Stretch);
@@ -99,10 +103,10 @@ void FormVincularProdutos::carregarNotas()
             continue;
         }
 
-        bool matchForn = n.fornecedorNome.toLower().contains(busca);
-        bool matchCnpj = n.fornecedorCnpj.contains(busca);
-        bool matchChave = n.chaveAcesso.contains(busca);
-        bool matchNum = QString::number(n.numero).contains(busca);
+        bool matchForn = n.fornecedorNome().toLower().contains(busca);
+        bool matchCnpj = n.fornecedorCnpj().contains(busca);
+        bool matchChave = n.chaveAcesso().contains(busca);
+        bool matchNum = QString::number(n.numero()).contains(busca);
 
         if (matchForn || matchCnpj || matchChave || matchNum) {
             m_notasFiltradas.append(n);
@@ -121,27 +125,27 @@ void FormVincularProdutos::carregarNotas()
         auto *itemNum = new QTableWidgetItem(QString::number(i + 1));
         itemNum->setTextAlignment(Qt::AlignCenter);
 
-        auto *itemNfe = new QTableWidgetItem(QString("%1 / %2").arg(n.numero).arg(n.serie));
+        auto *itemNfe = new QTableWidgetItem(QString("%1 / %2").arg(n.numero()).arg(n.serie()));
         itemNfe->setTextAlignment(Qt::AlignCenter);
 
-        auto *itemData = new QTableWidgetItem(n.dataEmissao.toString("dd/MM/yyyy HH:mm"));
+        auto *itemData = new QTableWidgetItem(n.dataEmissao().toString("dd/MM/yyyy HH:mm"));
         itemData->setTextAlignment(Qt::AlignCenter);
 
-        auto *itemForn = new QTableWidgetItem(n.fornecedorNome);
-        auto *itemCnpj = new QTableWidgetItem(n.fornecedorCnpj);
+        auto *itemForn = new QTableWidgetItem(n.fornecedorNome());
+        auto *itemCnpj = new QTableWidgetItem(n.fornecedorCnpj());
         itemCnpj->setTextAlignment(Qt::AlignCenter);
 
-        auto *itemChave = new QTableWidgetItem(n.chaveAcesso);
-        itemChave->setToolTip(n.chaveAcesso);
+        auto *itemChave = new QTableWidgetItem(n.chaveAcesso());
+        itemChave->setToolTip(n.chaveAcesso());
 
-        auto *itemQtd = new QTableWidgetItem(QString("%1 / %2").arg(n.itensPendentes).arg(n.totalItens));
+        auto *itemQtd = new QTableWidgetItem(QString("%1 / %2").arg(n.itensPendentes()).arg(n.totalItens()));
         itemQtd->setTextAlignment(Qt::AlignCenter);
 
         auto *itemStatus = new QTableWidgetItem();
         itemStatus->setTextAlignment(Qt::AlignCenter);
         itemStatus->setFont(fontBold);
 
-        if (n.itensPendentes > 0) {
+        if (n.itensPendentes() > 0) {
             itemStatus->setText("Pendente");
             itemStatus->setForeground(QBrush(QColor("#E65100"))); // Laranja
         } else {
@@ -158,7 +162,7 @@ void FormVincularProdutos::carregarNotas()
         ui->tableNotas->setItem(i, 6, itemQtd);
         ui->tableNotas->setItem(i, 7, itemStatus);
 
-        if (n.idDocumentoFiscal == m_idNotaSelecionada) {
+        if (n.idDocumentoFiscal() == m_idNotaSelecionada) {
             selectIndex = i;
         }
     }
@@ -195,11 +199,11 @@ void FormVincularProdutos::onNotaSelectionChanged()
     int row = ui->tableNotas->currentRow();
     if (row >= 0 && row < m_notasFiltradas.size()) {
         const auto &nota = m_notasFiltradas[row];
-        m_idNotaSelecionada = nota.idDocumentoFiscal;
-        m_idFornecedorNotaAtual = nota.idFornecedor;
-        m_nomeFornecedorNotaAtual = nota.fornecedorNome;
+        m_idNotaSelecionada = nota.idDocumentoFiscal();
+        m_idFornecedorNotaAtual = nota.idFornecedor();
+        m_nomeFornecedorNotaAtual = nota.fornecedorNome();
 
-        ui->groupItens->setTitle(QString("Itens da NF-e %1 (Fornecedor: %2)").arg(nota.numero).arg(nota.fornecedorNome));
+        ui->groupItens->setTitle(QString("Itens da NF-e %1 (Fornecedor: %2)").arg(nota.numero()).arg(nota.fornecedorNome()));
         carregarItensDaNotaSelecionada();
     } else {
         m_idNotaSelecionada = -1;
@@ -232,18 +236,18 @@ void FormVincularProdutos::carregarItensDaNotaSelecionada()
     for (int i = 0; i < m_itensNotaAtual.size(); ++i) {
         const auto &item = m_itensNotaAtual[i];
 
-        auto *itemNum = new QTableWidgetItem(QString::number(item.numeroItem));
+        auto *itemNum = new QTableWidgetItem(QString::number(item.numeroItem()));
         itemNum->setTextAlignment(Qt::AlignCenter);
 
-        auto *itemCodForn = new QTableWidgetItem(item.codigoProduto);
+        auto *itemCodForn = new QTableWidgetItem(item.codigoProduto());
         itemCodForn->setTextAlignment(Qt::AlignCenter);
 
-        auto *itemDescForn = new QTableWidgetItem(item.descricao);
+        auto *itemDescForn = new QTableWidgetItem(item.descricao());
 
-        auto *itemBarras = new QTableWidgetItem(item.codigoBarras.isEmpty() ? "-" : item.codigoBarras);
+        auto *itemBarras = new QTableWidgetItem(item.codigoBarras().isEmpty() ? "-" : item.codigoBarras());
         itemBarras->setTextAlignment(Qt::AlignCenter);
 
-        auto *itemUnidForn = new QTableWidgetItem(item.unidadeMedida);
+        auto *itemUnidForn = new QTableWidgetItem(item.unidadeMedida());
         itemUnidForn->setTextAlignment(Qt::AlignCenter);
 
         auto *itemStatus = new QTableWidgetItem();
@@ -254,17 +258,17 @@ void FormVincularProdutos::carregarItensDaNotaSelecionada()
         auto *itemFator = new QTableWidgetItem();
         itemFator->setTextAlignment(Qt::AlignCenter);
 
-        if (item.vinculado) {
+        if (item.vinculado()) {
             itemStatus->setText("Vinculado");
             itemStatus->setForeground(QBrush(QColor("#2E7D32"))); // Verde
 
-            QString descProd = item.produtoDescricao;
-            if (!item.produtoCodigoInterno.isEmpty()) {
-                descProd = QString("[%1] %2").arg(item.produtoCodigoInterno, descProd);
+            QString descProd = item.produtoDescricao();
+            if (!item.produtoCodigoInterno().isEmpty()) {
+                descProd = QString("[%1] %2").arg(item.produtoCodigoInterno(), descProd);
             }
             itemProdInt->setText(descProd);
 
-            itemFator->setText(QString("x%1 %2").arg(QString::number(item.multiplicador, 'f', 2), item.siglaUnidadeMedidaInterna));
+            itemFator->setText(QString("x%1 %2").arg(QString::number(item.multiplicador(), 'f', 2), item.siglaUnidadeMedidaInterna()));
         } else {
             itemStatus->setText("Pendente");
             itemStatus->setForeground(QBrush(QColor("#E65100"))); // Laranja
@@ -308,9 +312,9 @@ void FormVincularProdutos::atualizarBotoesAcaoItem()
     const auto &item = m_itensNotaAtual[row];
     ui->btnVincularExistente->setEnabled(true);
     ui->btnNovoProduto->setEnabled(true);
-    ui->btnDesvincular->setEnabled(item.vinculado);
+    ui->btnDesvincular->setEnabled(item.vinculado());
 
-    if (item.vinculado) {
+    if (item.vinculado()) {
         ui->btnVincularExistente->setText("Alterar Vínculo...");
     } else {
         ui->btnVincularExistente->setText("Vincular a Produto Existente...");
@@ -330,7 +334,7 @@ void FormVincularProdutos::onVincularExistenteClicked()
         double mult = dlg.multiplicador();
         int idUm = dlg.idUnidadeMedida();
 
-        ProdutoFornecedor pf(idProd, m_idFornecedorNotaAtual, item.codigoProduto, idUm, mult, std::nullopt);
+        ProdutoFornecedor pf(idProd, m_idFornecedorNotaAtual, item.codigoProduto(), idUm, mult, std::nullopt);
         ProdutoFornecedorRepository pfRepo;
 
         if (pfRepo.salvar(pf)) {
@@ -350,13 +354,36 @@ void FormVincularProdutos::onNovoProdutoClicked()
 
     const auto &item = m_itensNotaAtual[row];
 
-    DialogNovoProdutoRapido dlg(m_idFornecedorNotaAtual, m_nomeFornecedorNotaAtual, item, QString(), this);
-    if (dlg.exec() == QDialog::Accepted) {
-        int idNovoProd = dlg.idProdutoCriado();
-        double mult = dlg.multiplicador();
-        int idUm = dlg.idUnidadeMedida();
+    QDialog dlg(this);
+    dlg.setWindowTitle("Cadastrar Novo Produto");
+    dlg.resize(600, 520);
 
-        ProdutoFornecedor pf(idNovoProd, m_idFornecedorNotaAtual, item.codigoProduto, idUm, mult, std::nullopt);
+    auto *layout = new QVBoxLayout(&dlg);
+    layout->setContentsMargins(10, 10, 10, 10);
+
+    auto *formDetalhe = new FormProdutoDetalhe(&dlg);
+    formDetalhe->preencherDadosIniciais(item.descricao(), item.codigoBarras(), item.unidadeMedida(), item.ncm());
+    layout->addWidget(formDetalhe);
+
+    connect(formDetalhe, &FormDetalheBase::fechar, &dlg, [&dlg, formDetalhe]() {
+        if (formDetalhe->salvo()) {
+            dlg.accept();
+        } else {
+            dlg.reject();
+        }
+    });
+
+    if (dlg.exec() == QDialog::Accepted && formDetalhe->salvo()) {
+        auto optProd = formDetalhe->produtoAtual();
+        if (!optProd.has_value() || !optProd.value().id().has_value()) {
+            return;
+        }
+
+        int idNovoProd = optProd.value().id().value();
+        int idUm = optProd.value().idUnidadeMedida();
+        double mult = 1.0;
+
+        ProdutoFornecedor pf(idNovoProd, m_idFornecedorNotaAtual, item.codigoProduto(), idUm, mult, std::nullopt);
         ProdutoFornecedorRepository pfRepo;
 
         if (pfRepo.salvar(pf)) {
@@ -375,20 +402,20 @@ void FormVincularProdutos::onDesvincularClicked()
     if (row < 0 || row >= m_itensNotaAtual.size()) return;
 
     const auto &item = m_itensNotaAtual[row];
-    if (!item.vinculado || !item.idProdutoFornecedor.has_value()) return;
+    if (!item.vinculado() || !item.idProdutoFornecedor().has_value()) return;
 
     auto resp = QMessageBox::question(
         this,
         "Confirmar Desvinculação",
         QString("Deseja remover a associação do item \"%1\" (Cód: %2) com o produto \"%3\"?")
-            .arg(item.descricao, item.codigoProduto, item.produtoDescricao),
+            .arg(item.descricao(), item.codigoProduto(), item.produtoDescricao()),
         QMessageBox::Yes | QMessageBox::No,
         QMessageBox::No
     );
 
     if (resp == QMessageBox::Yes) {
         ProdutoFornecedorRepository pfRepo;
-        if (pfRepo.deletar(item.idProdutoFornecedor.value())) {
+        if (pfRepo.deletar(item.idProdutoFornecedor().value())) {
             ToastNotification::show(this, "Desvinculado", "Vínculo removido com sucesso.", ToastNotification::Info, 2500);
             carregarItensDaNotaSelecionada();
             carregarNotas();
@@ -397,4 +424,3 @@ void FormVincularProdutos::onDesvincularClicked()
         }
     }
 }
-

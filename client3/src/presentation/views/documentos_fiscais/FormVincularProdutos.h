@@ -37,10 +37,9 @@ private:
 
     QList<NotaTerceiroResumo> m_todasNotas;
     QList<NotaTerceiroResumo> m_notasFiltradas;
-    QList<ItemNotaTerceiroInfo> m_itensNotaAtual;
+    QList<NotaTerceiroItem> m_itensNotaAtual;
 
     int m_idNotaSelecionada{-1};
     int m_idFornecedorNotaAtual{-1};
     QString m_nomeFornecedorNotaAtual;
 };
-

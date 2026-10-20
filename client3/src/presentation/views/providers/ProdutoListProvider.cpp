@@ -47,9 +47,20 @@ std::optional<int> ProdutoListProvider::columnWidth(int column) const
 {
     switch (column) {
         case 0: return 60;   // ID
-        case 1: return 300;  // Descricão
+        case 1: return 300;  // Descrição
         case 2: return 160;  // Cód Barras
         case 3: return 150;  // Criado Em
+        default: return std::nullopt;
+    }
+}
+
+std::optional<QHeaderView::ResizeMode> ProdutoListProvider::columnResizeMode(int column) const
+{
+    switch (column) {
+        case 0: return QHeaderView::ResizeToContents; // ID
+        case 1: return QHeaderView::Stretch;          // Descrição
+        case 2: return QHeaderView::ResizeToContents; // Cód Barras
+        case 3: return QHeaderView::ResizeToContents; // Criado Em
         default: return std::nullopt;
     }
 }

@@ -94,6 +94,7 @@ void FormProcessarXml::configurarTabela()
     ui->tableArquivos->setHorizontalHeaderLabels(headers);
 
     auto *header = ui->tableArquivos->horizontalHeader();
+    header->setStretchLastSection(false);
     header->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     header->setSectionResizeMode(1, QHeaderView::Interactive);
     header->setSectionResizeMode(2, QHeaderView::Interactive);

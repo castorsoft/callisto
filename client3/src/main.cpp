@@ -11,6 +11,7 @@
 #include <QApplication>
 #include <QSplashScreen>
 #include <QPixmap>
+#include <QIcon>
 #include "presentation/views/MainWindow.h"
 #endif
 
@@ -34,6 +35,7 @@ int main(int argc, char *argv[])
 #endif
 
 #ifndef HEADLESS_MODE
+    a.setWindowIcon(QIcon(":/icons/icon.png"));
     QPixmap q("://assets/splash_620x300.png");
     QSplashScreen splash(q);
 
@@ -47,7 +49,8 @@ int main(int argc, char *argv[])
 
     auto showMessage = [&](const QString &msg) {
 #ifndef HEADLESS_MODE
-        splash.showMessage(msg);
+        splash.showMessage("  " + msg, Qt::AlignBottom | Qt::AlignLeft, Qt::white);
+        a.processEvents();
 #endif
         qInfo() << msg;
     };

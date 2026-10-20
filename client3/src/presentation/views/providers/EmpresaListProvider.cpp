@@ -55,3 +55,15 @@ std::optional<int> EmpresaListProvider::columnWidth(int column) const
         default: return std::nullopt;
     }
 }
+
+std::optional<QHeaderView::ResizeMode> EmpresaListProvider::columnResizeMode(int column) const
+{
+    switch (column) {
+        case 0: return QHeaderView::ResizeToContents; // ID
+        case 1: return QHeaderView::ResizeToContents; // CNPJ/CPF
+        case 2: return QHeaderView::Stretch;          // Razão Social
+        case 3: return QHeaderView::Interactive;      // Nome Fantasia
+        case 4: return QHeaderView::ResizeToContents; // Criado Em
+        default: return std::nullopt;
+    }
+}

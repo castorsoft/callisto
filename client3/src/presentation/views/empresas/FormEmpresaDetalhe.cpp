@@ -7,6 +7,7 @@
 #include "../../../infrastructure/database/repositories/EstadoRepository.h"
 #include "../../../infrastructure/database/repositories/CidadeRepository.h"
 #include "../../../core/GlobalState.h"
+#include "../../../core/constants/Mensagens.h"
 #include "../../../infrastructure/services/CnpjService.h"
 #include <QVariant>
 
@@ -47,8 +48,13 @@ bool FormEmpresaDetalhe::validar() {
 
     cpfCnpj.remove('.').remove('-').remove('/');
 
-    if (cpfCnpj.isEmpty() || razaoSocial.isEmpty()) {
-        ToastNotification::show(this, "Aviso", "Preencha os campos obrigatórios (CPF/CNPJ e Razão Social).", ToastNotification::Warning, 3000);
+    if (cpfCnpj.isEmpty()) {
+        ToastNotification::show(this, "Aviso", Mensagens::Validacao::campoObrigatorio(ui->edtRazaoSocial->labelText()), ToastNotification::Warning, 3000);
+        return false;
+    }
+
+    if (razaoSocial.isEmpty()) {
+        ToastNotification::show(this, "Aviso", Mensagens::Validacao::campoObrigatorio(ui->edtCNPJ->labelText()), ToastNotification::Warning, 3000);
         return false;
     }
 

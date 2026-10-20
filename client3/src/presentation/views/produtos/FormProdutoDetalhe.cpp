@@ -6,6 +6,7 @@
 #include "../../../infrastructure/database/repositories/NCMRepository.h"
 #include "../../../infrastructure/database/repositories/UnidadeMedidaRepository.h"
 #include "../../../core/GlobalState.h"
+#include "../../../core/constants/Mensagens.h"
 #include <QVariant>
 
 FormProdutoDetalhe::FormProdutoDetalhe(QWidget *parent)
@@ -29,7 +30,8 @@ FormProdutoDetalhe::FormProdutoDetalhe(QWidget *parent)
     connect(ui->lookupNCM, &InputLookup::searchRequested, this, &FormProdutoDetalhe::buscarNCM);
     connect(ui->lookupUnMedida, &InputLookup::searchRequested, this, &FormProdutoDetalhe::buscarUnMedida);
 
-
+    connect(ui->btnCancelar, &QPushButton::clicked, this, &FormProdutoDetalhe::fechar);
+    connect(ui->btnSalvar, &QPushButton::clicked, this, &FormProdutoDetalhe::onSalvar);
 
     // preencherUF();
     // atualizarCidades(1);
@@ -76,17 +78,63 @@ void FormProdutoDetalhe::buscarUnMedida(QString aTermo) {
     ui->lookupUnMedida->setResults(resultados);
 }
 
+void FormProdutoDetalhe::preencherDadosIniciais(const QString &descricao,
+                                               const QString &codigoBarras,
+                                               const QString &siglaUnidade,
+                                               const QString &codigoNcm)
+{
+    ui->edtDescricao->setText(descricao);
+
+    if (!codigoBarras.isEmpty() && codigoBarras.compare("SEM GTIN", Qt::CaseInsensitive) != 0) {
+        ui->edtCodBarras->setText(codigoBarras);
+    }
+
+    if (!siglaUnidade.isEmpty()) {
+        UnidadeMedidaRepository unRepo;
+        auto optUn = unRepo.buscarPorSigla(siglaUnidade);
+        if (optUn.has_value()) {
+            ui->lookupUnMedida->setCurrentData(optUn.value().id().value(), optUn.value().textoExibicao());
+        }
+    }
+
+    if (!codigoNcm.isEmpty()) {
+        NCMRepository ncmRepo;
+        auto optNcm = ncmRepo.buscarPorCodigo(codigoNcm);
+        if (optNcm.has_value()) {
+            ui->lookupNCM->setCurrentData(optNcm.value().id().value(), optNcm.value().textoExibicao());
+        }
+    }
+
+    if (ui->edtTipoAtividade->currentData().toString().isEmpty()) {
+        ui->edtTipoAtividade->setCurrentIndex(0); // 00 - Mercadoria para Revenda
+    }
+}
+
 bool FormProdutoDetalhe::validar() {
-    // bool isJuridica = ui->rgProduto->currentIndex() == 1;
-    // QString cpfCnpj = isJuridica ? ui->edtCNPJ->text() : ui->edtCPF->text();
-    // QString razaoSocial = ui->edtRazaoSocial->text();
+    QString descricao = ui->edtDescricao->text();
+    int idUnidadeMedida = ui->lookupUnMedida->currentData().toInt();
+    QString tipoAtividade = ui->edtTipoAtividade->currentData().toString();
+    int idNCM = ui->lookupNCM->currentData().toInt();
 
-    // cpfCnpj.remove('.').remove('-').remove('/');
+    if (descricao.isEmpty()) {
+        ToastNotification::show(this, "Aviso", Mensagens::Validacao::campoObrigatorio(ui->edtDescricao->labelText()), ToastNotification::Warning, 3000);
+        return false;
+    }
 
-    // if (cpfCnpj.isEmpty() || razaoSocial.isEmpty()) {
-    //     ToastNotification::show(this, "Aviso", "Preencha os campos obrigatórios (CPF/CNPJ e Razão Social).", ToastNotification::Warning, 3000);
-    //     return false;
-    // }
+    if (idUnidadeMedida == 0) {
+        ToastNotification::show(this, "Aviso", Mensagens::Validacao::campoObrigatorio(ui->lookupUnMedida->labelText()), ToastNotification::Warning, 3000);
+        return false;
+    }
+
+    if (tipoAtividade.isEmpty()) {
+        ToastNotification::show(this, "Aviso", Mensagens::Validacao::campoObrigatorio(ui->edtTipoAtividade->labelText()), ToastNotification::Warning, 3000);
+        return false;
+    }
+
+    if (idNCM == 0) {
+        ToastNotification::show(this, "Aviso", Mensagens::Validacao::campoObrigatorio(ui->lookupNCM->labelText()), ToastNotification::Warning, 3000);
+        return false;
+    }
 
     return true;
 }
@@ -98,10 +146,10 @@ void FormProdutoDetalhe::carregarDados() {
     UnidadeMedidaRepository unRepo;
     NCMRepository ncmRepo;
 
-    m_ProdutoAtual = prodRepo.buscarPorId(m_idRegistro.value());
+    m_produtoAtual = prodRepo.buscarPorId(m_idRegistro.value());
 
-    if (m_ProdutoAtual.has_value()) {
-        const Produto& p = m_ProdutoAtual.value();
+    if (m_produtoAtual.has_value()) {
+        const Produto& p = m_produtoAtual.value();
 
         ui->edtDescricao->setText(p.descricao());
         if (p.codigoBarra().has_value())
@@ -116,90 +164,41 @@ void FormProdutoDetalhe::carregarDados() {
         if (ncm.has_value()) {
             ui->lookupNCM->setCurrentData(p.idNCM(), ncm.value().textoExibicao());
         }
-
-    //     bool isJuridica = p.cnpjCpf().length() > 11;
-    //     ui->rgProduto->setCurrentIndex(isJuridica ? 1 : 0);
-
-    //     if (isJuridica) ui->edtCNPJ->setText(p.cnpjCpf());
-    //     else ui->edtCPF->setText(p.cnpjCpf());
-
-    //     ui->edtRazaoSocial->setText(p.razaoSocial());
-    //     if (p.nomeFantasia().has_value()) ui->edtNomeFantasia->setText(p.nomeFantasia().value());
-    //     if (p.inscricaoEstadual().has_value()) ui->edtInscricaoEstadual->setText(p.inscricaoEstadual().value());
-
-    //     ui->cbFornecedor->setChecked(p.fornecedor() == "S");
-    //     ui->cbContabilista->setChecked(p.contabilista() == "S");
-
-    //     // Endereco
-    //     const Endereco& end = p.endereco();
-    //     ui->edtLogradouro->setText(end.logradouro());
-    //     if (end.numero().has_value()) ui->edtNumero->setText(end.numero().value());
-    //     if (end.complemento().has_value()) ui->edtComplemento->setText(end.complemento().value());
-    //     ui->edtBairro->setText(end.bairro());
-    //     ui->edtCEP->setText(end.cep());
-
-    //     int indexUF = ui->cbUF->findIndex(end.cidade().idUF());
-    //     if (indexUF >= 0) ui->cbUF->setCurrentIndex(indexUF);
-
-    //     int indexCidade = ui->cbCidade->findIndex(end.idCidade());
-    //     if (indexCidade >= 0) ui->cbCidade->setCurrentIndex(indexCidade);
     }
 }
 
 void FormProdutoDetalhe::onSalvar() {
     if (!validar()) return;
 
-    // bool isJuridica = ui->rgProduto->currentIndex() == 1;
-    // QString cpfCnpj = isJuridica ? ui->edtCNPJ->text() : ui->edtCPF->text();
-    // QString razaoSocial = ui->edtRazaoSocial->text();
-    // QString nomeFantasia = ui->edtNomeFantasia->text();
-    // QString inscricaoEstadual = ui->edtInscricaoEstadual->text();
+    QString descricao = ui->edtDescricao->text();
+    QString codBarras = ui->edtCodBarras->text();
+    int idUnidadeMedida = ui->lookupUnMedida->currentData().toInt();
+    QString tipoAtividade = ui->edtTipoAtividade->currentData().toString();
+    int idNCM = ui->lookupNCM->currentData().toInt();
 
-    // QString fornecedor = ui->cbFornecedor->isChecked() ? "S" : "N";
-    // QString contabilista = ui->cbContabilista->isChecked() ? "S" : "N";
 
-    // QString enderecoLogradouro = ui->edtLogradouro->text();
-    // QString enderecoNumero = ui->edtNumero->text();
-    // QString enderecoComplemento = ui->edtComplemento->text();
-    // QString enderecoBairro = ui->edtBairro->text();
-    // QString enderecoCEP = ui->edtCEP->text();
-    // int enderecoCidade = ui->cbCidade->currentData().toInt();
+    try {
+        Produto p;
+        if (m_produtoAtual.has_value()) {
+            p = m_produtoAtual.value();
+        }
 
-    // cpfCnpj.remove('.').remove('-').remove('/');
+        p.setDescricao(descricao);
+        p.setCodigoBarra(codBarras);
+        p.setIdUnidadeMedida(idUnidadeMedida);
+        p.setTipoAtividade(tipoAtividade);
+        p.setIdNcm(idNCM);
 
-    // try {
-    //     Produto p;
-    //     Endereco endereco;
+        ProdutoRepository prodRepo;
 
-    //     if (m_ProdutoAtual.has_value()) {
-    //         p = m_ProdutoAtual.value();
-    //         endereco = p.endereco();
-    //     }
-
-    //     endereco.setLogradouro(enderecoLogradouro);
-    //     endereco.setNumero(enderecoNumero.isEmpty() ? std::nullopt : std::make_optional(enderecoNumero));
-    //     endereco.setComplemento(enderecoComplemento.isEmpty() ? std::nullopt : std::make_optional(enderecoComplemento));
-    //     endereco.setBairro(enderecoBairro);
-    //     endereco.setCep(enderecoCEP);
-    //     endereco.setIdCidade(enderecoCidade);
-
-    //     p.setCnpjCpf(cpfCnpj);
-    //     p.setRazaoSocial(razaoSocial);
-    //     p.setNomeFantasia(nomeFantasia.isEmpty() ? std::nullopt : std::make_optional(nomeFantasia));
-    //     p.setInscricaoEstadual(inscricaoEstadual.isEmpty() ? std::nullopt : std::make_optional(inscricaoEstadual));
-
-    //     p.setFornecedor(fornecedor);
-    //     p.setContabilista(contabilista);
-    //     p.setEndereco(endereco);
-
-    //     p.setIdEmpresa(GlobalState::instance().empresaAtual()->id().value());
-
-    //     ProdutoRepository repo;
-    //     repo.salvar(p);
-
-    //     ToastNotification::show(this, "Sucesso", "Produto salva com sucesso!", ToastNotification::Success, 3000);
-    //     emit fechar();
-    // } catch (const std::exception &e) {
-    //     ToastNotification::show(this, "Erro", QString("Ocorreu um erro ao salvar a Produto:\n") + e.what(), ToastNotification::Error, 5000);
-    // }
+        prodRepo.salvar(p);
+        m_produtoAtual = p;
+        m_idRegistro = p.id();
+        m_salvo = true;
+        ToastNotification::show(this, "Sucesso", Mensagens::Operacao::salvoSucesso("Produto"), ToastNotification::Success, 3000);
+        emit produtoSalvo(p);
+        emit fechar();
+    } catch (const std::exception &e) {
+        ToastNotification::show(this, "Erro", Mensagens::Operacao::erroSalvar("Produto", QString(e.what())), ToastNotification::Error, 5000);
+    }
 }

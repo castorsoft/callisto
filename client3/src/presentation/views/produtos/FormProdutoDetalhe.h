@@ -17,8 +17,20 @@ public:
     explicit FormProdutoDetalhe(QWidget *parent = nullptr);
     ~FormProdutoDetalhe();
 
+    void preencherDadosIniciais(const QString &descricao,
+                                const QString &codigoBarras = QString(),
+                                const QString &siglaUnidade = QString(),
+                                const QString &codigoNcm = QString());
+
+    bool salvo() const { return m_salvo; }
+    std::optional<Produto> produtoAtual() const { return m_produtoAtual; }
+
+signals:
+    void produtoSalvo(const Produto &produto);
+
 private:
     Ui::FormProdutoDetalhe *ui;
+    bool m_salvo{false};
 
 protected slots:
     void onSalvar() override;
@@ -26,14 +38,13 @@ protected slots:
 private slots:
     void buscarNCM(QString aTermo);
     void buscarUnMedida(QString aTermo);
-    // void atualizarVisibilidadeAbas();
 
 protected:
     bool validar() override;
     void carregarDados() override;
 
 private:
-    std::optional<Produto> m_ProdutoAtual;
+    std::optional<Produto> m_produtoAtual;
 };
 
 #endif // FormProdutoDetalheH
