@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/">
+        <file>assets/splash_620x300.png</file>
+        <file>icons/empresa.svg</file>
+        <file>icons/produto.svg</file>
+        <file>icons/vincular.svg</file>
+        <file>icons/pessoa.svg</file>
+        <file>icons/processar.svg</file>
+        <file>icons/sped.svg</file>
+        <file>icons/icon.png</file>
+    </qresource>
+</RCC>
