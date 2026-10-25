@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>FormProcessarXml</class>
+ <widget class="QWidget" name="FormProcessarXml">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>950</width>
+    <height>650</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Processar Documentos Fiscais</string>
+  </property>
+  <layout class="QVBoxLayout" name="mainLayout">
+   <item>
+    <widget class="QGroupBox" name="groupOrigem">
+     <property name="title">
+      <string>Origem dos Arquivos</string>
+     </property>
+     <layout class="QVBoxLayout" name="layoutOrigem">
+      <item>
+       <layout class="QHBoxLayout" name="layoutCaminho">
+        <item>
+         <widget class="QLabel" name="lblCaminho">
+          <property name="text">
+           <string>Pasta:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="editCaminho">
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+          <property name="placeholderText">
+           <string>Selecione uma pasta contendo arquivos XML ou JSON...</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnSelecionarPasta">
+          <property name="text">
+           <string>Selecionar Pasta...</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="chkSubpastas">
+          <property name="text">
+           <string>Incluir subpastas (busca recursiva)</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="layoutAcoes">
+        <item>
+         <widget class="QPushButton" name="btnIniciar">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>170</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Iniciar Processamento</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnCancelar">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>110</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Cancelar</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="spacerAcoes">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupProgresso">
+     <property name="title">
+      <string>Progresso e Métricas</string>
+     </property>
+     <layout class="QVBoxLayout" name="layoutProgresso">
+      <item>
+       <widget class="QProgressBar" name="progressBar">
+        <property name="value">
+         <number>0</number>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+        <property name="format">
+         <string>%v / %m (%p%)</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="layoutMetricas">
+        <item>
+         <widget class="QLabel" name="lblTotal">
+          <property name="font">
+           <font>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Total: 0</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="lblSeparador1">
+          <property name="text">
+           <string>|</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="lblProcessados">
+          <property name="styleSheet">
+           <string notr="true">color: #2E7D32; font-weight: bold;</string>
+          </property>
+          <property name="text">
+           <string>Sucessos: 0</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="lblSeparador2">
+          <property name="text">
+           <string>|</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="lblJaImportados">
+          <property name="styleSheet">
+           <string notr="true">color: #E65100; font-weight: bold;</string>
+          </property>
+          <property name="text">
+           <string>Já Importados: 0</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="lblSeparador3">
+          <property name="text">
+           <string>|</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="lblErros">
+          <property name="styleSheet">
+           <string notr="true">color: #C62828; font-weight: bold;</string>
+          </property>
+          <property name="text">
+           <string>Erros: 0</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="spacerMetricas">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="lblFiltro">
+          <property name="text">
+           <string>Exibir:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="cbFiltroStatus">
+          <property name="minimumSize">
+           <size>
+            <width>140</width>
+            <height>0</height>
+           </size>
+          </property>
+          <item>
+           <property name="text">
+            <string>Todos</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Pendentes</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Sucessos</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Já Importados</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Erros</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QTableWidget" name="tableArquivos">
+     <property name="editTriggers">
+      <set>QAbstractItemView::NoEditTriggers</set>
+     </property>
+     <property name="alternatingRowColors">
+      <bool>true</bool>
+     </property>
+     <property name="selectionMode">
+      <enum>QAbstractItemView::SingleSelection</enum>
+     </property>
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectRows</enum>
+     </property>
+     <property name="sortingEnabled">
+      <bool>false</bool>
+     </property>
+     <column>
+      <property name="text">
+       <string>#</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Arquivo</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Chave de Acesso / Modelo</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Status</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Detalhes</string>
+      </property>
+     </column>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
+

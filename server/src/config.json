@@ -1,9 +1,0 @@
-{
-    "database": {
-        "driver": "postgresql",
-        "host": "localhost",
-        "port": 5433,
-        "name": "dfe",
-        "username": "dfe"
-    }
-}

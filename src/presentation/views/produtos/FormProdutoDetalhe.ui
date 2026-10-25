@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>FormProdutoDetalhe</class>
+ <widget class="QWidget" name="FormProdutoDetalhe">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>527</width>
+    <height>424</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
+    <widget class="QScrollArea" name="scrollArea">
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="scrollAreaWidgetContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>507</width>
+        <height>404</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_4">
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="InputText" name="edtDescricao">
+           <property name="labelText">
+            <string>Descrição</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="InputText" name="edtCodBarras">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="labelText">
+            <string>Cód. Barras</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="InputLookup" name="lookupUnMedida">
+           <property name="labelText">
+            <string>Unidade de Medida</string>
+           </property>
+           <property name="placeholderText">
+            <string>Digite para buscar...</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="InputComboBox" name="edtTipoAtividade">
+           <property name="labelText">
+            <string>Tipo Atividade</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="InputLookup" name="lookupNCM">
+           <property name="labelText">
+            <string>NCM</string>
+           </property>
+           <property name="placeholderText">
+            <string>Digite para buscar...</string>
+           </property>
+           <property name="minSearchChars">
+            <number>2</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="verticalSpacer">
+           <property name="orientation">
+            <enum>Qt::Orientation::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_41">
+         <item>
+          <widget class="QPushButton" name="btnCancelar">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>40</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Cancelar</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Orientation::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnSalvar">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>40</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Salvar</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>InputText</class>
+   <extends>QWidget</extends>
+   <header>presentation/components/inputs/InputText.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>InputComboBox</class>
+   <extends>QWidget</extends>
+   <header>presentation/components/inputs/InputComboBox.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>InputLookup</class>
+   <extends>QWidget</extends>
+   <header>presentation/components/inputs/InputLookup.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

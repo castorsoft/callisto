@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+  <class>FormEmpresaDetalhe</class>
+  <widget class="QWidget" name="FormEmpresaDetalhe">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>527</width>
+        <height>424</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>Form</string>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+        <widget class="QScrollArea" name="scrollArea">
+          <property name="widgetResizable">
+            <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents">
+            <property name="geometry">
+              <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>507</width>
+                <height>404</height>
+              </rect>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_4">
+              <item>
+                <layout class="QVBoxLayout" name="verticalLayout_3">
+                  <item>
+                    <widget class="InputRadioGroup" name="rgPessoa" native="true" />
+                  </item>
+                  <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout">
+                      <item>
+                        <widget class="InputMasked" name="edtCPF" native="true">
+                          <property name="mask" stdset="0">
+                            <string>999.999.999-99;_</string>
+                          </property>
+                          <property name="labelText" stdset="0">
+                            <string>CPF</string>
+                          </property>
+                        </widget>
+                      </item>
+                      <item>
+                        <widget class="InputMasked" name="edtCNPJ" native="true">
+                          <property name="mask" stdset="0">
+                            <string>99.999.999/9999-99;_</string>
+                          </property>
+                          <property name="labelText" stdset="0">
+                            <string>CNPJ</string>
+                          </property>
+                        </widget>
+                      </item>
+                    </layout>
+                  </item>
+                  <item>
+                    <widget class="InputText" name="edtRazaoSocial" native="true">
+                      <property name="minimumSize">
+                        <size>
+                          <width>0</width>
+                          <height>0</height>
+                        </size>
+                      </property>
+                      <property name="labelText" stdset="0">
+                        <string>Razão Social</string>
+                      </property>
+                    </widget>
+                  </item>
+                  <item>
+                    <widget class="InputText" name="edtNomeFantasia" native="true">
+                      <property name="minimumSize">
+                        <size>
+                          <width>0</width>
+                          <height>0</height>
+                        </size>
+                      </property>
+                      <property name="labelText" stdset="0">
+                        <string>Nome Fantasia</string>
+                      </property>
+                    </widget>
+                  </item>
+                  <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_4">
+                      <item>
+                        <widget class="InputText" name="edtInscricaoEstadual" native="true">
+                          <property name="labelText" stdset="0">
+                            <string>Inscrição Estadual</string>
+                          </property>
+                        </widget>
+                      </item>
+                      <item>
+                        <widget class="InputText" name="edtInscricaoMunicipal" native="true">
+                          <property name="labelText" stdset="0">
+                            <string>Inscrição Municipal</string>
+                          </property>
+                        </widget>
+                      </item>
+                      <item>
+                        <widget class="InputComboBox" name="cbRegimeTributario" native="true">
+                          <property name="labelText" stdset="0">
+                            <string>Regime Tributário</string>
+                          </property>
+                        </widget>
+                      </item>
+                    </layout>
+                  </item>
+                  <item>
+                    <widget class="QTabWidget" name="tabWidget">
+                      <property name="currentIndex">
+                        <number>0</number>
+                      </property>
+                      <widget class="QWidget" name="tabEndereco">
+                        <attribute name="title">
+                          <string>Endereço</string>
+                        </attribute>
+                        <layout class="QVBoxLayout" name="verticalLayout">
+                          <item>
+                            <widget class="InputMasked" name="edtCEP" native="true">
+                              <property name="mask" stdset="0">
+                                <string>99.999-999;_</string>
+                              </property>
+                              <property name="labelText" stdset="0">
+                                <string>CEP</string>
+                              </property>
+                            </widget>
+                          </item>
+                          <item>
+                            <layout class="QHBoxLayout" name="horizontalLayout_2">
+                              <item>
+                                <widget class="InputText" name="edtLogradouro" native="true">
+                                  <property name="labelText" stdset="0">
+                                    <string>Logradouro</string>
+                                  </property>
+                                </widget>
+                              </item>
+                              <item>
+                                <widget class="InputText" name="edtNumero" native="true">
+                                  <property name="maximumSize">
+                                    <size>
+                                      <width>100</width>
+                                      <height>16777215</height>
+                                    </size>
+                                  </property>
+                                  <property name="labelText" stdset="0">
+                                    <string>Número</string>
+                                  </property>
+                                </widget>
+                              </item>
+                            </layout>
+                          </item>
+                          <item>
+                            <widget class="InputText" name="edtComplemento" native="true">
+                              <property name="labelText" stdset="0">
+                                <string>Complemento</string>
+                              </property>
+                            </widget>
+                          </item>
+                          <item>
+                            <widget class="InputText" name="edtBairro" native="true">
+                              <property name="labelText" stdset="0">
+                                <string>Bairro</string>
+                              </property>
+                            </widget>
+                          </item>
+                          <item>
+                            <layout class="QHBoxLayout" name="horizontalLayout_3">
+                              <item>
+                                <widget class="InputComboBox" name="cbUF" native="true">
+                                  <property name="maximumSize">
+                                    <size>
+                                      <width>50</width>
+                                      <height>16777215</height>
+                                    </size>
+                                  </property>
+                                  <property name="labelText" stdset="0">
+                                    <string>UF</string>
+                                  </property>
+                                </widget>
+                              </item>
+                              <item>
+                                <widget class="InputComboBox" name="cbCidade" native="true">
+                                  <property name="labelText" stdset="0">
+                                    <string>Cidade</string>
+                                  </property>
+                                </widget>
+                              </item>
+                            </layout>
+                          </item>
+                          <item>
+                            <spacer name="verticalSpacer">
+                              <property name="orientation">
+                                <enum>Qt::Orientation::Vertical</enum>
+                              </property>
+                              <property name="sizeHint" stdset="0">
+                                <size>
+                                  <width>20</width>
+                                  <height>40</height>
+                                </size>
+                              </property>
+                            </spacer>
+                          </item>
+                        </layout>
+                      </widget>
+                    </widget>
+                  </item>
+                </layout>
+              </item>
+              <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_41">
+                  <item>
+                    <widget class="QPushButton" name="btnCancelar">
+                      <property name="minimumSize">
+                        <size>
+                          <width>0</width>
+                          <height>40</height>
+                        </size>
+                      </property>
+                      <property name="text">
+                        <string>Cancelar</string>
+                      </property>
+                    </widget>
+                  </item>
+                  <item>
+                    <spacer name="horizontalSpacer">
+                      <property name="orientation">
+                        <enum>Qt::Orientation::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                        <size>
+                          <width>40</width>
+                          <height>20</height>
+                        </size>
+                      </property>
+                    </spacer>
+                  </item>
+                  <item>
+                    <widget class="QPushButton" name="btnSalvar">
+                      <property name="minimumSize">
+                        <size>
+                          <width>0</width>
+                          <height>40</height>
+                        </size>
+                      </property>
+                      <property name="text">
+                        <string>Salvar</string>
+                      </property>
+                    </widget>
+                  </item>
+                </layout>
+              </item>
+            </layout>
+          </widget>
+        </widget>
+      </item>
+    </layout>
+  </widget>
+  <customwidgets>
+    <customwidget>
+      <class>InputMasked</class>
+      <extends>QWidget</extends>
+      <header>presentation/components/inputs/InputMasked.h</header>
+      <container>1</container>
+    </customwidget>
+    <customwidget>
+      <class>InputText</class>
+      <extends>QWidget</extends>
+      <header>presentation/components/inputs/InputText.h</header>
+      <container>1</container>
+    </customwidget>
+    <customwidget>
+      <class>InputRadioGroup</class>
+      <extends>QWidget</extends>
+      <header>presentation/components/inputs/InputRadioGroup.h</header>
+      <container>1</container>
+    </customwidget>
+    <customwidget>
+      <class>InputComboBox</class>
+      <extends>QWidget</extends>
+      <header>presentation/components/inputs/InputComboBox.h</header>
+      <container>1</container>
+    </customwidget>
+  </customwidgets>
+  <resources />
+  <connections />
+</ui>

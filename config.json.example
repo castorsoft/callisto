@@ -1,0 +1,19 @@
+{
+    "application": {
+        "theme": "system"
+    },
+    "database": {
+        "database": "callisto",
+        "host": "localhost",
+        "password": "secret",
+        "port": 5432,
+        "user": "postgres"
+    },
+    "services": {
+        "search": {
+            "paths": [
+                "./files/"
+            ]
+        }
+    }
+}
