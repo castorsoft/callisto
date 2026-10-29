@@ -6,6 +6,7 @@
 #include "../components/inputs/InputCheckBox.h"
 #include <QWidget>
 #include <QGroupBox>
+#include <QScrollArea>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QGridLayout>
@@ -100,6 +101,14 @@ InputCheckBox* PluginContext::createInputCheckBox(const QString &label, const QS
 QGroupBox* PluginContext::createGroupBox(const QString &title, QWidget *parent) const
 {
     return new QGroupBox(title, parent);
+}
+
+QScrollArea* PluginContext::createScrollArea(QWidget *parent) const
+{
+    auto *scrollArea = new QScrollArea(parent);
+    scrollArea->setWidgetResizable(true);
+    scrollArea->setFrameShape(QFrame::NoFrame);
+    return scrollArea;
 }
 
 QHBoxLayout* PluginContext::createHBoxLayout(QWidget *parent) const

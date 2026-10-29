@@ -14,6 +14,7 @@
 
 class QWidget;
 class QGroupBox;
+class QScrollArea;
 class QHBoxLayout;
 class QVBoxLayout;
 class QGridLayout;
@@ -50,6 +51,7 @@ public:
 
     // Métodos Factory de Containers e Layouts
     virtual QGroupBox* createGroupBox(const QString &title, QWidget *parent = nullptr) const = 0;
+    virtual QScrollArea* createScrollArea(QWidget *parent = nullptr) const = 0;
     virtual QHBoxLayout* createHBoxLayout(QWidget *parent = nullptr) const = 0;
     virtual QVBoxLayout* createVBoxLayout(QWidget *parent = nullptr) const = 0;
     virtual QGridLayout* createGridLayout(QWidget *parent = nullptr) const = 0;

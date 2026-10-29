@@ -11,6 +11,7 @@
 #include <QHBoxLayout>
 #include <QGridLayout>
 #include <QGroupBox>
+#include <QScrollArea>
 #include <QLabel>
 #include <QDateEdit>
 #include <QPushButton>
@@ -36,12 +37,21 @@ void FormSpedFiscal::setupUi()
 {
     setWindowTitle("SPED Fiscal (EFD ICMS/IPI)");
 
-    auto *mainLayout = m_context ? m_context->createVBoxLayout(this) : new QVBoxLayout(this);
+    auto *outerLayout = m_context ? m_context->createVBoxLayout(this) : new QVBoxLayout(this);
+    outerLayout->setContentsMargins(0, 0, 0, 0);
+    outerLayout->setSpacing(0);
+
+    auto *scrollArea = m_context ? m_context->createScrollArea(this) : new QScrollArea(this);
+    scrollArea->setWidgetResizable(true);
+    scrollArea->setFrameShape(QFrame::NoFrame);
+
+    auto *scrollContent = new QWidget(scrollArea);
+    auto *mainLayout = m_context ? m_context->createVBoxLayout(scrollContent) : new QVBoxLayout(scrollContent);
     mainLayout->setContentsMargins(15, 15, 15, 15);
     mainLayout->setSpacing(12);
 
     // 1. Grupo Empresa
-    auto *groupEmpresa = m_context ? m_context->createGroupBox("Empresa Ativa", this) : new QGroupBox("Empresa Ativa", this);
+    auto *groupEmpresa = m_context ? m_context->createGroupBox("Empresa Ativa", scrollContent) : new QGroupBox("Empresa Ativa", scrollContent);
     auto *layoutEmpresa = m_context ? m_context->createHBoxLayout(groupEmpresa) : new QHBoxLayout(groupEmpresa);
     layoutEmpresa->setContentsMargins(10, 8, 10, 8);
 
@@ -58,7 +68,7 @@ void FormSpedFiscal::setupUi()
     mainLayout->addWidget(groupEmpresa);
 
     // 2. Grupo Parâmetros de Geração
-    auto *groupParametros = m_context ? m_context->createGroupBox("Parâmetros do Período e Layout", this) : new QGroupBox("Parâmetros do Período e Layout", this);
+    auto *groupParametros = m_context ? m_context->createGroupBox("Parâmetros do Período e Layout", scrollContent) : new QGroupBox("Parâmetros do Período e Layout", scrollContent);
     auto *gridParam = m_context ? m_context->createGridLayout(groupParametros) : new QGridLayout(groupParametros);
     gridParam->setContentsMargins(10, 10, 10, 10);
     gridParam->setSpacing(10);
@@ -114,7 +124,7 @@ void FormSpedFiscal::setupUi()
     mainLayout->addWidget(groupParametros);
 
     // 3. Grupo Dados do Contabilista (Registro 0100)
-    auto *groupContador = m_context ? m_context->createGroupBox("Dados do Contabilista / Contador (Registro 0100)", this) : new QGroupBox("Dados do Contabilista / Contador (Registro 0100)", this);
+    auto *groupContador = m_context ? m_context->createGroupBox("Dados do Contabilista / Contador (Registro 0100)", scrollContent) : new QGroupBox("Dados do Contabilista / Contador (Registro 0100)", scrollContent);
     auto *gridContador = m_context ? m_context->createGridLayout(groupContador) : new QGridLayout(groupContador);
     gridContador->setContentsMargins(10, 10, 10, 10);
     gridContador->setSpacing(10);
@@ -150,7 +160,7 @@ void FormSpedFiscal::setupUi()
     mainLayout->addWidget(groupContador);
 
     // 4. Grupo Destino do Arquivo
-    auto *groupDestino = m_context ? m_context->createGroupBox("Arquivo de Destino (.txt)", this) : new QGroupBox("Arquivo de Destino (.txt)", this);
+    auto *groupDestino = m_context ? m_context->createGroupBox("Arquivo de Destino (.txt)", scrollContent) : new QGroupBox("Arquivo de Destino (.txt)", scrollContent);
     auto *layoutDestino = m_context ? m_context->createHBoxLayout(groupDestino) : new QHBoxLayout(groupDestino);
     layoutDestino->setContentsMargins(10, 10, 10, 10);
     layoutDestino->setSpacing(8);
@@ -175,17 +185,23 @@ void FormSpedFiscal::setupUi()
     mainLayout->addWidget(groupDestino);
 
     // 5. Progresso e Log
-    m_progressBar = new QProgressBar(this);
+    m_progressBar = new QProgressBar(scrollContent);
     m_progressBar->setRange(0, 100);
     m_progressBar->setValue(0);
     m_progressBar->setTextVisible(true);
     mainLayout->addWidget(m_progressBar);
 
-    m_textLog = new QTextEdit(this);
+    m_textLog = new QTextEdit(scrollContent);
     m_textLog->setReadOnly(true);
+    m_textLog->setMinimumHeight(100);
     m_textLog->setMaximumHeight(150);
     m_textLog->setPlaceholderText("Acompanhamento das etapas de geração...");
     mainLayout->addWidget(m_textLog);
+
+    mainLayout->addStretch();
+
+    scrollArea->setWidget(scrollContent);
+    outerLayout->addWidget(scrollArea);
 
     // Conectar eventos após todos os componentes terem sido devidamente instanciados
     connect(m_comboMesAno, &InputComboBox::currentIndexChanged, this, &FormSpedFiscal::onMesAnoChanged);

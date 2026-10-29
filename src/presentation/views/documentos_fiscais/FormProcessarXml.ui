@@ -102,9 +102,95 @@
           </property>
          </spacer>
         </item>
+        <item>
+         <widget class="QLabel" name="lblFiltro">
+          <property name="text">
+           <string>Exibir:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="cbFiltroStatus">
+          <property name="minimumSize">
+           <size>
+            <width>140</width>
+            <height>0</height>
+           </size>
+          </property>
+          <item>
+           <property name="text">
+            <string>Todos</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Pendentes</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Sucessos</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Já Importados</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Erros</string>
+           </property>
+          </item>
+         </widget>
+        </item>
        </layout>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QTableWidget" name="tableArquivos">
+     <property name="editTriggers">
+      <set>QAbstractItemView::NoEditTriggers</set>
+     </property>
+     <property name="alternatingRowColors">
+      <bool>true</bool>
+     </property>
+     <property name="selectionMode">
+      <enum>QAbstractItemView::SingleSelection</enum>
+     </property>
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectRows</enum>
+     </property>
+     <property name="sortingEnabled">
+      <bool>false</bool>
+     </property>
+     <column>
+      <property name="text">
+       <string>#</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Arquivo</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Chave de Acesso / Modelo</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Status</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Detalhes</string>
+      </property>
+     </column>
     </widget>
    </item>
    <item>
@@ -204,95 +290,9 @@
           </property>
          </spacer>
         </item>
-        <item>
-         <widget class="QLabel" name="lblFiltro">
-          <property name="text">
-           <string>Exibir:</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QComboBox" name="cbFiltroStatus">
-          <property name="minimumSize">
-           <size>
-            <width>140</width>
-            <height>0</height>
-           </size>
-          </property>
-          <item>
-           <property name="text">
-            <string>Todos</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Pendentes</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Sucessos</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Já Importados</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Erros</string>
-           </property>
-          </item>
-         </widget>
-        </item>
        </layout>
       </item>
      </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QTableWidget" name="tableArquivos">
-     <property name="editTriggers">
-      <set>QAbstractItemView::NoEditTriggers</set>
-     </property>
-     <property name="alternatingRowColors">
-      <bool>true</bool>
-     </property>
-     <property name="selectionMode">
-      <enum>QAbstractItemView::SingleSelection</enum>
-     </property>
-     <property name="selectionBehavior">
-      <enum>QAbstractItemView::SelectRows</enum>
-     </property>
-     <property name="sortingEnabled">
-      <bool>false</bool>
-     </property>
-     <column>
-      <property name="text">
-       <string>#</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Arquivo</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Chave de Acesso / Modelo</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Status</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Detalhes</string>
-      </property>
-     </column>
     </widget>
    </item>
   </layout>
@@ -300,4 +300,3 @@
  <resources/>
  <connections/>
 </ui>
-

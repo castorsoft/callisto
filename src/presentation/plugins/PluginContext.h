@@ -37,6 +37,7 @@ public:
 
     // Métodos Factory de Containers e Layouts
     QGroupBox* createGroupBox(const QString &title, QWidget *parent = nullptr) const override;
+    QScrollArea* createScrollArea(QWidget *parent = nullptr) const override;
     QHBoxLayout* createHBoxLayout(QWidget *parent = nullptr) const override;
     QVBoxLayout* createVBoxLayout(QWidget *parent = nullptr) const override;
     QGridLayout* createGridLayout(QWidget *parent = nullptr) const override;

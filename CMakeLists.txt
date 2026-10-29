@@ -86,7 +86,7 @@ endif()
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/files)
 
-add_subdirectory(external_plugins/test_plugin)
+# add_subdirectory(external_plugins/test_plugin)
 add_subdirectory(external_plugins/sped_fiscal)
 add_subdirectory(qt_plugins)
 
