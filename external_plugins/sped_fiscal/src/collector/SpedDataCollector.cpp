@@ -9,14 +9,13 @@ SpedCollectedData SpedDataCollector::collect(
     const QDate &dataFim,
     int finalidade,
     const QString &perfil,
-    const SpedContadorData &contador)
+    std::optional<int> idContador)
 {
     SpedCollectedData result;
     result.dataInicio = dataInicio;
     result.dataFim = dataFim;
     result.finalidade = finalidade;
     result.perfil = perfil;
-    result.contador = contador;
 
     // 1. Dados da Empresa
     auto optEmpresa = context.empresaAtual();
@@ -27,6 +26,37 @@ SpedCollectedData SpedDataCollector::collect(
         result.empresa.nomeFantasia = emp.nomeFantasia().value_or("");
         result.empresa.inscricaoEstadual = emp.inscricaoEstadual().value_or("");
         result.empresa.perfilSped = perfil;
+    }
+
+    // 1.1. Dados do Contabilista (Registro 0100)
+    if (idContador.has_value() && idContador.value() > 0) {
+        auto optContador = context.pessoaRepository().buscarPorId(idContador.value());
+        if (optContador.has_value()) {
+            const auto &cont = optContador.value();
+            result.contador.nome = cont.razaoSocial();
+
+            if (cont.pessoaContabilista().has_value()) {
+                result.contador.crc = cont.pessoaContabilista()->crc();
+                result.contador.cpf = cont.pessoaContabilista()->cpf();
+            }
+
+            QString doc = cont.cnpjCpf().trimmed();
+            if (doc.length() > 11) {
+                result.contador.cnpj = doc;
+            } else if (result.contador.cpf.isEmpty()) {
+                result.contador.cpf = doc;
+            }
+
+            const auto &end = cont.endereco();
+            result.contador.cep = end.cep();
+            result.contador.logradouro = end.logradouro();
+            result.contador.numero = end.numero().value_or("");
+            result.contador.complemento = end.complemento().value_or("");
+            result.contador.bairro = end.bairro();
+            if (end.cidade().idIbge() > 0) {
+                result.contador.codigoMunicipioIbge = QString::number(end.cidade().idIbge());
+            }
+        }
     }
 
     // 2. Documentos Fiscais do Período

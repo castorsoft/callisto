@@ -30,8 +30,8 @@ FormProdutoDetalhe::FormProdutoDetalhe(QWidget *parent)
     connect(ui->lookupNCM, &InputLookup::searchRequested, this, &FormProdutoDetalhe::buscarNCM);
     connect(ui->lookupUnMedida, &InputLookup::searchRequested, this, &FormProdutoDetalhe::buscarUnMedida);
 
-    connect(ui->btnCancelar, &QPushButton::clicked, this, &FormProdutoDetalhe::fechar);
-    connect(ui->btnSalvar, &QPushButton::clicked, this, &FormProdutoDetalhe::onSalvar);
+    connect(ui->btnCancelar, &InputButton::clicked, this, &FormProdutoDetalhe::fechar);
+    connect(ui->btnSalvar, &InputButton::clicked, this, &FormProdutoDetalhe::onSalvar);
 
     // preencherUF();
     // atualizarCidades(1);
@@ -42,8 +42,8 @@ FormProdutoDetalhe::FormProdutoDetalhe(QWidget *parent)
     // connect(ui->cbContabilista, &InputCheckBox::toggled, this, [this](bool) { atualizarVisibilidadeAbas(); });
 
     // connect(ui->rgProduto, &InputRadioGroup::currentIndexChanged, this, &FormProdutoDetalhe::onProdutoChange);
-    // connect(ui->btnCancelar, &QPushButton::clicked, this, &FormProdutoDetalhe::fechar);
-    // connect(ui->btnSalvar, &QPushButton::clicked, this, &FormProdutoDetalhe::onSalvar);
+    // connect(ui->btnCancelar, &InputButton::clicked, this, &FormProdutoDetalhe::fechar);
+    // connect(ui->btnSalvar, &InputButton::clicked, this, &FormProdutoDetalhe::onSalvar);
     // connect(ui->cbUF, &InputComboBox::currentIndexChanged, this, &FormProdutoDetalhe::atualizarCidades);
 
     // ui->rgProduto->setCurrentIndex(0);

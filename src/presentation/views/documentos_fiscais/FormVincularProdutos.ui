@@ -44,7 +44,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="btnRecarregar">
+      <widget class="InputButton" name="btnRecarregar">
        <property name="text">
         <string>Recarregar</string>
        </property>
@@ -184,32 +184,41 @@
        <item>
         <layout class="QHBoxLayout" name="layoutAcoesItens">
          <item>
-          <widget class="QPushButton" name="btnVincularExistente">
+          <widget class="InputButton" name="btnVincularExistente">
            <property name="enabled">
             <bool>false</bool>
            </property>
            <property name="text">
             <string>Vincular a Produto Existente...</string>
            </property>
+           <property name="colorScheme" stdset="0">
+            <enum>InputButton::Primary</enum>
+           </property>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="btnNovoProduto">
+          <widget class="InputButton" name="btnNovoProduto">
            <property name="enabled">
             <bool>false</bool>
            </property>
            <property name="text">
             <string>Cadastrar Novo Produto...</string>
            </property>
+           <property name="colorScheme" stdset="0">
+            <enum>InputButton::Success</enum>
+           </property>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="btnDesvincular">
+          <widget class="InputButton" name="btnDesvincular">
            <property name="enabled">
             <bool>false</bool>
            </property>
            <property name="text">
             <string>Desvincular</string>
+           </property>
+           <property name="colorScheme" stdset="0">
+            <enum>InputButton::Danger</enum>
            </property>
           </widget>
          </item>
@@ -234,6 +243,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>InputButton</class>
+   <extends>QPushButton</extends>
+   <header>presentation/components/inputs/InputButton.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

@@ -34,6 +34,8 @@ public:
     InputMasked* createInputMasked(const QString &label, const QString &mask = "", QWidget *parent = nullptr) const override;
     InputComboBox* createInputComboBox(const QString &label, QWidget *parent = nullptr) const override;
     InputCheckBox* createInputCheckBox(const QString &label, const QString &text = "", QWidget *parent = nullptr) const override;
+    InputLookup* createInputLookup(const QString &label, const QString &placeholder = "", QWidget *parent = nullptr) const override;
+    InputButton* createInputButton(const QString &text, QWidget *parent = nullptr) const override;
 
     // Métodos Factory de Containers e Layouts
     QGroupBox* createGroupBox(const QString &title, QWidget *parent = nullptr) const override;

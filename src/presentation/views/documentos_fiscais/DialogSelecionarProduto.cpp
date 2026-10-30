@@ -35,8 +35,8 @@ DialogSelecionarProduto::DialogSelecionarProduto(int idFornecedor,
     connect(ui->editBusca, &QLineEdit::textChanged, this, &DialogSelecionarProduto::onBuscaChanged);
     connect(ui->tableProdutos, &QTableWidget::itemSelectionChanged, this, &DialogSelecionarProduto::onTabelaSelectionChanged);
     connect(ui->tableProdutos, &QTableWidget::cellDoubleClicked, this, &DialogSelecionarProduto::onTabelaDoubleClicked);
-    connect(ui->btnConfirmar, &QPushButton::clicked, this, &DialogSelecionarProduto::onConfirmarClicked);
-    connect(ui->btnCancelar, &QPushButton::clicked, this, &QDialog::reject);
+    connect(ui->btnConfirmar, &InputButton::clicked, this, &DialogSelecionarProduto::onConfirmarClicked);
+    connect(ui->btnCancelar, &InputButton::clicked, this, &QDialog::reject);
 }
 
 DialogSelecionarProduto::~DialogSelecionarProduto()

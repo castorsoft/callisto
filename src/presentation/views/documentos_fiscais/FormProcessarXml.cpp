@@ -66,9 +66,9 @@ FormProcessarXml::FormProcessarXml(QWidget *parent)
     ui->setupUi(this);
     configurarTabela();
 
-    connect(ui->btnSelecionarPasta, &QPushButton::clicked, this, &FormProcessarXml::onSelecionarPastaClicked);
-    connect(ui->btnIniciar, &QPushButton::clicked, this, &FormProcessarXml::onIniciarClicked);
-    connect(ui->btnCancelar, &QPushButton::clicked, this, &FormProcessarXml::onCancelarClicked);
+    connect(ui->btnSelecionarPasta, &InputButton::clicked, this, &FormProcessarXml::onSelecionarPastaClicked);
+    connect(ui->btnIniciar, &InputButton::clicked, this, &FormProcessarXml::onIniciarClicked);
+    connect(ui->btnCancelar, &InputButton::clicked, this, &FormProcessarXml::onCancelarClicked);
     connect(ui->chkSubpastas, &QCheckBox::toggled, this, &FormProcessarXml::onSubpastasToggled);
     connect(ui->cbFiltroStatus, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &FormProcessarXml::onFiltroStatusChanged);
     connect(ui->tableArquivos, &QTableWidget::cellDoubleClicked, this, &FormProcessarXml::onTabelaDoubleClicked);

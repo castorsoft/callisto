@@ -32,7 +32,7 @@ public:
         const QDate &dataFim,
         int finalidade,
         const QString &perfil,
-        const SpedContadorData &contador
+        std::optional<int> idContador = std::nullopt
     );
 };
 

@@ -12,6 +12,7 @@ public:
     std::optional<Pessoa> buscarPorId(int id) override;
     std::optional<Pessoa> buscarPorUuid(const QUuid &uuid) override;
     std::optional<Pessoa> buscarPorCnpjCpf(const QString &cnpjCpf) override;
+    QList<Pessoa> buscarContadorPorTermo(const QString &termo) override;
     QList<Pessoa> listarTodas() override;
     bool deletar(int id) override;
 

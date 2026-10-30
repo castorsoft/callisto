@@ -30,8 +30,8 @@ FormEmpresaDetalhe::FormEmpresaDetalhe(QWidget *parent)
     connect(ui->edtCNPJ, &InputMasked::editingFinished, this, &FormEmpresaDetalhe::onCnpjEditingFinished);
 
     connect(ui->rgPessoa, &InputRadioGroup::currentIndexChanged, this, &FormEmpresaDetalhe::onPessoaChange);
-    connect(ui->btnCancelar, &QPushButton::clicked, this, &FormEmpresaDetalhe::fechar);
-    connect(ui->btnSalvar, &QPushButton::clicked, this, &FormEmpresaDetalhe::onSalvar);
+    connect(ui->btnCancelar, &InputButton::clicked, this, &FormEmpresaDetalhe::fechar);
+    connect(ui->btnSalvar, &InputButton::clicked, this, &FormEmpresaDetalhe::onSalvar);
     connect(ui->cbUF, &InputComboBox::currentIndexChanged, this, &FormEmpresaDetalhe::atualizarCidades);
 
     ui->rgPessoa->setCurrentIndex(0);

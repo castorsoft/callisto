@@ -4,6 +4,8 @@
 #include "../components/inputs/InputMasked.h"
 #include "../components/inputs/InputComboBox.h"
 #include "../components/inputs/InputCheckBox.h"
+#include "../components/inputs/InputLookup.h"
+#include "../components/inputs/InputButton.h"
 #include <QWidget>
 #include <QGroupBox>
 #include <QScrollArea>
@@ -96,6 +98,21 @@ InputCheckBox* PluginContext::createInputCheckBox(const QString &label, const QS
         input->setText(text);
     }
     return input;
+}
+
+InputLookup* PluginContext::createInputLookup(const QString &label, const QString &placeholder, QWidget *parent) const
+{
+    auto *input = new InputLookup(parent);
+    input->setLabelText(label);
+    if (!placeholder.isEmpty()) {
+        input->setPlaceholderText(placeholder);
+    }
+    return input;
+}
+
+InputButton* PluginContext::createInputButton(const QString &text, QWidget *parent) const
+{
+    return new InputButton(text, parent);
 }
 
 QGroupBox* PluginContext::createGroupBox(const QString &title, QWidget *parent) const

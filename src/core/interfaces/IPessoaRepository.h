@@ -13,6 +13,7 @@ public:
     virtual std::optional<Pessoa> buscarPorId(int id) = 0;
     virtual std::optional<Pessoa> buscarPorUuid(const QUuid &uuid) = 0;
     virtual std::optional<Pessoa> buscarPorCnpjCpf(const QString &cnpjCpf) = 0;
+    virtual QList<Pessoa> buscarContadorPorTermo(const QString &termo) = 0;
     virtual QList<Pessoa> listarTodas() = 0;
     virtual bool deletar(int id) = 0;
 };

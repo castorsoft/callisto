@@ -256,19 +256,22 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="btnCancelar">
+      <widget class="InputButton" name="btnCancelar">
        <property name="text">
         <string>Cancelar</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="btnConfirmar">
+      <widget class="InputButton" name="btnConfirmar">
        <property name="enabled">
         <bool>false</bool>
        </property>
        <property name="text">
         <string>Confirmar Vínculo</string>
+       </property>
+       <property name="colorScheme" stdset="0">
+        <enum>InputButton::Primary</enum>
        </property>
       </widget>
      </item>
@@ -276,6 +279,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>InputButton</class>
+   <extends>QPushButton</extends>
+   <header>presentation/components/inputs/InputButton.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

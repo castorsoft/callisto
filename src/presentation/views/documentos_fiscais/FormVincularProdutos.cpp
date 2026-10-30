@@ -30,14 +30,14 @@ FormVincularProdutos::FormVincularProdutos(QWidget *parent)
 
     connect(ui->comboFiltro, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &FormVincularProdutos::onFiltroChanged);
     connect(ui->editBusca, &QLineEdit::textChanged, this, &FormVincularProdutos::onBuscaChanged);
-    connect(ui->btnRecarregar, &QPushButton::clicked, this, &FormVincularProdutos::onRecarregarClicked);
+    connect(ui->btnRecarregar, &InputButton::clicked, this, &FormVincularProdutos::onRecarregarClicked);
 
     connect(ui->tableNotas, &QTableWidget::itemSelectionChanged, this, &FormVincularProdutos::onNotaSelectionChanged);
     connect(ui->tableItens, &QTableWidget::itemSelectionChanged, this, &FormVincularProdutos::onItemSelectionChanged);
 
-    connect(ui->btnVincularExistente, &QPushButton::clicked, this, &FormVincularProdutos::onVincularExistenteClicked);
-    connect(ui->btnNovoProduto, &QPushButton::clicked, this, &FormVincularProdutos::onNovoProdutoClicked);
-    connect(ui->btnDesvincular, &QPushButton::clicked, this, &FormVincularProdutos::onDesvincularClicked);
+    connect(ui->btnVincularExistente, &InputButton::clicked, this, &FormVincularProdutos::onVincularExistenteClicked);
+    connect(ui->btnNovoProduto, &InputButton::clicked, this, &FormVincularProdutos::onNovoProdutoClicked);
+    connect(ui->btnDesvincular, &InputButton::clicked, this, &FormVincularProdutos::onDesvincularClicked);
 
     // Ajusta proporção inicial do splitter (40% topo, 60% base)
     ui->splitter->setSizes({250, 350});

@@ -28,8 +28,8 @@ FormPessoaDetalhe::FormPessoaDetalhe(QWidget *parent)
     connect(ui->cbContabilista, &InputCheckBox::toggled, this, [this](bool) { atualizarVisibilidadeAbas(); });
 
     connect(ui->rgPessoa, &InputRadioGroup::currentIndexChanged, this, &FormPessoaDetalhe::onPessoaChange);
-    connect(ui->btnCancelar, &QPushButton::clicked, this, &FormPessoaDetalhe::fechar);
-    connect(ui->btnSalvar, &QPushButton::clicked, this, &FormPessoaDetalhe::onSalvar);
+    connect(ui->btnCancelar, &InputButton::clicked, this, &FormPessoaDetalhe::fechar);
+    connect(ui->btnSalvar, &InputButton::clicked, this, &FormPessoaDetalhe::onSalvar);
     connect(ui->cbUF, &InputComboBox::currentIndexChanged, this, &FormPessoaDetalhe::atualizarCidades);
 
     ui->rgPessoa->setCurrentIndex(0);
@@ -81,6 +81,15 @@ void FormPessoaDetalhe::carregarDados() {
 
         ui->cbFornecedor->setChecked(p.fornecedor() == "S");
         ui->cbContabilista->setChecked(p.contabilista() == "S");
+
+        if (p.pessoaContabilista().has_value()) {
+            const PessoaContabilista &pc = p.pessoaContabilista().value();
+            ui->edtCRCContabilista->setText(pc.crc());
+            ui->edtCPFContabilista->setText(pc.cpf());
+        } else {
+            ui->edtCRCContabilista->setText("");
+            ui->edtCPFContabilista->setText("");
+        }
 
         // Endereco
         const Endereco& end = p.endereco();
@@ -143,6 +152,17 @@ void FormPessoaDetalhe::onSalvar() {
         p.setFornecedor(fornecedor);
         p.setContabilista(contabilista);
         p.setEndereco(endereco);
+
+        if (contabilista == "S") {
+            PessoaContabilista pc = p.pessoaContabilista().value_or(PessoaContabilista());
+            QString cpfCont = ui->edtCPFContabilista->text().trimmed();
+            cpfCont.remove('.').remove('-').remove('/');
+            pc.setCrc(ui->edtCRCContabilista->text().trimmed());
+            pc.setCpf(cpfCont);
+            p.setPessoaContabilista(pc);
+        } else {
+            p.setPessoaContabilista(std::nullopt);
+        }
 
         p.setIdEmpresa(GlobalState::instance().empresaAtual()->id().value());
 

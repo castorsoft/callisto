@@ -15,8 +15,8 @@ public:
     int idUF() const { return m_idEstado; }
 
 private:
-    int m_id;
+    int m_id{0};
     QString m_nome;
-    int m_idIbge;
-    int m_idEstado;
+    int m_idIbge{0};
+    int m_idEstado{0};
 };

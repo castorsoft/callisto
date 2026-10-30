@@ -32,6 +32,11 @@ Pessoa Pessoa::fromRecord(const QSqlRecord &record, const QString &prefix)
     if (record.contains(prefix + "contabilista"))
         p.setContabilista(record.value(prefix + "contabilista").toString());
 
+    PessoaContabilista cont = PessoaContabilista::fromRecord(record, "cont_");
+    if (cont.id().has_value() || !cont.crc().isEmpty() || !cont.cpf().isEmpty()) {
+        p.setPessoaContabilista(cont);
+    }
+
     if (record.contains(prefix + "id_endereco")) {
         // Just setting the foreign key internally
         int idEnd = record.value(prefix + "id_endereco").toInt();

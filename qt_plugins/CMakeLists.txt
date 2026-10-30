@@ -29,6 +29,8 @@ set(PLUGIN_SOURCES
     InputRadioGroupPlugin.cpp
     InputLookupPlugin.h
     InputLookupPlugin.cpp
+    InputButtonPlugin.h
+    InputButtonPlugin.cpp
     ../src/presentation/components/inputs/InputBase.h
     ../src/presentation/components/inputs/InputBase.cpp
     ../src/presentation/components/inputs/InputText.h
@@ -43,6 +45,8 @@ set(PLUGIN_SOURCES
     ../src/presentation/components/inputs/InputRadioGroup.cpp
     ../src/presentation/components/inputs/InputLookup.h
     ../src/presentation/components/inputs/InputLookup.cpp
+    ../src/presentation/components/inputs/InputButton.h
+    ../src/presentation/components/inputs/InputButton.cpp
 )
 
 add_library(castor_designer_plugins MODULE ${PLUGIN_SOURCES})

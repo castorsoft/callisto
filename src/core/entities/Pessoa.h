@@ -7,6 +7,7 @@
 #include <QSqlRecord>
 #include <optional>
 #include "Endereco.h"
+#include "PessoaContabilista.h"
 
 class Pessoa {
 public:
@@ -39,6 +40,11 @@ public:
     int idEndereco() const { return m_idEndereco; }
     Endereco endereco() const { return m_endereco.value(); }
 
+    std::optional<PessoaContabilista> pessoaContabilista() const { return m_pessoaContabilista; }
+    void setPessoaContabilista(const std::optional<PessoaContabilista> &val) { m_pessoaContabilista = val; }
+
+    QString textoExibicao() const { return QString("%1 - %2").arg(cnpjCpf(), razaoSocial()); }
+
     void setIdEmpresa(int val) { m_idEmpresa = val; }
     void setCnpjCpf(const QString &val) { m_cnpjCpf = val; }
     void setRazaoSocial(const QString &val) { m_razaoSocial = val; }
@@ -69,6 +75,7 @@ private:
 
     int m_idEndereco = -1;
     std::optional<Endereco> m_endereco;
+    std::optional<PessoaContabilista> m_pessoaContabilista;
 
     std::optional<QDateTime> m_criadoEm;
     std::optional<QDateTime> m_atualizadoEm;

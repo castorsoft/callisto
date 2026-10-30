@@ -24,6 +24,8 @@ class InputText;
 class InputMasked;
 class InputComboBox;
 class InputCheckBox;
+class InputLookup;
+class InputButton;
 
 class IPluginContext {
 public:
@@ -48,6 +50,8 @@ public:
     virtual InputMasked* createInputMasked(const QString &label, const QString &mask = "", QWidget *parent = nullptr) const = 0;
     virtual InputComboBox* createInputComboBox(const QString &label, QWidget *parent = nullptr) const = 0;
     virtual InputCheckBox* createInputCheckBox(const QString &label, const QString &text = "", QWidget *parent = nullptr) const = 0;
+    virtual InputLookup* createInputLookup(const QString &label, const QString &placeholder = "", QWidget *parent = nullptr) const = 0;
+    virtual InputButton* createInputButton(const QString &text, QWidget *parent = nullptr) const = 0;
 
     // Métodos Factory de Containers e Layouts
     virtual QGroupBox* createGroupBox(const QString &title, QWidget *parent = nullptr) const = 0;
