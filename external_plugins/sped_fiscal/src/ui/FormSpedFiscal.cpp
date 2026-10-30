@@ -56,7 +56,7 @@ void FormSpedFiscal::setupUi()
     layoutEmpresa->setContentsMargins(10, 8, 10, 8);
 
     m_lblEmpresaInfo = new QLabel(groupEmpresa);
-    m_lblEmpresaInfo->setStyleSheet("font-weight: bold; font-size: 13px; color: #1565C0;");
+    m_lblEmpresaInfo->setStyleSheet("font-weight: bold; font-size: 13px;");
 
     if (m_context && m_context->empresaAtual().has_value()) {
         const auto &emp = m_context->empresaAtual().value();

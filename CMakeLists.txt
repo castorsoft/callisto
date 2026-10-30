@@ -62,9 +62,9 @@ if(HEADLESS)
     target_compile_definitions(callisto PRIVATE HEADLESS_MODE)
 endif()
 
-# # 3. Habilitar testes
-# enable_testing()
-# add_subdirectory(tests)
+# 3. Habilitar testes
+enable_testing()
+add_subdirectory(tests)
 
 # install(TARGETS callisto
 #     BUNDLE  DESTINATION .

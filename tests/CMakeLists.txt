@@ -1,30 +1,37 @@
-find_package(Qt6 REQUIRED COMPONENTS Test)
-# Baixar o Google Test via FetchContent
-include(FetchContent)
-FetchContent_Declare(
-  googletest
-  URL https://github.com/google/googletest/archive/refs/tags/v1.18.0.zip
-)
-# Make GoogleTest available
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
+find_package(Qt6 REQUIRED COMPONENTS Core Sql Test)
 
-# Criar o executavel de testes globais
+find_package(GTest QUIET)
+if(NOT GTest_FOUND)
+    include(FetchContent)
+    FetchContent_Declare(
+        googletest
+        URL https://github.com/google/googletest/archive/refs/tags/v1.18.0.zip
+    )
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(googletest)
+endif()
+
 qt_add_executable(callisto_tests
-    # Arquivo de teste de exemplo para validar a configuracao
-    domain/DummyTest.cpp
+    core/EntitiesTest.cpp
+    core/GlobalStateAndMensagensTest.cpp
+    infrastructure/ConfigManagerTest.cpp
+    application/ProcessFileTest.cpp
 )
 
-# Linkar os testes com o GTest, GMock e com a NOSSA logica (core_lib)
+target_include_directories(callisto_tests PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/src
+)
+
 target_link_libraries(callisto_tests
     PRIVATE
     core_lib
     GTest::gtest_main
     GTest::gmock
-    Qt::Core
-    Qt::Test
+    Qt6::Core
+    Qt6::Sql
+    Qt6::Test
 )
 
-# Adicionar ao painel de testes do CTest/CMake
 include(GoogleTest)
 gtest_discover_tests(callisto_tests)
