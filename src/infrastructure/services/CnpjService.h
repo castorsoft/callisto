@@ -1,39 +1,16 @@
 #pragma once
 
-#include <QObject>
-#include <QString>
+#include "../../core/interfaces/ICnpjService.h"
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 
-struct CnpjResult {
-    QString cnpj;
-    QString razaoSocial;
-    QString nomeFantasia;
-    QString regimeTributario;
-
-    QString logradouro;
-    QString numero;
-    QString complemento;
-    QString bairro;
-    QString cep;
-    int ibgeCidade = 0;
-    QString siglaEstado;
-
-    QString inscricaoEstadual;
-    bool isValid = false;
-    QString errorString;
-};
-
-class CnpjService : public QObject {
+class CnpjService : public ICnpjService {
     Q_OBJECT
 public:
     explicit CnpjService(QObject *parent = nullptr);
+    ~CnpjService() override = default;
 
-    void consultarCNPJ(const QString &cnpj);
-
-signals:
-    void consultaFinalizada(const CnpjResult &resultado);
-    void erroConsulta(const QString &erro);
+    void consultarCNPJ(const QString &cnpj) override;
 
 private slots:
     void onReplyFinished(QNetworkReply *reply);

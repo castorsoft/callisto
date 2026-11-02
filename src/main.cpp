@@ -2,6 +2,8 @@
 #include "infrastructure/config/ConfigManager.h"
 #include "infrastructure/database/DatabaseManager.h"
 #include "infrastructure/database/MigrationRunner.h"
+#include "infrastructure/services/CnpjService.h"
+#include "core/interfaces/ICnpjService.h"
 
 #include "plugins/PluginManager.h"
 
@@ -93,6 +95,9 @@ int main(int argc, char *argv[])
     pluginMgr.loadPlugins(a.applicationDirPath() + "/bin/plugins");
 
     showMessage("Inicializando serviços");
+    ICnpjService::setFactory([](QObject *parent) -> ICnpjService* {
+        return new CnpjService(parent);
+    });
     // Adicionar demais services aqui
     ServiceManager::instance().startAll();
 

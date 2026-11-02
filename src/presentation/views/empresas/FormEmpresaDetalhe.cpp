@@ -8,12 +8,12 @@
 #include "../../../infrastructure/database/repositories/CidadeRepository.h"
 #include "../../../core/GlobalState.h"
 #include "../../../core/constants/Mensagens.h"
-#include "../../../infrastructure/services/CnpjService.h"
 #include <QVariant>
 
-FormEmpresaDetalhe::FormEmpresaDetalhe(QWidget *parent)
+FormEmpresaDetalhe::FormEmpresaDetalhe(QWidget *parent, ICnpjService *cnpjService)
     : FormDetalheBase(parent)
-    , ui(new Ui::FormEmpresaDetalhe) {
+    , ui(new Ui::FormEmpresaDetalhe)
+    , m_cnpjService(cnpjService) {
     ui->setupUi(this);
 
     ui->rgPessoa->addOption("Física");
@@ -196,9 +196,14 @@ void FormEmpresaDetalhe::onCnpjEditingFinished() {
     cnpj.remove('.').remove('-').remove('/');
 
     if (cnpj.length() == 14) {
-        auto *service = new CnpjService(this);
-        connect(service, &CnpjService::consultaFinalizada, this, &FormEmpresaDetalhe::onCnpjRetornado);
-        connect(service, &CnpjService::erroConsulta, this, &FormEmpresaDetalhe::onCnpjErro);
+        ICnpjService *service = m_cnpjService ? m_cnpjService : ICnpjService::create(this);
+        if (!service) {
+            ToastNotification::show(this, "Aviso", "Serviço de consulta de CNPJ não configurado.", ToastNotification::Warning, 3000);
+            return;
+        }
+
+        connect(service, &ICnpjService::consultaFinalizada, this, &FormEmpresaDetalhe::onCnpjRetornado, Qt::UniqueConnection);
+        connect(service, &ICnpjService::erroConsulta, this, &FormEmpresaDetalhe::onCnpjErro, Qt::UniqueConnection);
 
         ToastNotification::show(this, "Aguarde", "Consultando CNPJ...", ToastNotification::Info, 2000);
         service->consultarCNPJ(cnpj);
@@ -206,8 +211,8 @@ void FormEmpresaDetalhe::onCnpjEditingFinished() {
 }
 
 void FormEmpresaDetalhe::onCnpjRetornado(const CnpjResult &resultado) {
-    auto *service = qobject_cast<CnpjService*>(sender());
-    if (service) service->deleteLater();
+    auto *service = qobject_cast<ICnpjService*>(sender());
+    if (service && service != m_cnpjService) service->deleteLater();
 
     if (!resultado.isValid) {
         ToastNotification::show(this, "Aviso", "CNPJ inválido ou não encontrado na Receita.", ToastNotification::Warning, 3000);
@@ -241,8 +246,8 @@ void FormEmpresaDetalhe::onCnpjRetornado(const CnpjResult &resultado) {
 }
 
 void FormEmpresaDetalhe::onCnpjErro(const QString &erro) {
-    auto *service = qobject_cast<CnpjService*>(sender());
-    if (service) service->deleteLater();
+    auto *service = qobject_cast<ICnpjService*>(sender());
+    if (service && service != m_cnpjService) service->deleteLater();
 
     ToastNotification::show(this, "Erro", "Falha na consulta do CNPJ: " + erro, ToastNotification::Error, 3000);
 }

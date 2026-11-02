@@ -1,4 +1,4 @@
-find_package(Qt6 REQUIRED COMPONENTS Core Sql Test)
+find_package(Qt6 REQUIRED COMPONENTS Core Sql Gui Widgets Test)
 
 find_package(GTest QUIET)
 if(NOT GTest_FOUND)
@@ -16,6 +16,10 @@ qt_add_executable(callisto_tests
     core/GlobalStateAndMensagensTest.cpp
     infrastructure/ConfigManagerTest.cpp
     application/ProcessFileTest.cpp
+    presentation/ProvidersTest.cpp
+    ${CMAKE_SOURCE_DIR}/src/presentation/components/providers/TableDataProviderAdapter.h
+    ${CMAKE_SOURCE_DIR}/src/presentation/views/providers/NotaTerceiroListProvider.cpp
+    ${CMAKE_SOURCE_DIR}/src/presentation/views/providers/NotaTerceiroItemListProvider.cpp
 )
 
 target_include_directories(callisto_tests PRIVATE
@@ -30,6 +34,8 @@ target_link_libraries(callisto_tests
     GTest::gmock
     Qt6::Core
     Qt6::Sql
+    Qt6::Gui
+    Qt6::Widgets
     Qt6::Test
 )
 

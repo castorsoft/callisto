@@ -21,10 +21,7 @@ public:
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override {
         if (!index.isValid() || !m_provider) return QVariant();
-        if (role == Qt::DisplayRole) {
-            return m_provider->data(index.row(), index.column());
-        }
-        return QVariant();
+        return m_provider->data(index.row(), index.column(), role);
     }
 
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override {

@@ -13,6 +13,13 @@
 #include "core/interfaces/IProdutoFornecedorRepository.h"
 #include "core/interfaces/IProdutoRepository.h"
 #include "core/interfaces/IUnidadeMedidaRepository.h"
+#include "core/interfaces/ICnpjService.h"
+
+class MockCnpjService : public ICnpjService {
+public:
+    explicit MockCnpjService(QObject *parent = nullptr) : ICnpjService(parent) {}
+    MOCK_METHOD(void, consultarCNPJ, (const QString &cnpj), (override));
+};
 
 class MockCidadeRepository : public ICidadeRepository {
 public:

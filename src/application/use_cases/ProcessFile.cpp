@@ -438,7 +438,8 @@ int ProcessFile::carregarOuCriarPessoa(const zafra::document::NFeDocument &doc, 
     } else {
         auto dest = doc.GetDest();
         if (dest) {
-            cnpjCpf = QString::fromStdString(dest->GetCnpjCpf());
+            // TODO: estrangeiro
+            cnpjCpf = QString::fromStdString(dest->GetCnpjCpf().value_or("00000000000"));
             razaoSocial = QString::fromStdString(dest->GetNome());
             if (dest->GetInscricaoEstadual().has_value()) {
                 inscricaoEstadual = QString::fromStdString(dest->GetInscricaoEstadual().value());
@@ -475,7 +476,7 @@ int ProcessFile::carregarOuCriarPessoa(const zafra::document::NFeDocument &doc, 
         enderXml ? std::make_optional(QString::fromStdString(enderXml->GetNumero())) : std::nullopt,
         (enderXml && enderXml->GetComplemento().has_value()) ? std::make_optional(QString::fromStdString(enderXml->GetComplemento().value())) : std::nullopt,
         enderXml ? QString::fromStdString(enderXml->GetBairro()) : "",
-        enderXml ? QString::fromStdString(enderXml->GetCEP()) : "",
+        enderXml ? QString::fromStdString(enderXml->GetCEP().value_or("")) : "",
         idCidade
     );
 

@@ -5,6 +5,8 @@
 #include "core/constants/Mensagens.h"
 #include "core/entities/Empresa.h"
 #include "core/entities/Endereco.h"
+#include "core/interfaces/ICnpjService.h"
+#include "../mocks/MockRepositories.h"
 
 TEST(GlobalStateTest, SetAndClearEmpresaAtualEmitsSignal) {
     auto &state = GlobalState::instance();
@@ -62,5 +64,41 @@ TEST(MensagensTest, ValidacaoAndOperacaoFormatting) {
               "Participante excluído(a) com sucesso!");
     EXPECT_EQ(Mensagens::nenhumRegistroEncontrado(),
               "Nenhum registro encontrado.");
+}
+
+TEST(CnpjServiceTest, FactoryRegistrationAndSignalPropagation) {
+    ICnpjService::setFactory([](QObject *parent) -> ICnpjService* {
+        return new MockCnpjService(parent);
+    });
+
+    auto *service = ICnpjService::create();
+    ASSERT_NE(service, nullptr);
+
+    auto *mock = dynamic_cast<MockCnpjService*>(service);
+    ASSERT_NE(mock, nullptr);
+
+    EXPECT_CALL(*mock, consultarCNPJ(QString("12345678000199"))).Times(1);
+
+    qRegisterMetaType<CnpjResult>();
+    QSignalSpy spyFinalizada(service, &ICnpjService::consultaFinalizada);
+    QSignalSpy spyErro(service, &ICnpjService::erroConsulta);
+
+    mock->consultarCNPJ("12345678000199");
+
+    CnpjResult res;
+    res.cnpj = "12345678000199";
+    res.razaoSocial = "Empresa Teste";
+    res.isValid = true;
+    emit mock->consultaFinalizada(res);
+
+    EXPECT_EQ(spyFinalizada.count(), 1);
+    auto emitResult = spyFinalizada.takeFirst().at(0).value<CnpjResult>();
+    EXPECT_EQ(emitResult.cnpj, "12345678000199");
+    EXPECT_EQ(emitResult.razaoSocial, "Empresa Teste");
+
+    emit mock->erroConsulta("Timeout");
+    EXPECT_EQ(spyErro.count(), 1);
+
+    delete service;
 }
 

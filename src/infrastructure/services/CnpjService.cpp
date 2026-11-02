@@ -5,7 +5,7 @@
 #include <QJsonArray>
 #include <QUrl>
 
-CnpjService::CnpjService(QObject *parent) : QObject(parent) {
+CnpjService::CnpjService(QObject *parent) : ICnpjService(parent) {
     m_networkManager = new QNetworkAccessManager(this);
     connect(m_networkManager, &QNetworkAccessManager::finished, this, &CnpjService::onReplyFinished);
 }
