@@ -5,7 +5,7 @@
 #include "infrastructure/services/CnpjService.h"
 #include "core/interfaces/ICnpjService.h"
 
-#include "plugins/PluginManager.h"
+#include "infrastructure/plugins/PluginManager.h"
 
 #ifdef HEADLESS_MODE
 #include <QCoreApplication>

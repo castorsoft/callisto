@@ -20,3 +20,4 @@ public:
 
 #define IPlugin_iid "dev.castorsoft.Callisto.IPlugin/0.0.1-alpha"
 Q_DECLARE_INTERFACE(IPlugin, IPlugin_iid)
+

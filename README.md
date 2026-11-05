@@ -138,9 +138,8 @@ dfe/
 │   └── test_plugin/            # Plugin de exemplo/teste
 └── src/
     ├── main.cpp                # Ponto de entrada, SplashScreen e inicialização
-    ├── core/                   # Entidades de domínio, interfaces de repositórios e constantes
+    ├── core/                   # Entidades de domínio, interfaces de repositórios, contratos de plugins (IPlugin, IPluginContext) e constantes
     ├── application/            # Casos de uso (ex.: ProcessFile)
-    ├── infrastructure/         # PostgreSQL, Repositórios SQL, Migrations e CnpjService
-    ├── plugins/                # Contratos (IPlugin, IPluginContext) e PluginManager
-    └── presentation/           # Views (MainWindow, Forms), Providers e Inputs customizados
+    ├── infrastructure/         # PostgreSQL, Repositórios SQL, Migrations, CnpjService e PluginManager
+    └── presentation/           # Views (MainWindow, Forms), Providers, Inputs customizados e contratos de UI de plugins (IUIExtension, IUIPluginContext)
 ```

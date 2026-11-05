@@ -1,6 +1,7 @@
 #include "PluginManager.h"
 
 #include <QDir>
+#include <QDebug>
 
 PluginManager &PluginManager::instance()
 {
@@ -77,3 +78,4 @@ PluginManager::~PluginManager()
         delete loader;
     }
 }
+

@@ -84,8 +84,8 @@ O sistema é estritamente particionado em cinco camadas concêntricas e hierárq
 - **Camada de Apresentação (`src/presentation`):** Responsável pela interação direta com o usuário através de interface desktop baseada em Qt Widgets. Centralizada na `MainWindow` (com suporte a abas dinâmicas / TDI), formulários CRUD padronizados (`FormListagemBase`, `FormDetalheBase`) e componentes customizados (`InputBase`, `InputLookup`, `InputMasked`, `ToastNotification`).
 - **Camada de Aplicação (`src/application`):** Encapsula a orquestração dos casos de uso de negócio do sistema (ex.: `ProcessFile`), coordenando tarefas assíncronas em threads secundárias (`QThreadPool`), controle de concorrência com mutex (`ChaveEmProcessamentoGuard`) e mediação entre camadas.
 - **Camada de Domínio / Core (`src/core`):** O núcleo conceitual estável. Define entidades puras (`Empresa`, `Pessoa`, `Produto`, `DocumentoFiscal`), projeções de leitura (`virtual/NotaTerceiroResumo`), contratos abstratos de repositório e serviços (`IEmpresaRepository`, `ICnpjService`), o estado global da aplicação (`GlobalState`) e dicionário centralizado de mensagens (`Mensagens`).
-- **Camada de Infraestrutura (`src/infrastructure`):** Implementações concretas de acesso a recursos externos: persistência no PostgreSQL via `QSqlDatabase` (`EmpresaRepository`, etc.), migrador de schema (`MigrationRunner`), cliente HTTP REST assíncrono (`CnpjService`) e gerenciador de arquivo de configuração (`ConfigManager`).
-- **Camada de Plugins (`src/plugins` & `external_plugins`):** Host dinâmico de carregamento de extensões em tempo de execução via `QPluginLoader`, isolado do banco de dados por meio da injeção de dependência via `IPluginContext`.
+- **Camada de Infraestrutura (`src/infrastructure`):** Implementações concretas de acesso a recursos externos: persistência no PostgreSQL via `QSqlDatabase` (`EmpresaRepository`, etc.), migrador de schema (`MigrationRunner`), cliente HTTP REST assíncrono (`CnpjService`), gerenciador de arquivo de configuração (`ConfigManager`) e hospedeiro de carregamento dinâmico de extensões via `QPluginLoader` (`PluginManager`).
+- **Plugins Externos (`external_plugins`):** Módulos dinâmicos compilados à parte (`.so` / `.dll`), isolados do banco de dados por meio da injeção de dependência via contratos de interface (`IPluginContext` e `IUIPluginContext`).
 
 ---
 
@@ -1587,9 +1587,9 @@ sequenceDiagram
 
 ## 7. Módulo 6: Arquitetura de Plugins e Padronização Visual
 
-O **Módulo de Arquitetura de Plugins e Padronização Visual** define o ecossistema de extensibilidade desacoplada e a identidade visual do Callisto DFE. Através de bibliotecas dinâmicas compiladas separadamente (`.so` no Linux / `.dll` no Windows) e carregadas em tempo de execução via [`PluginManager`](file:///home/lamb/dev/castorsoft/dfe/src/plugins/PluginManager.h), novos recursos fiscais e contábeis podem ser integrados ao sistema sem alterar o binário principal ([RF21](file:///home/lamb/dev/castorsoft/dfe/docs/ESPECIFICACAO_REQUISITOS.md#L266)).
+O **Módulo de Arquitetura de Plugins e Padronização Visual** define o ecossistema de extensibilidade desacoplada e a identidade visual do Callisto DFE. Através de bibliotecas dinâmicas compiladas separadamente (`.so` no Linux / `.dll` no Windows) e carregadas em tempo de execução via [`PluginManager`](file:///home/lamb/dev/castorsoft/dfe/src/infrastructure/plugins/PluginManager.h), novos recursos fiscais e contábeis podem ser integrados ao sistema sem alterar o binário principal ([RF21](file:///home/lamb/dev/castorsoft/dfe/docs/ESPECIFICACAO_REQUISITOS.md#L266)).
 
-A segurança arquitetural e o isolamento do banco de dados são estritamente garantidos pela injeção do [`IPluginContext`](file:///home/lamb/dev/castorsoft/dfe/src/plugins/api/IPluginContext.h): os plugins recebem apenas contratos abstratos dos repositórios e serviços de UI, sendo formalmente proibidos de referenciar ou executar consultas diretas no `DatabaseManager` ([RN21](file:///home/lamb/dev/castorsoft/dfe/docs/ESPECIFICACAO_REQUISITOS.md#L277)). Além disso, o módulo centraliza a biblioteca de componentes visuais padronizados (`InputText`, `InputMasked`, `InputComboBox`, `InputLookup`, `ToastNotification`), que fornecem ergonomia uniforme, acessibilidade e higienização automática de entradas mascaradas ([RN22](file:///home/lamb/dev/castorsoft/dfe/docs/ESPECIFICACAO_REQUISITOS.md#L278)).
+A segurança arquitetural e o isolamento do banco de dados são estritamente garantidos pela injeção do [`IPluginContext`](file:///home/lamb/dev/castorsoft/dfe/src/core/plugins/IPluginContext.h) e [`IUIPluginContext`](file:///home/lamb/dev/castorsoft/dfe/src/presentation/plugins/api/IUIPluginContext.h): os plugins recebem apenas contratos abstratos dos repositórios e serviços de UI, sendo formalmente proibidos de referenciar ou executar consultas diretas no `DatabaseManager` ([RN21](file:///home/lamb/dev/castorsoft/dfe/docs/ESPECIFICACAO_REQUISITOS.md#L277)). Além disso, o módulo centraliza a biblioteca de componentes visuais padronizados (`InputText`, `InputMasked`, `InputComboBox`, `InputLookup`, `ToastNotification`), que fornecem ergonomia uniforme, acessibilidade e higienização automática de entradas mascaradas ([RN22](file:///home/lamb/dev/castorsoft/dfe/docs/ESPECIFICACAO_REQUISITOS.md#L278)).
 
 ---
 
@@ -1602,41 +1602,34 @@ flowchart TD
     %% Subgraphs horizontais
     subgraph L1 ["1. Camada de Apresentação (UI / Qt Widgets)"]
         direction LR
-        MainWindow["MainWindow (TDI e Barra Lateral)"] ~~~ InputBaseFam["Família InputBase (Inputs Padronizados)"] ~~~ ToastNotif["ToastNotification"]
+        MainWindow["MainWindow (TDI e Barra Lateral)"] ~~~ InputBaseFam["Família InputBase (Inputs Padronizados)"] ~~~ IUIPluginCtx["IUIPluginContext / PluginContext"]
     end
 
-    subgraph L2 ["2. Casos de Uso & Gerenciamento de Plugins (src/plugins)"]
+    subgraph L2 ["2. Camada de Domínio / Core (Contratos de Extensibilidade)"]
         direction LR
-        PluginMgr["PluginManager (Descoberta e Carga)"] ~~~ PluginCtx["PluginContext (Implementação do Host)"] ~~~ QPluginLdr["QPluginLoader (Qt Runtime)"]
+        IPluginIntf["IPlugin (Contrato Base)"] ~~~ IPluginCtxIntf["IPluginContext (Injeção de Dados e Repositórios)"] ~~~ IReposCore["Interfaces de Repositórios (DIP)"]
     end
 
-    subgraph L3 ["3. Camada de Domínio / Core (Contratos de Extensibilidade)"]
+    subgraph L3 ["3. Camada de Infraestrutura (Provedores e Host de Plugins)"]
         direction LR
-        IPluginIntf["IPlugin (Contrato Base)"] ~~~ IUIExtIntf["IUIExtension (Extensão Visual)"] ~~~ IPluginCtxIntf["IPluginContext (Injeção de Dependências)"] ~~~ IReposCore["Interfaces de Repositórios (DIP)"]
+        PluginMgr["PluginManager (QPluginLoader)"] ~~~ ReposConcretos["Repositórios SQL Concretos"] ~~~ DBManager["DatabaseManager (Privado ao Core)"]
     end
 
-    subgraph L4 ["4. Camada de Infraestrutura (Provedores Concretos)"]
-        direction LR
-        ReposConcretos["Repositórios SQL Concretos"] ~~~ DBManager["DatabaseManager (Privado ao Core)"]
-    end
-
-    subgraph L5 ["5. Plugins Externos & Bibliotecas Dinâmicas"]
+    subgraph L4 ["4. Plugins Externos & Bibliotecas Dinâmicas"]
         direction LR
         SpedPluginSo["Plugin SPED Fiscal (sped_fiscal.so)"] ~~~ TestPluginSo["Plugins Adicionais (*.so / *.dll)"]
     end
 
     %% Ancoragem vertical estrita
-    MainWindow ~~~ PluginMgr
-    PluginMgr ~~~ IPluginIntf
-    IPluginIntf ~~~ ReposConcretos
-    ReposConcretos ~~~ SpedPluginSo
+    MainWindow ~~~ IPluginIntf
+    IPluginIntf ~~~ PluginMgr
+    PluginMgr ~~~ SpedPluginSo
 
     %% Estilos de alto contraste
     style L1 fill:#E3F2FD,stroke:#1565C0,stroke-width:2px,color:#0D47A1
-    style L2 fill:#EDE7F6,stroke:#512DA8,stroke-width:2px,color:#311B92
-    style L3 fill:#E8F5E9,stroke:#2E7D32,stroke-width:2px,color:#1B5E20
-    style L4 fill:#FFF3E0,stroke:#E65100,stroke-width:2px,color:#E65100
-    style L5 fill:#ECEFF1,stroke:#37474F,stroke-width:2px,color:#263238
+    style L2 fill:#E8F5E9,stroke:#2E7D32,stroke-width:2px,color:#1B5E20
+    style L3 fill:#FFF3E0,stroke:#E65100,stroke-width:2px,color:#E65100
+    style L4 fill:#ECEFF1,stroke:#37474F,stroke-width:2px,color:#263238
 ```
 
 ---
@@ -1650,28 +1643,25 @@ flowchart TB
     %% ---------------- CAMADA DE APRESENTAÇÃO ----------------
     subgraph Presentation ["1. Camada de Apresentação (src/presentation)"]
         MainWindowClass["<b>MainWindow</b><br/>- m_tabWidget: QTabWidget*<br/>- m_sidebarLayout: QVBoxLayout*<br/>+ adicionarBotaoPlugin(action: QAction*)<br/>+ openTab(widget: QWidget*, titulo: QString)"]
-        InputBaseClass["<b>InputBase</b> (Base Abstrata)<br/>- m_label: QLabel*<br/>- m_lblErro: QLabel*<br/>+ setLabelText(QString)<br/>+ setError(QString)<br/>+ clearError()"]
-        InputMaskedClass["<b>InputMasked</b><br/>- m_mascara: QString<br/>+ <b>text(): QString</b> (Retorna dígitos limpos - RN22)<br/>+ setMascaraCpf()<br/>+ setMascaraCnpj()"]
-        InputTextClass["<b>InputText</b><br/>+ text(): QString<br/>+ setText(QString)"]
-        InputComboClass["<b>InputComboBox</b><br/>+ currentData(): QVariant<br/>+ addItem(texto, valor)"]
-    end
-
-    %% ---------------- GERENCIAMENTO DE PLUGINS ----------------
-    subgraph HostEngine ["2. Hospedeiro e Contexto (src/plugins e src/presentation/plugins)"]
-        PluginMgrClass["<b>PluginManager</b><br/>- m_plugins: QList&lt;IPlugin*&gt;<br/>- m_loaders: QList&lt;QPluginLoader*&gt;<br/>+ loadPlugins(dirPath: QString)<br/>+ plugins(): QList&lt;IPlugin*&gt;"]
-        PluginCtxClass["<b>PluginContext</b><br/>- m_empresaAtual: Empresa<br/>- m_mainWindow: MainWindow*<br/>+ empresaAtual(): Empresa<br/>+ openTab(widget, titulo)<br/>+ <i>Fábricas de UI (createInputText, createInputMasked, etc.)</i><br/>+ <i>Repositórios (empresaRepo, docRepo, pessoaRepo, prodRepo)</i>"]
+        IUIExtClass["&lt;&lt;interface&gt;&gt;<br/><b>IUIExtension</b><br/>+ getAction(parent: QObject*): QAction*<br/>+ iconPath(): QString<br/>+ initializeUI()"]
+        IUIPluginCtxClass["&lt;&lt;interface&gt;&gt;<br/><b>IUIPluginContext</b><br/>+ openTab(QWidget*, QString)<br/>+ createInputText(): InputText*<br/>+ createInputMasked(): InputMasked*<br/>+ createInputComboBox(): InputComboBox*"]
+        PluginCtxClass["<b>PluginContext</b> (implementa IUIPluginContext)<br/>- m_empresaAtual: Empresa<br/>+ openTab(widget, titulo)<br/>+ <i>Fábricas de UI</i><br/>+ <i>Repositórios Core</i>"]
     end
 
     %% ---------------- CONTRATOS DO CORE ----------------
-    subgraph CoreContracts ["3. Contratos de Domínio & Interfaces (src/plugins/api)"]
+    subgraph CoreContracts ["2. Contratos de Domínio & Interfaces (src/core/plugins)"]
         IPluginClass["&lt;&lt;interface&gt;&gt;<br/><b>IPlugin</b><br/>+ name(): QString<br/>+ version(): QString<br/>+ setContext(shared_ptr&lt;IPluginContext&gt;)<br/>+ initializePlugin()"]
-        IUIExtClass["&lt;&lt;interface&gt;&gt;<br/><b>IUIExtension</b><br/>+ getAction(parent: QObject*): QAction*<br/>+ iconPath(): QString<br/>+ initializeUI()"]
-        IPluginCtxClass["&lt;&lt;interface&gt;&gt;<br/><b>IPluginContext</b><br/>+ empresaAtual(): Empresa<br/>+ openTab(QWidget*, QString)<br/>+ createInputText(): InputText*<br/>+ createInputMasked(): InputMasked*<br/>+ createInputComboBox(): InputComboBox*<br/>+ empresaRepository(): IEmpresaRepository*<br/>+ documentoFiscalRepository(): IDocumentoFiscalRepository*<br/>+ pessoaRepository(): IPessoaRepository*<br/>+ produtoRepository(): IProdutoRepository*"]
+        IPluginCtxClass["&lt;&lt;interface&gt;&gt;<br/><b>IPluginContext</b><br/>+ empresaAtual(): Empresa<br/>+ empresaRepository(): IEmpresaRepository&amp;<br/>+ documentoFiscalRepository(): IDocumentoFiscalRepository&amp;<br/>+ pessoaRepository(): IPessoaRepository&amp;<br/>+ produtoRepository(): IProdutoRepository&amp;"]
+    end
+
+    %% ---------------- INFRAESTRUTURA ----------------
+    subgraph InfraEngine ["3. Camada de Infraestrutura (src/infrastructure)"]
+        PluginMgrClass["<b>PluginManager</b> (src/infrastructure/plugins)<br/>- m_plugins: QList&lt;IPlugin*&gt;<br/>- m_loaders: QList&lt;QPluginLoader*&gt;<br/>+ loadPlugins(dirPath: QString)<br/>+ plugins(): QList&lt;IPlugin*&gt;"]
     end
 
     %% ---------------- PLUGINS EXTERNOS ----------------
-    subgraph ExternalPlugins ["5. Bibliotecas Dinâmicas Externas (external_plugins)"]
-        SpedPluginClass["<b>SpedFiscalPlugin</b> (sped_fiscal.so)<br/>- m_context: shared_ptr&lt;IPluginContext&gt;<br/>- m_form: FormSpedFiscal*<br/>+ name(): QString ('sped_fiscal')<br/>+ getAction(parent): QAction*<br/>+ onTriggered()"]
+    subgraph ExternalPlugins ["4. Bibliotecas Dinâmicas Externas (external_plugins)"]
+        SpedPluginClass["<b>SpedFiscalPlugin</b> (sped_fiscal.so)<br/>- m_context: shared_ptr&lt;IPluginContext&gt;<br/>- m_uiContext: shared_ptr&lt;IUIPluginContext&gt;<br/>- m_form: FormSpedFiscal*<br/>+ name(): QString ('dev.castorsoft.sped-fiscal')<br/>+ getAction(parent): QAction*<br/>+ onTriggered()"]
     end
 
     %% Relações e Heranças
@@ -1813,7 +1803,7 @@ sequenceDiagram
 
 ## 8. Módulo 7: Geração do Arquivo SPED Fiscal (EFD ICMS/IPI)
 
-O **Módulo de Geração do SPED Fiscal (Escrituração Fiscal Digital - EFD ICMS/IPI)** é responsável por compilar, estruturar e exportar as operações fiscais e mercantis da empresa ativa em conformidade com o Guia Prático da EFD da Receita Federal do Brasil. Implementado inteiramente como um plugin externo dinâmico ([`SpedFiscalPlugin`](file:///home/lamb/dev/castorsoft/dfe/external_plugins/sped_fiscal/src/SpedFiscalPlugin.h)), ele opera de forma desacoplada do executável principal, consumindo dados do domínio exclusivamente por meio da interface [`IPluginContext`](file:///home/lamb/dev/castorsoft/dfe/src/plugins/api/IPluginContext.h) ([RN21](file:///home/lamb/dev/castorsoft/dfe/docs/ESPECIFICACAO_REQUISITOS.md#L277)).
+O **Módulo de Geração do SPED Fiscal (Escrituração Fiscal Digital - EFD ICMS/IPI)** é responsável por compilar, estruturar e exportar as operações fiscais e mercantis da empresa ativa em conformidade com o Guia Prático da EFD da Receita Federal do Brasil. Implementado inteiramente como um plugin externo dinâmico ([`SpedFiscalPlugin`](file:///home/lamb/dev/castorsoft/dfe/external_plugins/sped_fiscal/src/SpedFiscalPlugin.h)), ele opera de forma desacoplada do executável principal, consumindo dados do domínio exclusivamente por meio da interface [`IPluginContext`](file:///home/lamb/dev/castorsoft/dfe/src/core/plugins/IPluginContext.h) e [`IUIPluginContext`](file:///home/lamb/dev/castorsoft/dfe/src/presentation/plugins/api/IUIPluginContext.h) ([RN21](file:///home/lamb/dev/castorsoft/dfe/docs/ESPECIFICACAO_REQUISITOS.md#L277)).
 
 O processo de geração baseia-se em um **pipeline em 3 etapas desacopladas** ([RF26](file:///home/lamb/dev/castorsoft/dfe/docs/ESPECIFICACAO_REQUISITOS.md#L302)):
 1. **Coleta de Dados (`SpedDataCollector`):** Extrai entidades em memória sem persistência;

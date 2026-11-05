@@ -1,7 +1,7 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 
-#include "../../plugins/PluginManager.h"
+#include "../../infrastructure/plugins/PluginManager.h"
 #include "../plugins/api/IUIExtension.h"
 #include "../plugins/PluginContext.h"
 

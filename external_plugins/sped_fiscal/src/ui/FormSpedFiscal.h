@@ -2,7 +2,7 @@
 
 #include <QWidget>
 #include <memory>
-#include "../../../src/plugins/api/IPluginContext.h"
+#include "../../../src/presentation/plugins/api/IUIPluginContext.h"
 #include "../models/SpedContadorData.h"
 
 class InputText;
@@ -21,7 +21,7 @@ class FormSpedFiscal : public QWidget {
     Q_OBJECT
 
 public:
-    explicit FormSpedFiscal(std::shared_ptr<IPluginContext> context, QWidget *parent = nullptr);
+    explicit FormSpedFiscal(std::shared_ptr<IUIPluginContext> context, QWidget *parent = nullptr);
     ~FormSpedFiscal() override = default;
 
 private slots:
@@ -33,7 +33,7 @@ private slots:
 private:
     void setupUi();
 
-    std::shared_ptr<IPluginContext> m_context;
+    std::shared_ptr<IUIPluginContext> m_context;
 
     QLabel *m_lblEmpresaInfo{nullptr};
 

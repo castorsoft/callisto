@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../plugins/api/IPluginContext.h"
+#include "api/IUIPluginContext.h"
 #include "../../infrastructure/database/repositories/EmpresaRepository.h"
 #include "../../infrastructure/database/repositories/DocumentoFiscalRepository.h"
 #include "../../infrastructure/database/repositories/PessoaRepository.h"
@@ -9,7 +9,7 @@
 #include "../../infrastructure/database/repositories/UnidadeMedidaRepository.h"
 #include <functional>
 
-class PluginContext : public IPluginContext {
+class PluginContext : public IUIPluginContext {
 public:
     using TabOpener = std::function<void(QWidget*, const QString&)>;
 

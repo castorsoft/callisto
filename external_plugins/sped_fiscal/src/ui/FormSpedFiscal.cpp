@@ -26,7 +26,7 @@
 #include <QJsonDocument>
 #include <QApplication>
 
-FormSpedFiscal::FormSpedFiscal(std::shared_ptr<IPluginContext> context, QWidget *parent)
+FormSpedFiscal::FormSpedFiscal(std::shared_ptr<IUIPluginContext> context, QWidget *parent)
     : QWidget(parent)
     , m_context(context)
 {

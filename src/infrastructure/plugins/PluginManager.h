@@ -1,10 +1,11 @@
 #pragma once
 
-#include "api/IPlugin.h"
+#include "core/plugins/IPlugin.h"
 
 #include <QObject>
 #include <QList>
 #include <QPluginLoader>
+#include <memory>
 
 class PluginManager: public QObject {
     Q_OBJECT
@@ -27,3 +28,4 @@ private:
     QList<QPluginLoader*> m_loaders;
     QList<IPlugin*> m_plugins;
 };
+

@@ -19,8 +19,6 @@ file(GLOB_RECURSE CORE_LIB_SOURCES
     "src/core/*.h"
     "src/infrastructure/*.cpp"
     "src/infrastructure/*.h"
-    "src/plugins/*.cpp"
-    "src/plugins/*.h"
 )
 
 qt_add_library(core_lib STATIC ${CORE_LIB_SOURCES})

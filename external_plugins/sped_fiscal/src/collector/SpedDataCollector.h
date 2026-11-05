@@ -3,7 +3,7 @@
 #include <QDate>
 #include <QList>
 #include <memory>
-#include "../../../src/plugins/api/IPluginContext.h"
+#include "../../../src/core/plugins/IPluginContext.h"
 #include "../models/SpedEmpresaData.h"
 #include "../models/SpedContadorData.h"
 #include "../models/SpedParticipanteData.h"
@@ -35,4 +35,3 @@ public:
         std::optional<int> idContador = std::nullopt
     );
 };
-

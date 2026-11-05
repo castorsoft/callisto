@@ -23,12 +23,12 @@ QAction* SpedFiscalPlugin::getAction(QObject *parent)
 
 void SpedFiscalPlugin::onTriggered()
 {
-    if (m_context) {
+    if (m_uiContext) {
         if (!m_form) {
-            m_form = new FormSpedFiscal(m_context);
+            m_form = new FormSpedFiscal(m_uiContext);
         }
-        m_context->openTab(m_form, "SPED Fiscal");
+        m_uiContext->openTab(m_form, "SPED Fiscal");
     } else {
-        qWarning() << "[SpedFiscalPlugin] Tentativa de abrir aba sem contexto configurado.";
+        qWarning() << "[SpedFiscalPlugin] Tentativa de abrir aba sem contexto UI configurado.";
     }
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <QObject>
-#include "../../../src/plugins/api/IPlugin.h"
+#include "../../../src/core/plugins/IPlugin.h"
 #include "../../../src/presentation/plugins/api/IUIExtension.h"
 
 class TestButtonPlugin: public QObject, public IPlugin, public IUIExtension {
