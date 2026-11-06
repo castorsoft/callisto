@@ -1,0 +1,1 @@
+- Arrancar Single Shot na abertura, deixa síncrono mesmo;
