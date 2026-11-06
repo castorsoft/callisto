@@ -1,12 +1,6 @@
 #pragma once
 
 #include "api/IUIPluginContext.h"
-#include "../../infrastructure/database/repositories/EmpresaRepository.h"
-#include "../../infrastructure/database/repositories/DocumentoFiscalRepository.h"
-#include "../../infrastructure/database/repositories/PessoaRepository.h"
-#include "../../infrastructure/database/repositories/ProdutoRepository.h"
-#include "../../infrastructure/database/repositories/ProdutoFornecedorRepository.h"
-#include "../../infrastructure/database/repositories/UnidadeMedidaRepository.h"
 #include <functional>
 
 class PluginContext : public IUIPluginContext {
@@ -51,12 +45,5 @@ public:
     QWidget* createVerticalSpacing(int height = 10, QWidget *parent = nullptr) const override;
 
 private:
-    mutable EmpresaRepository m_empresaRepo;
-    mutable DocumentoFiscalRepository m_docFiscalRepo;
-    mutable PessoaRepository m_pessoaRepo;
-    mutable ProdutoRepository m_produtoRepo;
-    mutable ProdutoFornecedorRepository m_produtoFornecedorRepo;
-    mutable UnidadeMedidaRepository m_unidadeMedidaRepo;
-
     TabOpener m_tabOpener;
 };

@@ -2,10 +2,7 @@
 #include "ui_FormEmpresaDetalhe.h"
 #include "../../components/ToastNotification.h"
 #include "../../../core/entities/Empresa.h"
-#include "../../../infrastructure/database/repositories/EmpresaRepository.h"
-#include "../../../infrastructure/database/repositories/EnderecoRepository.h"
-#include "../../../infrastructure/database/repositories/EstadoRepository.h"
-#include "../../../infrastructure/database/repositories/CidadeRepository.h"
+#include "../../../core/RepositoryProvider.h"
 #include "../../../core/GlobalState.h"
 #include "../../../core/constants/Mensagens.h"
 #include <QVariant>
@@ -64,7 +61,7 @@ bool FormEmpresaDetalhe::validar() {
 void FormEmpresaDetalhe::carregarDados() {
     if (!m_idRegistro.has_value()) return;
 
-    EmpresaRepository repo;
+    auto &repo = RepositoryProvider::empresaRepository();
     m_empresaAtual = repo.buscarPorId(m_idRegistro.value());
 
     if (m_empresaAtual.has_value()) {
@@ -143,7 +140,7 @@ void FormEmpresaDetalhe::onSalvar() {
         emp.setRegimeTributario(regimeTributario);
         emp.setEndereco(endereco);
 
-        EmpresaRepository repo;
+        auto &repo = RepositoryProvider::empresaRepository();
         repo.salvar(emp);
 
         GlobalState::instance().setEmpresaAtual(emp);
@@ -157,7 +154,7 @@ void FormEmpresaDetalhe::onSalvar() {
 
 void FormEmpresaDetalhe::preencherUF() {
     ui->cbUF->clear();
-    EstadoRepository repo;
+    auto &repo = RepositoryProvider::estadoRepository();
     QList<Estado> estados = repo.listarTodos();
     for (const Estado& estado : estados) {
         ui->cbUF->addItem(estado.sigla(), estado.id());
@@ -172,7 +169,7 @@ void FormEmpresaDetalhe::atualizarCidades(int indexUF) {
 
     int idEstado = ufData.toInt();
 
-    CidadeRepository repo;
+    auto &repo = RepositoryProvider::cidadeRepository();
     QList<Cidade> cidades = repo.listarPorEstado(idEstado);
     for (const Cidade& cidade : cidades) {
         ui->cbCidade->addItem(cidade.nome(), cidade.id());
@@ -234,7 +231,7 @@ void FormEmpresaDetalhe::onCnpjRetornado(const CnpjResult &resultado) {
     }
 
     if (resultado.ibgeCidade > 0) {
-        CidadeRepository cidadeRepo;
+        auto &cidadeRepo = RepositoryProvider::cidadeRepository();
         auto cidadeOpt = cidadeRepo.buscarPorIbge(resultado.ibgeCidade);
         if (cidadeOpt.has_value()) {
             int indexCidade = ui->cbCidade->findIndex(cidadeOpt.value().id());

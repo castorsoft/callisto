@@ -1,5 +1,5 @@
 #include "FormPessoaListagem.h"
-#include "../../../infrastructure/database/repositories/PessoaRepository.h"
+#include "../../../core/RepositoryProvider.h"
 #include "../../components/providers/TableDataProviderAdapter.h"
 
 FormPessoaListagem::FormPessoaListagem(QWidget *parent)
@@ -10,7 +10,7 @@ FormPessoaListagem::FormPessoaListagem(QWidget *parent)
 
 void FormPessoaListagem::carregarLista()
 {
-    PessoaRepository repo;
+    auto &repo = RepositoryProvider::pessoaRepository();
     auto Pessoas = repo.listarTodas();
     m_provider = std::make_shared<PessoaListProvider>(Pessoas);
     auto adapter = new TableDataProviderAdapter(m_provider, this);

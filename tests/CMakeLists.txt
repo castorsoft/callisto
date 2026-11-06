@@ -14,6 +14,7 @@ endif()
 qt_add_executable(callisto_tests
     core/EntitiesTest.cpp
     core/GlobalStateAndMensagensTest.cpp
+    core/RepositoryProviderTest.cpp
     infrastructure/ConfigManagerTest.cpp
     application/ProcessFileTest.cpp
     presentation/ProvidersTest.cpp

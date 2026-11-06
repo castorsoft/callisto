@@ -2,10 +2,7 @@
 #include "ui_FormPessoaDetalhe.h"
 #include "../../components/ToastNotification.h"
 #include "../../../core/entities/Pessoa.h"
-#include "../../../infrastructure/database/repositories/PessoaRepository.h"
-#include "../../../infrastructure/database/repositories/EnderecoRepository.h"
-#include "../../../infrastructure/database/repositories/EstadoRepository.h"
-#include "../../../infrastructure/database/repositories/CidadeRepository.h"
+#include "../../../core/RepositoryProvider.h"
 #include "../../../core/GlobalState.h"
 #include "../../../core/constants/Mensagens.h"
 #include <QVariant>
@@ -63,7 +60,7 @@ bool FormPessoaDetalhe::validar() {
 void FormPessoaDetalhe::carregarDados() {
     if (!m_idRegistro.has_value()) return;
 
-    PessoaRepository repo;
+    auto &repo = RepositoryProvider::pessoaRepository();
     m_PessoaAtual = repo.buscarPorId(m_idRegistro.value());
 
     if (m_PessoaAtual.has_value()) {
@@ -166,7 +163,7 @@ void FormPessoaDetalhe::onSalvar() {
 
         p.setIdEmpresa(GlobalState::instance().empresaAtual()->id().value());
 
-        PessoaRepository repo;
+        auto &repo = RepositoryProvider::pessoaRepository();
         repo.salvar(p);
 
         ToastNotification::show(this, "Sucesso", "Pessoa salva com sucesso!", ToastNotification::Success, 3000);
@@ -178,7 +175,7 @@ void FormPessoaDetalhe::onSalvar() {
 
 void FormPessoaDetalhe::preencherUF() {
     ui->cbUF->clear();
-    EstadoRepository repo;
+    auto &repo = RepositoryProvider::estadoRepository();
     QList<Estado> estados = repo.listarTodos();
     for (const Estado& estado : estados) {
         ui->cbUF->addItem(estado.sigla(), estado.id());
@@ -193,7 +190,7 @@ void FormPessoaDetalhe::atualizarCidades(int indexUF) {
 
     int idEstado = ufData.toInt();
 
-    CidadeRepository repo;
+    auto &repo = RepositoryProvider::cidadeRepository();
     QList<Cidade> cidades = repo.listarPorEstado(idEstado);
     for (const Cidade& cidade : cidades) {
         ui->cbCidade->addItem(cidade.nome(), cidade.id());
@@ -256,7 +253,7 @@ void FormPessoaDetalhe::onCnpjRetornado(const CnpjResult &resultado) {
     }
 
     if (resultado.ibgeCidade > 0) {
-        CidadeRepository cidadeRepo;
+        auto &cidadeRepo = RepositoryProvider::cidadeRepository();
         auto cidadeOpt = cidadeRepo.buscarPorIbge(resultado.ibgeCidade);
         if (cidadeOpt.has_value()) {
             int indexCidade = ui->cbCidade->findIndex(cidadeOpt.value().id());

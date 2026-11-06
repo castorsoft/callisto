@@ -1,5 +1,6 @@
 #include "PluginContext.h"
 #include "../../core/GlobalState.h"
+#include "../../core/RepositoryProvider.h"
 #include "../components/inputs/InputText.h"
 #include "../components/inputs/InputMasked.h"
 #include "../components/inputs/InputComboBox.h"
@@ -28,32 +29,32 @@ std::optional<Empresa> PluginContext::empresaAtual() const
 
 IEmpresaRepository& PluginContext::empresaRepository() const
 {
-    return m_empresaRepo;
+    return RepositoryProvider::empresaRepository();
 }
 
 IDocumentoFiscalRepository& PluginContext::documentoFiscalRepository() const
 {
-    return m_docFiscalRepo;
+    return RepositoryProvider::documentoFiscalRepository();
 }
 
 IPessoaRepository& PluginContext::pessoaRepository() const
 {
-    return m_pessoaRepo;
+    return RepositoryProvider::pessoaRepository();
 }
 
 IProdutoRepository& PluginContext::produtoRepository() const
 {
-    return m_produtoRepo;
+    return RepositoryProvider::produtoRepository();
 }
 
 IProdutoFornecedorRepository& PluginContext::produtoFornecedorRepository() const
 {
-    return m_produtoFornecedorRepo;
+    return RepositoryProvider::produtoFornecedorRepository();
 }
 
 IUnidadeMedidaRepository& PluginContext::unidadeMedidaRepository() const
 {
-    return m_unidadeMedidaRepo;
+    return RepositoryProvider::unidadeMedidaRepository();
 }
 
 void PluginContext::openTab(QWidget *widget, const QString &title)

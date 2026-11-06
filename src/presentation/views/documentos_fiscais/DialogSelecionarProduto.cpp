@@ -1,8 +1,7 @@
 #include "DialogSelecionarProduto.h"
 #include "ui_DialogSelecionarProduto.h"
 
-#include "../../../infrastructure/database/repositories/ProdutoRepository.h"
-#include "../../../infrastructure/database/repositories/UnidadeMedidaRepository.h"
+#include "../../../core/RepositoryProvider.h"
 
 #include <QHeaderView>
 #include <QTableWidgetItem>
@@ -62,7 +61,7 @@ void DialogSelecionarProduto::configurarTabela()
 void DialogSelecionarProduto::carregarUnidades()
 {
     ui->comboUnidade->clear();
-    UnidadeMedidaRepository umRepo;
+    auto &umRepo = RepositoryProvider::unidadeMedidaRepository();
     QList<UnidadeMedida> unidades = umRepo.listarTodas();
 
     int defaultIndex = -1;
@@ -84,7 +83,7 @@ void DialogSelecionarProduto::carregarUnidades()
 
 void DialogSelecionarProduto::carregarProdutos(const QString &filtro)
 {
-    ProdutoRepository prodRepo;
+    auto &prodRepo = RepositoryProvider::produtoRepository();
     QList<Produto> todos = prodRepo.listarTodos();
 
     m_produtosFiltrados.clear();

@@ -46,7 +46,7 @@ Q_DECLARE_METATYPE(ResultadoProcessamento)
 
 class ProcessFile {
 public:
-    ProcessFile() = default;
+    ProcessFile();
     explicit ProcessFile(const ProcessFileRepositories &repos);
 
     ResultadoProcessamento processarArquivo(const QString &filePath);

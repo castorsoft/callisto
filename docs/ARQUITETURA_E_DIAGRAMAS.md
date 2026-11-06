@@ -83,8 +83,8 @@ O sistema é estritamente particionado em cinco camadas concêntricas e hierárq
 
 - **Camada de Apresentação (`src/presentation`):** Responsável pela interação direta com o usuário através de interface desktop baseada em Qt Widgets. Centralizada na `MainWindow` (com suporte a abas dinâmicas / TDI), formulários CRUD padronizados (`FormListagemBase`, `FormDetalheBase`) e componentes customizados (`InputBase`, `InputLookup`, `InputMasked`, `ToastNotification`).
 - **Camada de Aplicação (`src/application`):** Encapsula a orquestração dos casos de uso de negócio do sistema (ex.: `ProcessFile`), coordenando tarefas assíncronas em threads secundárias (`QThreadPool`), controle de concorrência com mutex (`ChaveEmProcessamentoGuard`) e mediação entre camadas.
-- **Camada de Domínio / Core (`src/core`):** O núcleo conceitual estável. Define entidades puras (`Empresa`, `Pessoa`, `Produto`, `DocumentoFiscal`), projeções de leitura (`virtual/NotaTerceiroResumo`), contratos abstratos de repositório e serviços (`IEmpresaRepository`, `ICnpjService`), o estado global da aplicação (`GlobalState`) e dicionário centralizado de mensagens (`Mensagens`).
-- **Camada de Infraestrutura (`src/infrastructure`):** Implementações concretas de acesso a recursos externos: persistência no PostgreSQL via `QSqlDatabase` (`EmpresaRepository`, etc.), migrador de schema (`MigrationRunner`), cliente HTTP REST assíncrono (`CnpjService`), gerenciador de arquivo de configuração (`ConfigManager`) e hospedeiro de carregamento dinâmico de extensões via `QPluginLoader` (`PluginManager`).
+- **Camada de Domínio / Core (`src/core`):** O núcleo conceitual estável. Define entidades puras (`Empresa`, `Pessoa`, `Produto`, `DocumentoFiscal`), projeções de leitura (`virtual/NotaTerceiroResumo`), contratos abstratos de repositório e serviços (`IEmpresaRepository`, `ICnpjService`, `IRepositoryFactory`), o provedor desacoplado de repositórios (`RepositoryProvider`), o estado global da aplicação (`GlobalState`) e dicionário centralizado de mensagens (`Mensagens`).
+- **Camada de Infraestrutura (`src/infrastructure`):** Implementações concretas de acesso a recursos externos: fábrica SQL de repositórios (`SqlRepositoryFactory`), persistência no PostgreSQL via `QSqlDatabase` (`EmpresaRepository`, etc.), migrador de schema (`MigrationRunner`), cliente HTTP REST assíncrono (`CnpjService`), gerenciador de arquivo de configuração (`ConfigManager`) e hospedeiro de carregamento dinâmico de extensões via `QPluginLoader` (`PluginManager`).
 - **Plugins Externos (`external_plugins`):** Módulos dinâmicos compilados à parte (`.so` / `.dll`), isolados do banco de dados por meio da injeção de dependência via contratos de interface (`IPluginContext` e `IUIPluginContext`).
 
 ---
@@ -640,29 +640,42 @@ Ilustra o fluxo de dados entre as fronteiras das camadas em dois momentos crucia
 ```mermaid
 sequenceDiagram
     autonumber
+    actor User as Usuário
+
     participant L1 as 1. Camada de Apresentação
+    participant L2 as 2. Camada de Aplicação
     participant L3 as 3. Camada de Domínio / Core
     participant L4 as 4. Camada de Infraestrutura
     participant L5 as 5. Recursos Externos
 
-    Note over L1,L5: Etapa 1: Consulta Assíncrona de CNPJ e Resolução Automática de Município
-    L1->>L3: Instancia serviço via Factory ICnpjService::create()
-    L1->>L3: Invoca ICnpjService::consultarCNPJ("XX.XXX.XXX/0001-XX")
+    Note over User,L5: Etapa 1: Consulta Assíncrona de CNPJ e Resolução Automática de Município
+    User->>L1: Informa CNPJ (14 dígitos) no formulário
+    L1->>L2: Dispara solicitação de busca cadastral
+    L2->>L3: Instancia serviço via Factory ICnpjService::create()
+    L2->>L3: Invoca ICnpjService::consultarCNPJ("XX.XXX.XXX/0001-XX")
     L3->>L4: Encaminha requisição para CnpjService
     L4->>L5: Dispara HTTP GET na API externa de CNPJ
     L5-->>L4: Retorna JSON com dados cadastrais e código IBGE
     L4-->>L3: Converte JSON em CnpjResult (DTO)
-    L3-->>L1: Emite sinal consultaFinalizada(CnpjResult)
+    L3-->>L2: Propaga DTO CnpjResult
+    L2-->>L1: Emite sinal consultaFinalizada(CnpjResult)
     L1->>L1: Preenche Razão Social, Fantasia, CEP e Logradouro
-    L1->>L4: Consulta CidadeRepository::buscarPorIbge(codigoIbge)
+    L1->>L3: Consulta RepositoryProvider::cidadeRepository()
+    L3->>L4: Executa CidadeRepository::buscarPorIbge(codigoIbge)
     L4->>L5: SELECT na tabela cidades pelo código IBGE
     L5-->>L4: Registro da cidade e UF
-    L4-->>L1: Retorna entidade Cidade
+    L4-->>L3: Retorna entidade Cidade
+    L3-->>L1: Entrega entidade Cidade
     L1->>L1: Seleciona automaticamente o município no combo de cidades
+    L1-->>User: Exibe dados atualizados e notificação de preenchimento
 
-    Note over L1,L5: Etapa 2: Gravação em Cascata de Endereço, Pessoa e Dados de Contabilista
-    L1->>L3: Constrói entidade Pessoa (com Endereco e flags fornecedor/contabilista)
-    L1->>L4: Invoca PessoaRepository::salvar(Pessoa)
+    Note over User,L5: Etapa 2: Gravação em Cascata de Endereço, Pessoa e Dados de Contabilista
+    User->>L1: Revisa formulário e clica em "Salvar"
+    L1->>L1: Valida campos obrigatórios (RN03)
+    L1->>L2: Submete dados do participante para persistência
+    L2->>L3: Constrói entidade Pessoa (com Endereco e flags fornecedor/contabilista)
+    L2->>L3: Obtém repositório via RepositoryProvider::pessoaRepository()
+    L3->>L4: Invoca PessoaRepository::salvar(Pessoa)
     L4->>L4: Chama EnderecoRepository::salvar(Endereco)
     L4->>L5: INSERT / UPDATE em enderecos RETURNING id
     L5-->>L4: Retorna id_endereco gerado
@@ -672,8 +685,11 @@ sequenceDiagram
         L4->>L5: INSERT / UPDATE em pessoas_contabilista (CRC e CPF)
         L5-->>L4: Confirmação de persistência
     end
-    L4-->>L1: Retorna sucesso da operação
+    L4-->>L3: Confirma gravação bem-sucedida
+    L3-->>L2: Retorna confirmação de persistência
+    L2-->>L1: Notifica conclusão do salvamento
     L1->>L1: Exibe ToastNotification("Participante salvo com sucesso!")
+    L1-->>User: Exibe feedback visual e atualiza tela/listagem
 ```
 
 ---

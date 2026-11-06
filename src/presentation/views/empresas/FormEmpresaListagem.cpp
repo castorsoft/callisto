@@ -1,5 +1,5 @@
 #include "FormEmpresaListagem.h"
-#include "../../../infrastructure/database/repositories/EmpresaRepository.h"
+#include "../../../core/RepositoryProvider.h"
 #include "../../components/providers/TableDataProviderAdapter.h"
 
 FormEmpresaListagem::FormEmpresaListagem(QWidget *parent)
@@ -10,7 +10,7 @@ FormEmpresaListagem::FormEmpresaListagem(QWidget *parent)
 
 void FormEmpresaListagem::carregarLista()
 {
-    EmpresaRepository repo;
+    auto &repo = RepositoryProvider::empresaRepository();
     auto empresas = repo.listarTodas();
     m_provider = std::make_shared<EmpresaListProvider>(empresas);
     auto adapter = new TableDataProviderAdapter(m_provider, this);

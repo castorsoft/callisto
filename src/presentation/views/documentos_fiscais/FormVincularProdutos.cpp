@@ -5,8 +5,7 @@
 #include "../produtos/FormProdutoDetalhe.h"
 #include "../../components/ToastNotification.h"
 
-#include "../../../infrastructure/database/repositories/DocumentoFiscalRepository.h"
-#include "../../../infrastructure/database/repositories/ProdutoFornecedorRepository.h"
+#include "../../../core/RepositoryProvider.h"
 
 #include <QHeaderView>
 #include <QMessageBox>
@@ -117,7 +116,7 @@ void FormVincularProdutos::carregarNotas()
 {
     bool apenasPendentes = ui->comboFiltro->currentData().toBool();
 
-    DocumentoFiscalRepository repo;
+    auto &repo = RepositoryProvider::documentoFiscalRepository();
     auto notas = repo.listarNotasTerceirosResumo(apenasPendentes);
 
     m_notasProvider = std::make_shared<NotaTerceiroListProvider>(notas);
@@ -287,7 +286,7 @@ void FormVincularProdutos::carregarItensDaNotaSelecionada()
 {
     QList<NotaTerceiroItem> itens;
     if (m_idNotaSelecionada > 0) {
-        DocumentoFiscalRepository repo;
+        auto &repo = RepositoryProvider::documentoFiscalRepository();
         itens = repo.carregarItensNotaTerceiro(m_idNotaSelecionada);
     }
 
@@ -349,7 +348,7 @@ void FormVincularProdutos::onVincularExistenteClicked()
         int idUm = dlg.idUnidadeMedida();
 
         ProdutoFornecedor pf(idProd, m_idFornecedorNotaAtual, item.codigoProduto(), idUm, mult, std::nullopt);
-        ProdutoFornecedorRepository pfRepo;
+        auto &pfRepo = RepositoryProvider::produtoFornecedorRepository();
 
         if (pfRepo.salvar(pf)) {
             ToastNotification::show(this, "Sucesso", "Vínculo salvo com sucesso!", ToastNotification::Success, 3000);
@@ -398,7 +397,7 @@ void FormVincularProdutos::onNovoProdutoClicked()
         double mult = 1.0;
 
         ProdutoFornecedor pf(idNovoProd, m_idFornecedorNotaAtual, item.codigoProduto(), idUm, mult, std::nullopt);
-        ProdutoFornecedorRepository pfRepo;
+        auto &pfRepo = RepositoryProvider::produtoFornecedorRepository();
 
         if (pfRepo.salvar(pf)) {
             ToastNotification::show(this, "Sucesso", "Novo produto cadastrado e vinculado com sucesso!", ToastNotification::Success, 3500);
@@ -428,7 +427,7 @@ void FormVincularProdutos::onDesvincularClicked()
     );
 
     if (resp == QMessageBox::Yes) {
-        ProdutoFornecedorRepository pfRepo;
+        auto &pfRepo = RepositoryProvider::produtoFornecedorRepository();
         if (pfRepo.deletar(item.idProdutoFornecedor().value())) {
             ToastNotification::show(this, "Desvinculado", "Vínculo removido com sucesso.", ToastNotification::Info, 2500);
             carregarItensDaNotaSelecionada();
