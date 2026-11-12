@@ -1,11 +1,15 @@
 #include "PluginContext.h"
 #include "../../core/GlobalState.h"
+#include "../../core/RepositoryProvider.h"
 #include "../components/inputs/InputText.h"
 #include "../components/inputs/InputMasked.h"
 #include "../components/inputs/InputComboBox.h"
 #include "../components/inputs/InputCheckBox.h"
+#include "../components/inputs/InputLookup.h"
+#include "../components/inputs/InputButton.h"
 #include <QWidget>
 #include <QGroupBox>
+#include <QScrollArea>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QGridLayout>
@@ -25,32 +29,32 @@ std::optional<Empresa> PluginContext::empresaAtual() const
 
 IEmpresaRepository& PluginContext::empresaRepository() const
 {
-    return m_empresaRepo;
+    return RepositoryProvider::empresaRepository();
 }
 
 IDocumentoFiscalRepository& PluginContext::documentoFiscalRepository() const
 {
-    return m_docFiscalRepo;
+    return RepositoryProvider::documentoFiscalRepository();
 }
 
 IPessoaRepository& PluginContext::pessoaRepository() const
 {
-    return m_pessoaRepo;
+    return RepositoryProvider::pessoaRepository();
 }
 
 IProdutoRepository& PluginContext::produtoRepository() const
 {
-    return m_produtoRepo;
+    return RepositoryProvider::produtoRepository();
 }
 
 IProdutoFornecedorRepository& PluginContext::produtoFornecedorRepository() const
 {
-    return m_produtoFornecedorRepo;
+    return RepositoryProvider::produtoFornecedorRepository();
 }
 
 IUnidadeMedidaRepository& PluginContext::unidadeMedidaRepository() const
 {
-    return m_unidadeMedidaRepo;
+    return RepositoryProvider::unidadeMedidaRepository();
 }
 
 void PluginContext::openTab(QWidget *widget, const QString &title)
@@ -97,9 +101,32 @@ InputCheckBox* PluginContext::createInputCheckBox(const QString &label, const QS
     return input;
 }
 
+InputLookup* PluginContext::createInputLookup(const QString &label, const QString &placeholder, QWidget *parent) const
+{
+    auto *input = new InputLookup(parent);
+    input->setLabelText(label);
+    if (!placeholder.isEmpty()) {
+        input->setPlaceholderText(placeholder);
+    }
+    return input;
+}
+
+InputButton* PluginContext::createInputButton(const QString &text, QWidget *parent) const
+{
+    return new InputButton(text, parent);
+}
+
 QGroupBox* PluginContext::createGroupBox(const QString &title, QWidget *parent) const
 {
     return new QGroupBox(title, parent);
+}
+
+QScrollArea* PluginContext::createScrollArea(QWidget *parent) const
+{
+    auto *scrollArea = new QScrollArea(parent);
+    scrollArea->setWidgetResizable(true);
+    scrollArea->setFrameShape(QFrame::NoFrame);
+    return scrollArea;
 }
 
 QHBoxLayout* PluginContext::createHBoxLayout(QWidget *parent) const

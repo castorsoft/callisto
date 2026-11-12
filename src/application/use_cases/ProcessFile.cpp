@@ -5,14 +5,15 @@
 #include "../../core/entities/Endereco.h"
 #include <zafra/document/document_factory.hpp>
 #include <zafra/xml/xml_document.hpp>
-#include "../../infrastructure/database/repositories/DocumentoFiscalRepository.h"
-#include "../../infrastructure/database/repositories/DocumentoFiscalArquivoRepository.h"
-#include "../../infrastructure/database/repositories/PessoaRepository.h"
-#include "../../infrastructure/database/repositories/ProdutoRepository.h"
-#include "../../infrastructure/database/repositories/ProdutoFornecedorRepository.h"
-#include "../../infrastructure/database/repositories/UnidadeMedidaRepository.h"
-#include "../../infrastructure/database/repositories/NCMRepository.h"
-#include "../../infrastructure/database/repositories/CidadeRepository.h"
+#include "../../core/interfaces/IDocumentoFiscalRepository.h"
+#include "../../core/interfaces/IDocumentoFiscalArquivoRepository.h"
+#include "../../core/interfaces/IPessoaRepository.h"
+#include "../../core/interfaces/IProdutoRepository.h"
+#include "../../core/interfaces/IProdutoFornecedorRepository.h"
+#include "../../core/interfaces/IUnidadeMedidaRepository.h"
+#include "../../core/interfaces/INCMRepository.h"
+#include "../../core/interfaces/ICidadeRepository.h"
+#include "../../core/RepositoryProvider.h"
 #include "../../core/GlobalState.h"
 #include <QFile>
 #include <QJsonArray>
@@ -61,6 +62,26 @@ private:
 };
 
 } // namespace
+
+ProcessFile::ProcessFile()
+{
+    if (RepositoryProvider::isInitialized()) {
+        auto &factory = RepositoryProvider::instance();
+        m_repos.documentoFiscalRepo = &factory.documentoFiscalRepository();
+        m_repos.documentoFiscalArquivoRepo = &factory.documentoFiscalArquivoRepository();
+        m_repos.pessoaRepo = &factory.pessoaRepository();
+        m_repos.produtoRepo = &factory.produtoRepository();
+        m_repos.produtoFornecedorRepo = &factory.produtoFornecedorRepository();
+        m_repos.unidadeMedidaRepo = &factory.unidadeMedidaRepository();
+        m_repos.ncmRepo = &factory.ncmRepository();
+        m_repos.cidadeRepo = &factory.cidadeRepository();
+    }
+}
+
+ProcessFile::ProcessFile(const ProcessFileRepositories &repos)
+    : m_repos(repos)
+{
+}
 
 ResultadoProcessamento ProcessFile::processarArquivo(const QString &filePath)
 {
@@ -131,7 +152,9 @@ ResultadoProcessamento ProcessFile::processarNFe(const zafra::document::NFeDocum
 
     qInfo() << "[ProcessarNFe] << Processando NFe" << QString::fromStdString(doc.getChaveAcesso());
 
-    DocumentoFiscalRepository repo;
+    IDocumentoFiscalRepository &repo = m_repos.documentoFiscalRepo
+        ? *m_repos.documentoFiscalRepo
+        : RepositoryProvider::documentoFiscalRepository();
 
     QString chaveAcesso = QString::fromStdString(doc.getChaveAcesso());
     resultado.chaveAcesso = chaveAcesso;
@@ -237,15 +260,21 @@ ResultadoProcessamento ProcessFile::processarNFe(const zafra::document::NFeDocum
         DocumentoFiscalItem item(-1, nItem, cProd, xProd, uCom, qCom, vUnCom, vProd, vDesc, dadosItem, cEAN);
 
         if (tipoEmissao == TipoEmissao::Terceiro) {
-            ProdutoFornecedorRepository pfRepo;
+            IProdutoFornecedorRepository &pfRepo = m_repos.produtoFornecedorRepo
+                ? *m_repos.produtoFornecedorRepo
+                : RepositoryProvider::produtoFornecedorRepository();
+
             auto optPf = pfRepo.buscarPorFornecedorECodigo(idPessoa, cProd);
             if (!optPf.has_value() && !cEAN.isEmpty()) {
-                ProdutoRepository prodRepo;
+                IProdutoRepository &prodRepo = m_repos.produtoRepo
+                    ? *m_repos.produtoRepo
+                    : RepositoryProvider::produtoRepository();
+
                 auto optProd = prodRepo.buscarPorCodigoBarra(cEAN);
                 if (optProd.has_value()) {
                     Produto prodExistente = optProd.value();
                     ProdutoFornecedor pf(
-                        prodExistente.id().value(),
+                        prodExistente.id().value_or(0),
                         idPessoa,
                         cProd,
                         prodExistente.idUnidadeMedida(),
@@ -373,9 +402,12 @@ ResultadoProcessamento ProcessFile::processarNFe(const zafra::document::NFeDocum
     resultado.mensagem = QString("Documento ID %1").arg(resultado.idDocumentoFiscal);
 
     DocumentoFiscalArquivo docArquivo(documento.id().value(), conteudoXml, "DOCUMENTO_FISCAL");
-    DocumentoFiscalArquivoRepository arquivoRepo;
+    IDocumentoFiscalArquivoRepository &arquivoRepo = m_repos.documentoFiscalArquivoRepo
+        ? *m_repos.documentoFiscalArquivoRepo
+        : RepositoryProvider::documentoFiscalArquivoRepository();
+
     if (arquivoRepo.salvar(docArquivo)) {
-        qInfo() << "[ProcessarNFe] Arquivo XML salvo com sucesso no banco. ID:" << docArquivo.id().value();
+        qInfo() << "[ProcessarNFe] Arquivo XML salvo com sucesso no banco. ID:" << docArquivo.id().value_or(0);
     } else {
         qWarning() << "[ProcessarNFe] Falha ao salvar arquivo XML no banco para documento ID:" << documento.id().value();
         resultado.mensagem += " (aviso: XML não foi armazenado)";
@@ -388,7 +420,9 @@ int ProcessFile::carregarOuCriarPessoa(const zafra::document::NFeDocument &doc, 
     static QMutex s_pessoaMutex;
     QMutexLocker locker(&s_pessoaMutex);
 
-    PessoaRepository pessoaRepo;
+    IPessoaRepository &pessoaRepo = m_repos.pessoaRepo
+        ? *m_repos.pessoaRepo
+        : RepositoryProvider::pessoaRepository();
 
     QString cnpjCpf;
     QString razaoSocial;
@@ -400,38 +434,46 @@ int ProcessFile::carregarOuCriarPessoa(const zafra::document::NFeDocument &doc, 
     // 1. Identifica se a outra pessoa é o emitente ou o destinatário da nota
     if (tipoEmissao == "terceiro") {
         auto emitente = doc.GetEmit();
-        cnpjCpf = QString::fromStdString(emitente->GetCnpjCpf());
-        razaoSocial = QString::fromStdString(emitente->GetRazaoSocial());
-        if (!emitente->GetNomeFantasia().empty()) {
-            nomeFantasia = QString::fromStdString(emitente->GetNomeFantasia());
+        if (emitente) {
+            cnpjCpf = QString::fromStdString(emitente->GetCnpjCpf());
+            razaoSocial = QString::fromStdString(emitente->GetRazaoSocial());
+            if (!emitente->GetNomeFantasia().empty()) {
+                nomeFantasia = QString::fromStdString(emitente->GetNomeFantasia());
+            }
+            if (!emitente->GetInscricaoEstadual().empty()) {
+                inscricaoEstadual = QString::fromStdString(emitente->GetInscricaoEstadual());
+            }
+            enderXml = emitente->GetEnderEmit();
         }
-        if (!emitente->GetInscricaoEstadual().empty()) {
-            inscricaoEstadual = QString::fromStdString(emitente->GetInscricaoEstadual());
-        }
-        enderXml = emitente->GetEnderEmit();
         isFornecedor = "S";
     } else {
         auto dest = doc.GetDest();
-        cnpjCpf = QString::fromStdString(dest->GetCnpjCpf());
-        razaoSocial = QString::fromStdString(dest->GetNome());
-        if (dest->GetInscricaoEstadual().has_value()) {
-            inscricaoEstadual = QString::fromStdString(dest->GetInscricaoEstadual().value());
+        if (dest) {
+            // TODO: estrangeiro
+            cnpjCpf = QString::fromStdString(dest->GetCnpjCpf().value_or("00000000000"));
+            razaoSocial = QString::fromStdString(dest->GetNome());
+            if (dest->GetInscricaoEstadual().has_value()) {
+                inscricaoEstadual = QString::fromStdString(dest->GetInscricaoEstadual().value());
+            }
+            enderXml = dest->GetEnderDest();
         }
-        enderXml = dest->GetEnderDest();
     }
 
     // 2. Verifica se a Pessoa já existe cadastrada no banco
     if (!cnpjCpf.isEmpty()) {
         auto optExistente = pessoaRepo.buscarPorCnpjCpf(cnpjCpf);
         if (optExistente.has_value()) {
-            return optExistente.value().id().value();
+            return optExistente.value().id().value_or(0);
         }
     }
 
     // 3. Caso não exista, busca a Cidade pelo código IBGE do XML
     int idCidade = 1; // Fallback
     if (enderXml && enderXml->GetCodMunicipio() > 0) {
-        CidadeRepository cidadeRepo;
+        ICidadeRepository &cidadeRepo = m_repos.cidadeRepo
+            ? *m_repos.cidadeRepo
+            : RepositoryProvider::cidadeRepository();
+
         auto optCidade = cidadeRepo.buscarPorIbge(enderXml->GetCodMunicipio());
         if (optCidade.has_value()) {
             idCidade = optCidade.value().id();
@@ -444,7 +486,7 @@ int ProcessFile::carregarOuCriarPessoa(const zafra::document::NFeDocument &doc, 
         enderXml ? std::make_optional(QString::fromStdString(enderXml->GetNumero())) : std::nullopt,
         (enderXml && enderXml->GetComplemento().has_value()) ? std::make_optional(QString::fromStdString(enderXml->GetComplemento().value())) : std::nullopt,
         enderXml ? QString::fromStdString(enderXml->GetBairro()) : "",
-        enderXml ? QString::fromStdString(enderXml->GetCEP()) : "",
+        enderXml ? QString::fromStdString(enderXml->GetCEP().value_or("")) : "",
         idCidade
     );
 
@@ -468,19 +510,21 @@ int ProcessFile::carregarOuCriarPessoa(const zafra::document::NFeDocument &doc, 
     // 7. Salva no banco (o repositório salva o endereço e preenche o id da pessoa)
     pessoaRepo.salvar(novaPessoa);
 
-    qInfo() << "[ProcessFile] Nova Pessoa cadastrada automaticamente. ID:" << novaPessoa.id().value();
-    return novaPessoa.id().value();
+    qInfo() << "[ProcessFile] Nova Pessoa cadastrada automaticamente. ID:" << novaPessoa.id().value_or(0);
+    return novaPessoa.id().value_or(0);
 }
 
 int ProcessFile::carregarOuCriarProduto(const zafra::document::NFeDocumentDet &det) {
     static QMutex s_produtoMutex;
     QMutexLocker locker(&s_produtoMutex);
 
-    ProdutoRepository prodRepo;
+    IProdutoRepository &prodRepo = m_repos.produtoRepo
+        ? *m_repos.produtoRepo
+        : RepositoryProvider::produtoRepository();
 
     std::optional<Produto> optProduto = prodRepo.buscarPorCodigoInterno(QString::fromStdString(det.GetProd()->GetCProd()));
     if (optProduto.has_value()) {
-        return optProduto.value().id().value();
+        return optProduto.value().id().value_or(0);
     }
 
     auto prod = det.GetProd();
@@ -488,35 +532,42 @@ int ProcessFile::carregarOuCriarProduto(const zafra::document::NFeDocumentDet &d
     int idUnidadeMedida = carregarOuCriarUnidadeMedida(QString::fromStdString(prod->GetUCom()));
     int idNCM = carregarOuCriarNCM(QString::fromStdString(prod->GetNCM()));
 
+    QString cEAN = QString::fromStdString(prod->GetCEAN()).trimmed();
+    if (cEAN.compare("SEM GTIN", Qt::CaseInsensitive) == 0) {
+        cEAN.clear();
+    }
+
     Produto novoProduto(
         QString::fromStdString(prod->GetXProd()),
         idUnidadeMedida,
         idNCM,
         TipoProdutoAtividade::MercadoriaRevenda,
-        QString::fromStdString(prod->GetCEAN()),
+        cEAN,
         QString::fromStdString(prod->GetCProd())
     );
     prodRepo.salvar(novoProduto);
 
-    return novoProduto.id().value();
+    return novoProduto.id().value_or(0);
 }
 
 int ProcessFile::carregarOuCriarUnidadeMedida(const QString &sigla) {
     static QMutex s_unidadeMutex;
     QMutexLocker locker(&s_unidadeMutex);
 
-    UnidadeMedidaRepository unMedidaRepo;
+    IUnidadeMedidaRepository &unMedidaRepo = m_repos.unidadeMedidaRepo
+        ? *m_repos.unidadeMedidaRepo
+        : RepositoryProvider::unidadeMedidaRepository();
 
     auto optUnMedida = unMedidaRepo.buscarPorSigla(sigla);
     if (optUnMedida.has_value()) {
-        return optUnMedida.value().id().value();
+        return optUnMedida.value().id().value_or(0);
     }
 
     UnidadeMedida novaUnMedida(sigla, sigla);
     unMedidaRepo.salvar(novaUnMedida);
 
-    qInfo() << "[ProcessFile] Nova Unidade de Medida cadastrada automaticamente. ID:" << novaUnMedida.id().value();
-    return novaUnMedida.id().value();
+    qInfo() << "[ProcessFile] Nova Unidade de Medida cadastrada automaticamente. ID:" << novaUnMedida.id().value_or(0);
+    return novaUnMedida.id().value_or(0);
 }
 
 int ProcessFile::carregarOuCriarNCM(const QString &codigo)
@@ -524,17 +575,19 @@ int ProcessFile::carregarOuCriarNCM(const QString &codigo)
     static QMutex s_ncmMutex;
     QMutexLocker locker(&s_ncmMutex);
 
-    NCMRepository ncmRepo;
+    INCMRepository &ncmRepo = m_repos.ncmRepo
+        ? *m_repos.ncmRepo
+        : RepositoryProvider::ncmRepository();
 
     auto optNCM = ncmRepo.buscarPorCodigo(codigo);
     if (optNCM.has_value()) {
-        return optNCM.value().id().value();
+        return optNCM.value().id().value_or(0);
     }
 
     NCM novoNCM(codigo, "CADASTRO AUTOMATICO", 0, 0, 0, QDate::currentDate(), QDate::currentDate().addYears(1));
     ncmRepo.salvar(novoNCM);
 
-    qInfo() << "[ProcessFile] Novo NCM cadastrado automaticamente. ID:" << novoNCM.id().value();
+    qInfo() << "[ProcessFile] Novo NCM cadastrado automaticamente. ID:" << novoNCM.id().value_or(0);
 
-    return novoNCM.id().value();
+    return novoNCM.id().value_or(0);
 }

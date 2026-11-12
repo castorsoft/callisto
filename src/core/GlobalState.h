@@ -17,6 +17,10 @@ public:
         m_empresaAtual = empresa;
         emit empresaAtualChanged();
     }
+    void clearEmpresaAtual() {
+        m_empresaAtual = std::nullopt;
+        emit empresaAtualChanged();
+    }
 
 signals:
     void empresaAtualChanged();

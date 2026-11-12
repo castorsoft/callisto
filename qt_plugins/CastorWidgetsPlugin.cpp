@@ -5,6 +5,7 @@
 #include "InputCheckBoxPlugin.h"
 #include "InputRadioGroupPlugin.h"
 #include "InputLookupPlugin.h"
+#include "InputButtonPlugin.h"
 
 CastorWidgetsPlugin::CastorWidgetsPlugin(QObject *parent)
     : QObject(parent)
@@ -15,6 +16,7 @@ CastorWidgetsPlugin::CastorWidgetsPlugin(QObject *parent)
     m_widgets.append(new InputCheckBoxPlugin(this));
     m_widgets.append(new InputRadioGroupPlugin(this));
     m_widgets.append(new InputLookupPlugin(this));
+    m_widgets.append(new InputButtonPlugin(this));
 }
 
 QList<QDesignerCustomWidgetInterface*> CastorWidgetsPlugin::customWidgets() const

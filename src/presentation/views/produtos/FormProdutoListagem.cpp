@@ -1,5 +1,5 @@
 #include "FormProdutoListagem.h"
-#include "../../../infrastructure/database/repositories/ProdutoRepository.h"
+#include "../../../core/RepositoryProvider.h"
 #include "../../components/providers/TableDataProviderAdapter.h"
 
 FormProdutoListagem::FormProdutoListagem(QWidget *parent)
@@ -10,7 +10,7 @@ FormProdutoListagem::FormProdutoListagem(QWidget *parent)
 
 void FormProdutoListagem::carregarLista()
 {
-    ProdutoRepository repo;
+    auto &repo = RepositoryProvider::produtoRepository();
     auto produtos = repo.listarTodos();
     m_provider = std::make_shared<ProdutoListProvider>(produtos);
     auto adapter = new TableDataProviderAdapter(m_provider, this);

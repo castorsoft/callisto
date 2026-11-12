@@ -11,6 +11,14 @@ public:
     virtual int rowCount() const = 0;
     virtual int columnCount() const = 0;
     virtual QVariant data(int row, int column) const = 0;
+
+    virtual QVariant data(int row, int column, int role) const {
+        if (role == Qt::DisplayRole) {
+            return data(row, column);
+        }
+        return QVariant();
+    }
+
     virtual QString headerData(int column) const = 0;
 
     virtual std::optional<int> columnWidth(int /*column*/) const {

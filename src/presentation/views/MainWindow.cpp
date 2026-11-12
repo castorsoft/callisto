@@ -1,7 +1,8 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 
-#include "../../plugins/PluginManager.h"
+#include "../../infrastructure/plugins/PluginManager.h"
+#include "../../core/RepositoryProvider.h"
 #include "../plugins/api/IUIExtension.h"
 #include "../plugins/PluginContext.h"
 
@@ -98,7 +99,7 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::verificarEmpresaInicial() {
-    EmpresaRepository repo;
+    auto &repo = RepositoryProvider::empresaRepository();
     QList<Empresa> empresas = repo.listarTodas();
     if (!empresas.isEmpty()) {
         GlobalState::instance().setEmpresaAtual(empresas.first());

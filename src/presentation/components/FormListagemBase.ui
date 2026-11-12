@@ -24,23 +24,29 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="btnNew">
+      <widget class="InputButton" name="btnNew">
        <property name="text">
         <string>Novo</string>
+       </property>
+       <property name="colorScheme" stdset="0">
+        <enum>InputButton::Primary</enum>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="btnEdit">
+      <widget class="InputButton" name="btnEdit">
        <property name="text">
         <string>Editar</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="btnDelete">
+      <widget class="InputButton" name="btnDelete">
        <property name="text">
         <string>Excluir</string>
+       </property>
+       <property name="colorScheme" stdset="0">
+        <enum>InputButton::Danger</enum>
        </property>
       </widget>
      </item>
@@ -51,6 +57,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>InputButton</class>
+   <extends>QPushButton</extends>
+   <header>presentation/components/inputs/InputButton.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

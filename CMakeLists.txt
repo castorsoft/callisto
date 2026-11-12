@@ -19,8 +19,6 @@ file(GLOB_RECURSE CORE_LIB_SOURCES
     "src/core/*.h"
     "src/infrastructure/*.cpp"
     "src/infrastructure/*.h"
-    "src/plugins/*.cpp"
-    "src/plugins/*.h"
 )
 
 qt_add_library(core_lib STATIC ${CORE_LIB_SOURCES})
@@ -62,9 +60,9 @@ if(HEADLESS)
     target_compile_definitions(callisto PRIVATE HEADLESS_MODE)
 endif()
 
-# # 3. Habilitar testes
-# enable_testing()
-# add_subdirectory(tests)
+# 3. Habilitar testes
+enable_testing()
+add_subdirectory(tests)
 
 # install(TARGETS callisto
 #     BUNDLE  DESTINATION .
@@ -86,7 +84,7 @@ endif()
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/files)
 
-add_subdirectory(external_plugins/test_plugin)
+# add_subdirectory(external_plugins/test_plugin)
 add_subdirectory(external_plugins/sped_fiscal)
 add_subdirectory(qt_plugins)
 

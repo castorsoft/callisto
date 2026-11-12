@@ -67,6 +67,57 @@ bool PessoaRepository::salvar(Pessoa &modelPessoa) {
             modelPessoa.setCriadoEm(query.value("criado_em").toDateTime());
         }
 
+        int idPessoa = modelPessoa.id().value();
+        if (modelPessoa.contabilista() == "S" && modelPessoa.pessoaContabilista().has_value()) {
+            PessoaContabilista pc = modelPessoa.pessoaContabilista().value();
+            pc.setIdPessoa(idPessoa);
+
+            QSqlQuery checkQuery(DatabaseManager::instance().database());
+            checkQuery.prepare("SELECT id FROM public.pessoas_contabilista WHERE id_pessoa = :id_pessoa LIMIT 1");
+            checkQuery.bindValue(":id_pessoa", idPessoa);
+
+            QSqlQuery pcQuery(DatabaseManager::instance().database());
+            if (checkQuery.exec() && checkQuery.next()) {
+                int idPc = checkQuery.value("id").toInt();
+                pc.setId(idPc);
+                pcQuery.prepare(
+                    "UPDATE public.pessoas_contabilista SET "
+                    "cpf = :cpf, "
+                    "crc = :crc "
+                    "WHERE id = :id "
+                    "RETURNING atualizado_em"
+                );
+                pcQuery.bindValue(":id", idPc);
+            } else {
+                pcQuery.prepare(
+                    "INSERT INTO public.pessoas_contabilista (id_pessoa, cpf, crc) "
+                    "VALUES (:id_pessoa, :cpf, :crc) "
+                    "RETURNING id, criado_em, atualizado_em"
+                );
+                pcQuery.bindValue(":id_pessoa", idPessoa);
+            }
+
+            pcQuery.bindValue(":cpf", pc.cpf().isEmpty() ? QVariant() : pc.cpf());
+            pcQuery.bindValue(":crc", pc.crc());
+
+            if (pcQuery.exec() && pcQuery.next()) {
+                if (!pc.id().has_value()) {
+                    pc.setId(pcQuery.value("id").toInt());
+                    pc.setCriadoEm(pcQuery.value("criado_em").toDateTime());
+                }
+                pc.setAtualizadoEm(pcQuery.value("atualizado_em").toDateTime());
+                modelPessoa.setPessoaContabilista(pc);
+            } else {
+                qCritical() << "[PessoaRepository] Erro ao salvar dados de contabilista:" << pcQuery.lastError().text();
+            }
+        } else {
+            QSqlQuery delQuery(DatabaseManager::instance().database());
+            delQuery.prepare("DELETE FROM public.pessoas_contabilista WHERE id_pessoa = :id_pessoa");
+            delQuery.bindValue(":id_pessoa", idPessoa);
+            delQuery.exec();
+            modelPessoa.setPessoaContabilista(std::nullopt);
+        }
+
         return true;
     } else {
         qCritical() << "[PessoaRepository] Erro ao inserir/atualizar pessoa:" << query.lastError().text();
@@ -77,7 +128,14 @@ bool PessoaRepository::salvar(Pessoa &modelPessoa) {
 
 std::optional<Pessoa> PessoaRepository::buscarPorId(int id) {
     QSqlQuery query(DatabaseManager::instance().database());
-    query.prepare("SELECT * FROM pessoas WHERE id = :id");
+    query.prepare(
+        "SELECT p.*, "
+        "pc.id AS cont_id, pc.id_pessoa AS cont_id_pessoa, pc.cpf AS cont_cpf, pc.crc AS cont_crc, "
+        "pc.criado_em AS cont_criado_em, pc.atualizado_em AS cont_atualizado_em "
+        "FROM public.pessoas p "
+        "LEFT JOIN public.pessoas_contabilista pc ON pc.id_pessoa = p.id "
+        "WHERE p.id = :id"
+    );
     query.bindValue(":id", id);
 
     if (query.exec() && query.next()) return mapToEntity(query);
@@ -86,7 +144,14 @@ std::optional<Pessoa> PessoaRepository::buscarPorId(int id) {
 
 std::optional<Pessoa> PessoaRepository::buscarPorUuid(const QUuid &uuid) {
     QSqlQuery query(DatabaseManager::instance().database());
-    query.prepare("SELECT * FROM pessoas WHERE uuid = :uuid");
+    query.prepare(
+        "SELECT p.*, "
+        "pc.id AS cont_id, pc.id_pessoa AS cont_id_pessoa, pc.cpf AS cont_cpf, pc.crc AS cont_crc, "
+        "pc.criado_em AS cont_criado_em, pc.atualizado_em AS cont_atualizado_em "
+        "FROM public.pessoas p "
+        "LEFT JOIN public.pessoas_contabilista pc ON pc.id_pessoa = p.id "
+        "WHERE p.uuid = :uuid"
+    );
     query.bindValue(":uuid", uuid);
 
     if (query.exec() && query.next()) return mapToEntity(query);
@@ -98,18 +163,58 @@ std::optional<Pessoa> PessoaRepository::buscarPorCnpjCpf(const QString &cnpjCpf)
     cnpjCpfTratado.remove('.').remove('-').remove('/');
 
     QSqlQuery query(DatabaseManager::instance().database());
-    query.prepare("SELECT * FROM pessoas WHERE cnpj_cpf = :cnpj_cpf");
+    query.prepare(
+        "SELECT p.*, "
+        "pc.id AS cont_id, pc.id_pessoa AS cont_id_pessoa, pc.cpf AS cont_cpf, pc.crc AS cont_crc, "
+        "pc.criado_em AS cont_criado_em, pc.atualizado_em AS cont_atualizado_em "
+        "FROM public.pessoas p "
+        "LEFT JOIN public.pessoas_contabilista pc ON pc.id_pessoa = p.id "
+        "WHERE p.cnpj_cpf = :cnpj_cpf"
+    );
     query.bindValue(":cnpj_cpf", cnpjCpfTratado);
 
     if (query.exec() && query.next()) return mapToEntity(query);
     return std::nullopt;
 }
 
+QList<Pessoa> PessoaRepository::buscarContadorPorTermo(const QString &termo) {
+    QList<Pessoa> lista;
+
+    QSqlQuery query(DatabaseManager::instance().database());
+    query.prepare(
+        "SELECT p.*, "
+        "pc.id AS cont_id, pc.id_pessoa AS cont_id_pessoa, pc.cpf AS cont_cpf, pc.crc AS cont_crc, "
+        "pc.criado_em AS cont_criado_em, pc.atualizado_em AS cont_atualizado_em "
+        "FROM public.pessoas p "
+        "LEFT JOIN public.pessoas_contabilista pc ON pc.id_pessoa = p.id "
+        "WHERE p.contabilista = 'S' "
+        "AND (p.razao_social ILIKE :termo OR p.nome_fantasia ILIKE :termo OR p.cnpj_cpf ILIKE :termo) "
+        "ORDER BY p.razao_social"
+    );
+    query.bindValue(":termo", "%" + termo + "%");
+
+    if (query.exec()) {
+        while (query.next()) {
+            lista.append(Pessoa::fromRecord(query.record()));
+        }
+    } else {
+        qCritical() << "[PessoaRepository] Erro ao buscar contadores por termo:" << query.lastError().text();
+    }
+    return lista;
+}
+
 QList<Pessoa> PessoaRepository::listarTodas() {
     QList<Pessoa> lista;
 
     QSqlQuery query(DatabaseManager::instance().database());
-    query.prepare("SELECT * FROM pessoas ORDER BY razao_social");
+    query.prepare(
+        "SELECT p.*, "
+        "pc.id AS cont_id, pc.id_pessoa AS cont_id_pessoa, pc.cpf AS cont_cpf, pc.crc AS cont_crc, "
+        "pc.criado_em AS cont_criado_em, pc.atualizado_em AS cont_atualizado_em "
+        "FROM public.pessoas p "
+        "LEFT JOIN public.pessoas_contabilista pc ON pc.id_pessoa = p.id "
+        "ORDER BY p.razao_social"
+    );
 
     if (query.exec()) {
         while (query.next()) {

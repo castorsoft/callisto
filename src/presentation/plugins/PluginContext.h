@@ -1,15 +1,9 @@
 #pragma once
 
-#include "../../plugins/api/IPluginContext.h"
-#include "../../infrastructure/database/repositories/EmpresaRepository.h"
-#include "../../infrastructure/database/repositories/DocumentoFiscalRepository.h"
-#include "../../infrastructure/database/repositories/PessoaRepository.h"
-#include "../../infrastructure/database/repositories/ProdutoRepository.h"
-#include "../../infrastructure/database/repositories/ProdutoFornecedorRepository.h"
-#include "../../infrastructure/database/repositories/UnidadeMedidaRepository.h"
+#include "api/IUIPluginContext.h"
 #include <functional>
 
-class PluginContext : public IPluginContext {
+class PluginContext : public IUIPluginContext {
 public:
     using TabOpener = std::function<void(QWidget*, const QString&)>;
 
@@ -34,9 +28,12 @@ public:
     InputMasked* createInputMasked(const QString &label, const QString &mask = "", QWidget *parent = nullptr) const override;
     InputComboBox* createInputComboBox(const QString &label, QWidget *parent = nullptr) const override;
     InputCheckBox* createInputCheckBox(const QString &label, const QString &text = "", QWidget *parent = nullptr) const override;
+    InputLookup* createInputLookup(const QString &label, const QString &placeholder = "", QWidget *parent = nullptr) const override;
+    InputButton* createInputButton(const QString &text, QWidget *parent = nullptr) const override;
 
     // Métodos Factory de Containers e Layouts
     QGroupBox* createGroupBox(const QString &title, QWidget *parent = nullptr) const override;
+    QScrollArea* createScrollArea(QWidget *parent = nullptr) const override;
     QHBoxLayout* createHBoxLayout(QWidget *parent = nullptr) const override;
     QVBoxLayout* createVBoxLayout(QWidget *parent = nullptr) const override;
     QGridLayout* createGridLayout(QWidget *parent = nullptr) const override;
@@ -48,12 +45,5 @@ public:
     QWidget* createVerticalSpacing(int height = 10, QWidget *parent = nullptr) const override;
 
 private:
-    mutable EmpresaRepository m_empresaRepo;
-    mutable DocumentoFiscalRepository m_docFiscalRepo;
-    mutable PessoaRepository m_pessoaRepo;
-    mutable ProdutoRepository m_produtoRepo;
-    mutable ProdutoFornecedorRepository m_produtoFornecedorRepo;
-    mutable UnidadeMedidaRepository m_unidadeMedidaRepo;
-
     TabOpener m_tabOpener;
 };

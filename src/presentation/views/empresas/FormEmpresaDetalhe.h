@@ -4,6 +4,7 @@
 #include <QWidget>
 #include "../../components/FormDetalheBase.h"
 #include "../../../core/entities/Empresa.h"
+#include "../../../core/interfaces/ICnpjService.h"
 
 namespace Ui {
 class FormEmpresaDetalhe;
@@ -14,7 +15,7 @@ class FormEmpresaDetalhe : public FormDetalheBase
     Q_OBJECT
 
 public:
-    explicit FormEmpresaDetalhe(QWidget *parent = nullptr);
+    explicit FormEmpresaDetalhe(QWidget *parent = nullptr, ICnpjService *cnpjService = nullptr);
     ~FormEmpresaDetalhe();
 
 private:
@@ -37,6 +38,7 @@ protected:
 private:
     void preencherUF();
     std::optional<Empresa> m_empresaAtual;
+    ICnpjService *m_cnpjService{nullptr};
 };
 
 #endif // FORMEMPRESADETALHEH

@@ -2,9 +2,7 @@
 #include "ui_FormProdutoDetalhe.h"
 #include "../../components/ToastNotification.h"
 #include "../../../core/entities/Produto.h"
-#include "../../../infrastructure/database/repositories/ProdutoRepository.h"
-#include "../../../infrastructure/database/repositories/NCMRepository.h"
-#include "../../../infrastructure/database/repositories/UnidadeMedidaRepository.h"
+#include "../../../core/RepositoryProvider.h"
 #include "../../../core/GlobalState.h"
 #include "../../../core/constants/Mensagens.h"
 #include <QVariant>
@@ -14,24 +12,24 @@ FormProdutoDetalhe::FormProdutoDetalhe(QWidget *parent)
     , ui(new Ui::FormProdutoDetalhe) {
     ui->setupUi(this);
 
-    ui->edtTipoAtividade->addItem("00 – Mercadoria para Revenda", "00");
-    ui->edtTipoAtividade->addItem("01 – Matéria-Prima", "01");
-    ui->edtTipoAtividade->addItem("02 – Embalagem", "02");
-    ui->edtTipoAtividade->addItem("03 – Produto em Processo", "03");
-    ui->edtTipoAtividade->addItem("04 – Produto Acabado", "04");
-    ui->edtTipoAtividade->addItem("05 – Subproduto", "05");
-    ui->edtTipoAtividade->addItem("06 – Produto Intermediário", "06");
-    ui->edtTipoAtividade->addItem("07 – Material de Uso e Consumo", "07");
-    ui->edtTipoAtividade->addItem("08 – Ativo Imobilizado", "08");
-    ui->edtTipoAtividade->addItem("09 – Serviços", "09");
-    ui->edtTipoAtividade->addItem("10 – Outros insumos", "10");
-    ui->edtTipoAtividade->addItem("99 – Outras", "99");
+    ui->edtTipoAtividade->addItem("00 - Mercadoria para Revenda", "00");
+    ui->edtTipoAtividade->addItem("01 - Matéria-Prima", "01");
+    ui->edtTipoAtividade->addItem("02 - Embalagem", "02");
+    ui->edtTipoAtividade->addItem("03 - Produto em Processo", "03");
+    ui->edtTipoAtividade->addItem("04 - Produto Acabado", "04");
+    ui->edtTipoAtividade->addItem("05 - Subproduto", "05");
+    ui->edtTipoAtividade->addItem("06 - Produto Intermediário", "06");
+    ui->edtTipoAtividade->addItem("07 - Material de Uso e Consumo", "07");
+    ui->edtTipoAtividade->addItem("08 - Ativo Imobilizado", "08");
+    ui->edtTipoAtividade->addItem("09 - Serviços", "09");
+    ui->edtTipoAtividade->addItem("10 - Outros insumos", "10");
+    ui->edtTipoAtividade->addItem("99 - Outras", "99");
 
     connect(ui->lookupNCM, &InputLookup::searchRequested, this, &FormProdutoDetalhe::buscarNCM);
     connect(ui->lookupUnMedida, &InputLookup::searchRequested, this, &FormProdutoDetalhe::buscarUnMedida);
 
-    connect(ui->btnCancelar, &QPushButton::clicked, this, &FormProdutoDetalhe::fechar);
-    connect(ui->btnSalvar, &QPushButton::clicked, this, &FormProdutoDetalhe::onSalvar);
+    connect(ui->btnCancelar, &InputButton::clicked, this, &FormProdutoDetalhe::fechar);
+    connect(ui->btnSalvar, &InputButton::clicked, this, &FormProdutoDetalhe::onSalvar);
 
     // preencherUF();
     // atualizarCidades(1);
@@ -42,8 +40,8 @@ FormProdutoDetalhe::FormProdutoDetalhe(QWidget *parent)
     // connect(ui->cbContabilista, &InputCheckBox::toggled, this, [this](bool) { atualizarVisibilidadeAbas(); });
 
     // connect(ui->rgProduto, &InputRadioGroup::currentIndexChanged, this, &FormProdutoDetalhe::onProdutoChange);
-    // connect(ui->btnCancelar, &QPushButton::clicked, this, &FormProdutoDetalhe::fechar);
-    // connect(ui->btnSalvar, &QPushButton::clicked, this, &FormProdutoDetalhe::onSalvar);
+    // connect(ui->btnCancelar, &InputButton::clicked, this, &FormProdutoDetalhe::fechar);
+    // connect(ui->btnSalvar, &InputButton::clicked, this, &FormProdutoDetalhe::onSalvar);
     // connect(ui->cbUF, &InputComboBox::currentIndexChanged, this, &FormProdutoDetalhe::atualizarCidades);
 
     // ui->rgProduto->setCurrentIndex(0);
@@ -55,7 +53,7 @@ FormProdutoDetalhe::~FormProdutoDetalhe() {
 }
 
 void FormProdutoDetalhe::buscarNCM(QString aTermo) {
-    NCMRepository repo;
+    auto &repo = RepositoryProvider::ncmRepository();
 
     auto lista = repo.buscarPorTermo(aTermo);
 
@@ -67,7 +65,7 @@ void FormProdutoDetalhe::buscarNCM(QString aTermo) {
 }
 
 void FormProdutoDetalhe::buscarUnMedida(QString aTermo) {
-    UnidadeMedidaRepository unRepo;
+    auto &unRepo = RepositoryProvider::unidadeMedidaRepository();
 
     auto lista = unRepo.buscarPorTermo(aTermo);
 
@@ -90,7 +88,7 @@ void FormProdutoDetalhe::preencherDadosIniciais(const QString &descricao,
     }
 
     if (!siglaUnidade.isEmpty()) {
-        UnidadeMedidaRepository unRepo;
+        auto &unRepo = RepositoryProvider::unidadeMedidaRepository();
         auto optUn = unRepo.buscarPorSigla(siglaUnidade);
         if (optUn.has_value()) {
             ui->lookupUnMedida->setCurrentData(optUn.value().id().value(), optUn.value().textoExibicao());
@@ -98,7 +96,7 @@ void FormProdutoDetalhe::preencherDadosIniciais(const QString &descricao,
     }
 
     if (!codigoNcm.isEmpty()) {
-        NCMRepository ncmRepo;
+        auto &ncmRepo = RepositoryProvider::ncmRepository();
         auto optNcm = ncmRepo.buscarPorCodigo(codigoNcm);
         if (optNcm.has_value()) {
             ui->lookupNCM->setCurrentData(optNcm.value().id().value(), optNcm.value().textoExibicao());
@@ -142,9 +140,9 @@ bool FormProdutoDetalhe::validar() {
 void FormProdutoDetalhe::carregarDados() {
     if (!m_idRegistro.has_value()) return;
 
-    ProdutoRepository prodRepo;
-    UnidadeMedidaRepository unRepo;
-    NCMRepository ncmRepo;
+    auto &prodRepo = RepositoryProvider::produtoRepository();
+    auto &unRepo = RepositoryProvider::unidadeMedidaRepository();
+    auto &ncmRepo = RepositoryProvider::ncmRepository();
 
     m_produtoAtual = prodRepo.buscarPorId(m_idRegistro.value());
 
@@ -189,7 +187,7 @@ void FormProdutoDetalhe::onSalvar() {
         p.setTipoAtividade(tipoAtividade);
         p.setIdNcm(idNCM);
 
-        ProdutoRepository prodRepo;
+        auto &prodRepo = RepositoryProvider::produtoRepository();
 
         prodRepo.salvar(p);
         m_produtoAtual = p;

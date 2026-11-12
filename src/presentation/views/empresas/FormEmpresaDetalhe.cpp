@@ -2,18 +2,15 @@
 #include "ui_FormEmpresaDetalhe.h"
 #include "../../components/ToastNotification.h"
 #include "../../../core/entities/Empresa.h"
-#include "../../../infrastructure/database/repositories/EmpresaRepository.h"
-#include "../../../infrastructure/database/repositories/EnderecoRepository.h"
-#include "../../../infrastructure/database/repositories/EstadoRepository.h"
-#include "../../../infrastructure/database/repositories/CidadeRepository.h"
+#include "../../../core/RepositoryProvider.h"
 #include "../../../core/GlobalState.h"
 #include "../../../core/constants/Mensagens.h"
-#include "../../../infrastructure/services/CnpjService.h"
 #include <QVariant>
 
-FormEmpresaDetalhe::FormEmpresaDetalhe(QWidget *parent)
+FormEmpresaDetalhe::FormEmpresaDetalhe(QWidget *parent, ICnpjService *cnpjService)
     : FormDetalheBase(parent)
-    , ui(new Ui::FormEmpresaDetalhe) {
+    , ui(new Ui::FormEmpresaDetalhe)
+    , m_cnpjService(cnpjService) {
     ui->setupUi(this);
 
     ui->rgPessoa->addOption("Física");
@@ -30,8 +27,8 @@ FormEmpresaDetalhe::FormEmpresaDetalhe(QWidget *parent)
     connect(ui->edtCNPJ, &InputMasked::editingFinished, this, &FormEmpresaDetalhe::onCnpjEditingFinished);
 
     connect(ui->rgPessoa, &InputRadioGroup::currentIndexChanged, this, &FormEmpresaDetalhe::onPessoaChange);
-    connect(ui->btnCancelar, &QPushButton::clicked, this, &FormEmpresaDetalhe::fechar);
-    connect(ui->btnSalvar, &QPushButton::clicked, this, &FormEmpresaDetalhe::onSalvar);
+    connect(ui->btnCancelar, &InputButton::clicked, this, &FormEmpresaDetalhe::fechar);
+    connect(ui->btnSalvar, &InputButton::clicked, this, &FormEmpresaDetalhe::onSalvar);
     connect(ui->cbUF, &InputComboBox::currentIndexChanged, this, &FormEmpresaDetalhe::atualizarCidades);
 
     ui->rgPessoa->setCurrentIndex(0);
@@ -64,7 +61,7 @@ bool FormEmpresaDetalhe::validar() {
 void FormEmpresaDetalhe::carregarDados() {
     if (!m_idRegistro.has_value()) return;
 
-    EmpresaRepository repo;
+    auto &repo = RepositoryProvider::empresaRepository();
     m_empresaAtual = repo.buscarPorId(m_idRegistro.value());
 
     if (m_empresaAtual.has_value()) {
@@ -143,7 +140,7 @@ void FormEmpresaDetalhe::onSalvar() {
         emp.setRegimeTributario(regimeTributario);
         emp.setEndereco(endereco);
 
-        EmpresaRepository repo;
+        auto &repo = RepositoryProvider::empresaRepository();
         repo.salvar(emp);
 
         GlobalState::instance().setEmpresaAtual(emp);
@@ -157,7 +154,7 @@ void FormEmpresaDetalhe::onSalvar() {
 
 void FormEmpresaDetalhe::preencherUF() {
     ui->cbUF->clear();
-    EstadoRepository repo;
+    auto &repo = RepositoryProvider::estadoRepository();
     QList<Estado> estados = repo.listarTodos();
     for (const Estado& estado : estados) {
         ui->cbUF->addItem(estado.sigla(), estado.id());
@@ -172,7 +169,7 @@ void FormEmpresaDetalhe::atualizarCidades(int indexUF) {
 
     int idEstado = ufData.toInt();
 
-    CidadeRepository repo;
+    auto &repo = RepositoryProvider::cidadeRepository();
     QList<Cidade> cidades = repo.listarPorEstado(idEstado);
     for (const Cidade& cidade : cidades) {
         ui->cbCidade->addItem(cidade.nome(), cidade.id());
@@ -196,9 +193,14 @@ void FormEmpresaDetalhe::onCnpjEditingFinished() {
     cnpj.remove('.').remove('-').remove('/');
 
     if (cnpj.length() == 14) {
-        auto *service = new CnpjService(this);
-        connect(service, &CnpjService::consultaFinalizada, this, &FormEmpresaDetalhe::onCnpjRetornado);
-        connect(service, &CnpjService::erroConsulta, this, &FormEmpresaDetalhe::onCnpjErro);
+        ICnpjService *service = m_cnpjService ? m_cnpjService : ICnpjService::create(this);
+        if (!service) {
+            ToastNotification::show(this, "Aviso", "Serviço de consulta de CNPJ não configurado.", ToastNotification::Warning, 3000);
+            return;
+        }
+
+        connect(service, &ICnpjService::consultaFinalizada, this, &FormEmpresaDetalhe::onCnpjRetornado, Qt::UniqueConnection);
+        connect(service, &ICnpjService::erroConsulta, this, &FormEmpresaDetalhe::onCnpjErro, Qt::UniqueConnection);
 
         ToastNotification::show(this, "Aguarde", "Consultando CNPJ...", ToastNotification::Info, 2000);
         service->consultarCNPJ(cnpj);
@@ -206,8 +208,8 @@ void FormEmpresaDetalhe::onCnpjEditingFinished() {
 }
 
 void FormEmpresaDetalhe::onCnpjRetornado(const CnpjResult &resultado) {
-    auto *service = qobject_cast<CnpjService*>(sender());
-    if (service) service->deleteLater();
+    auto *service = qobject_cast<ICnpjService*>(sender());
+    if (service && service != m_cnpjService) service->deleteLater();
 
     if (!resultado.isValid) {
         ToastNotification::show(this, "Aviso", "CNPJ inválido ou não encontrado na Receita.", ToastNotification::Warning, 3000);
@@ -229,7 +231,7 @@ void FormEmpresaDetalhe::onCnpjRetornado(const CnpjResult &resultado) {
     }
 
     if (resultado.ibgeCidade > 0) {
-        CidadeRepository cidadeRepo;
+        auto &cidadeRepo = RepositoryProvider::cidadeRepository();
         auto cidadeOpt = cidadeRepo.buscarPorIbge(resultado.ibgeCidade);
         if (cidadeOpt.has_value()) {
             int indexCidade = ui->cbCidade->findIndex(cidadeOpt.value().id());
@@ -241,8 +243,8 @@ void FormEmpresaDetalhe::onCnpjRetornado(const CnpjResult &resultado) {
 }
 
 void FormEmpresaDetalhe::onCnpjErro(const QString &erro) {
-    auto *service = qobject_cast<CnpjService*>(sender());
-    if (service) service->deleteLater();
+    auto *service = qobject_cast<ICnpjService*>(sender());
+    if (service && service != m_cnpjService) service->deleteLater();
 
     ToastNotification::show(this, "Erro", "Falha na consulta do CNPJ: " + erro, ToastNotification::Error, 3000);
 }

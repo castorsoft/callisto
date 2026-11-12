@@ -213,7 +213,7 @@
               <item>
                 <layout class="QHBoxLayout" name="horizontalLayout_41">
                   <item>
-                    <widget class="QPushButton" name="btnCancelar">
+                    <widget class="InputButton" name="btnCancelar">
                       <property name="minimumSize">
                         <size>
                           <width>0</width>
@@ -239,7 +239,7 @@
                     </spacer>
                   </item>
                   <item>
-                    <widget class="QPushButton" name="btnSalvar">
+                    <widget class="InputButton" name="btnSalvar">
                       <property name="minimumSize">
                         <size>
                           <width>0</width>
@@ -248,6 +248,9 @@
                       </property>
                       <property name="text">
                         <string>Salvar</string>
+                      </property>
+                      <property name="colorScheme" stdset="0">
+                        <enum>InputButton::Primary</enum>
                       </property>
                     </widget>
                   </item>
@@ -260,6 +263,11 @@
     </layout>
   </widget>
   <customwidgets>
+    <customwidget>
+      <class>InputButton</class>
+      <extends>QPushButton</extends>
+      <header>presentation/components/inputs/InputButton.h</header>
+    </customwidget>
     <customwidget>
       <class>InputMasked</class>
       <extends>QWidget</extends>

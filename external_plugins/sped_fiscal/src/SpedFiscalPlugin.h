@@ -3,8 +3,9 @@
 #include <QObject>
 #include <QPointer>
 #include <memory>
-#include "../../../src/plugins/api/IPlugin.h"
+#include "../../../src/core/plugins/IPlugin.h"
 #include "../../../src/presentation/plugins/api/IUIExtension.h"
+#include "../../../src/presentation/plugins/api/IUIPluginContext.h"
 #include "ui/FormSpedFiscal.h"
 
 class SpedFiscalPlugin : public QObject, public IPlugin, public IUIExtension {
@@ -18,6 +19,7 @@ public:
 
     void setContext(std::shared_ptr<IPluginContext> context) override {
         m_context = context;
+        m_uiContext = std::dynamic_pointer_cast<IUIPluginContext>(context);
     }
 
     void initializePlugin() const override;
@@ -31,5 +33,6 @@ private slots:
 
 private:
     std::shared_ptr<IPluginContext> m_context;
+    std::shared_ptr<IUIPluginContext> m_uiContext;
     QPointer<FormSpedFiscal> m_form;
 };

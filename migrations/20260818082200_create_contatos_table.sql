@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS public.contatos
     tipo tipo_contato NOT NULL,
     contato character varying(60) COLLATE pg_catalog."default" NOT NULL,
     criado_em timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    atualizao_em timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT contatos_pkey PRIMARY KEY (id),
     CONSTRAINT contatos_unique UNIQUE (uuid)
 )

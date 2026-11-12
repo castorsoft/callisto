@@ -2,8 +2,12 @@
 #include "infrastructure/config/ConfigManager.h"
 #include "infrastructure/database/DatabaseManager.h"
 #include "infrastructure/database/MigrationRunner.h"
+#include "infrastructure/database/SqlRepositoryFactory.h"
+#include "infrastructure/services/CnpjService.h"
+#include "core/interfaces/ICnpjService.h"
+#include "core/RepositoryProvider.h"
 
-#include "plugins/PluginManager.h"
+#include "infrastructure/plugins/PluginManager.h"
 
 #ifdef HEADLESS_MODE
 #include <QCoreApplication>
@@ -87,12 +91,18 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    // Inicialização da fábrica central de repositórios
+    RepositoryProvider::setFactory(std::make_shared<SqlRepositoryFactory>());
+
     // Carrega o sistema de plugins
     showMessage("Carregando plugins.");
     PluginManager &pluginMgr = PluginManager::instance();
     pluginMgr.loadPlugins(a.applicationDirPath() + "/bin/plugins");
 
     showMessage("Inicializando serviços");
+    ICnpjService::setFactory([](QObject *parent) -> ICnpjService* {
+        return new CnpjService(parent);
+    });
     // Adicionar demais services aqui
     ServiceManager::instance().startAll();
 

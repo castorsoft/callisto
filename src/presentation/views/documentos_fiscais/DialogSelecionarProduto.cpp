@@ -1,8 +1,7 @@
 #include "DialogSelecionarProduto.h"
 #include "ui_DialogSelecionarProduto.h"
 
-#include "../../../infrastructure/database/repositories/ProdutoRepository.h"
-#include "../../../infrastructure/database/repositories/UnidadeMedidaRepository.h"
+#include "../../../core/RepositoryProvider.h"
 
 #include <QHeaderView>
 #include <QTableWidgetItem>
@@ -35,8 +34,8 @@ DialogSelecionarProduto::DialogSelecionarProduto(int idFornecedor,
     connect(ui->editBusca, &QLineEdit::textChanged, this, &DialogSelecionarProduto::onBuscaChanged);
     connect(ui->tableProdutos, &QTableWidget::itemSelectionChanged, this, &DialogSelecionarProduto::onTabelaSelectionChanged);
     connect(ui->tableProdutos, &QTableWidget::cellDoubleClicked, this, &DialogSelecionarProduto::onTabelaDoubleClicked);
-    connect(ui->btnConfirmar, &QPushButton::clicked, this, &DialogSelecionarProduto::onConfirmarClicked);
-    connect(ui->btnCancelar, &QPushButton::clicked, this, &QDialog::reject);
+    connect(ui->btnConfirmar, &InputButton::clicked, this, &DialogSelecionarProduto::onConfirmarClicked);
+    connect(ui->btnCancelar, &InputButton::clicked, this, &QDialog::reject);
 }
 
 DialogSelecionarProduto::~DialogSelecionarProduto()
@@ -62,7 +61,7 @@ void DialogSelecionarProduto::configurarTabela()
 void DialogSelecionarProduto::carregarUnidades()
 {
     ui->comboUnidade->clear();
-    UnidadeMedidaRepository umRepo;
+    auto &umRepo = RepositoryProvider::unidadeMedidaRepository();
     QList<UnidadeMedida> unidades = umRepo.listarTodas();
 
     int defaultIndex = -1;
@@ -84,7 +83,7 @@ void DialogSelecionarProduto::carregarUnidades()
 
 void DialogSelecionarProduto::carregarProdutos(const QString &filtro)
 {
-    ProdutoRepository prodRepo;
+    auto &prodRepo = RepositoryProvider::produtoRepository();
     QList<Produto> todos = prodRepo.listarTodos();
 
     m_produtosFiltrados.clear();

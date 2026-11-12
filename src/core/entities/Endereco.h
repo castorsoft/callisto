@@ -39,7 +39,7 @@ public:
     void setCep(const QString &val) { m_cep = val; }
     void setIdCidade(int val) { m_idCidade = val; }
 
-    Cidade cidade() const { return m_cidade.value(); }
+    Cidade cidade() const { return m_cidade.value_or(Cidade()); }
     void setCidade(const Cidade &cidade) { m_cidade = cidade; m_idCidade = cidade.id(); }
 
     std::optional<QDateTime> criadoEm() const { return m_criadoEm; }

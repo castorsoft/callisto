@@ -2,13 +2,21 @@
 
 #include <QWidget>
 #include <QList>
+#include <memory>
+#include <optional>
+#include <QItemSelection>
 #include "../../../core/interfaces/IDocumentoFiscalRepository.h"
+#include "../providers/NotaTerceiroListProvider.h"
+#include "../providers/NotaTerceiroItemListProvider.h"
+#include "../../components/providers/TableDataProviderAdapter.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class FormVincularProdutos;
 }
 QT_END_NAMESPACE
+
+class QSortFilterProxyModel;
 
 class FormVincularProdutos : public QWidget {
     Q_OBJECT
@@ -33,11 +41,20 @@ private:
     void carregarItensDaNotaSelecionada();
     void atualizarBotoesAcaoItem();
 
+    void aplicarConfiguracoesTabelaNotas();
+    void aplicarConfiguracoesTabelaItens();
+
+    std::optional<NotaTerceiroResumo> notaSelecionada() const;
+    std::optional<NotaTerceiroItem> itemSelecionado() const;
+
     Ui::FormVincularProdutos *ui;
 
-    QList<NotaTerceiroResumo> m_todasNotas;
-    QList<NotaTerceiroResumo> m_notasFiltradas;
-    QList<NotaTerceiroItem> m_itensNotaAtual;
+    std::shared_ptr<NotaTerceiroListProvider> m_notasProvider;
+    TableDataProviderAdapter *m_notasAdapter{nullptr};
+    QSortFilterProxyModel *m_notasProxy{nullptr};
+
+    std::shared_ptr<NotaTerceiroItemListProvider> m_itensProvider;
+    TableDataProviderAdapter *m_itensAdapter{nullptr};
 
     int m_idNotaSelecionada{-1};
     int m_idFornecedorNotaAtual{-1};

@@ -132,7 +132,9 @@ void ConfigManager::setServiceSearchConfig(const QStringList &paths)
     QJsonObject pathsConfig;
     pathsConfig["paths"] = pathsItemsConfig;
 
-    m_configJson["services"].toObject().insert("search", pathsConfig);
+    QJsonObject servicesConfig = m_configJson["services"].toObject();
+    servicesConfig["search"] = pathsConfig;
+    m_configJson["services"] = servicesConfig;
 }
 
 void ConfigManager::setDatabaseConfig(const QString &host, int port, const QString &dbName, const QString &user, const QString &password)

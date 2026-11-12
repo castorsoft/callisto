@@ -1,19 +1,11 @@
 #pragma once
 
+#include "core/plugins/IPluginContext.h"
 #include <QString>
-#include <QDate>
-#include <memory>
-#include <optional>
-#include "../../core/entities/Empresa.h"
-#include "../../core/interfaces/IEmpresaRepository.h"
-#include "../../core/interfaces/IDocumentoFiscalRepository.h"
-#include "../../core/interfaces/IPessoaRepository.h"
-#include "../../core/interfaces/IProdutoRepository.h"
-#include "../../core/interfaces/IProdutoFornecedorRepository.h"
-#include "../../core/interfaces/IUnidadeMedidaRepository.h"
 
 class QWidget;
 class QGroupBox;
+class QScrollArea;
 class QHBoxLayout;
 class QVBoxLayout;
 class QGridLayout;
@@ -23,21 +15,12 @@ class InputText;
 class InputMasked;
 class InputComboBox;
 class InputCheckBox;
+class InputLookup;
+class InputButton;
 
-class IPluginContext {
+class IUIPluginContext : public virtual IPluginContext {
 public:
-    virtual ~IPluginContext() = default;
-
-    // Estado da Aplicação
-    virtual std::optional<Empresa> empresaAtual() const = 0;
-
-    // Acesso aos Repositórios
-    virtual IEmpresaRepository& empresaRepository() const = 0;
-    virtual IDocumentoFiscalRepository& documentoFiscalRepository() const = 0;
-    virtual IPessoaRepository& pessoaRepository() const = 0;
-    virtual IProdutoRepository& produtoRepository() const = 0;
-    virtual IProdutoFornecedorRepository& produtoFornecedorRepository() const = 0;
-    virtual IUnidadeMedidaRepository& unidadeMedidaRepository() const = 0;
+    ~IUIPluginContext() override = default;
 
     // Serviços de Interface Gráfica (UI)
     virtual void openTab(QWidget *widget, const QString &title) = 0;
@@ -47,9 +30,12 @@ public:
     virtual InputMasked* createInputMasked(const QString &label, const QString &mask = "", QWidget *parent = nullptr) const = 0;
     virtual InputComboBox* createInputComboBox(const QString &label, QWidget *parent = nullptr) const = 0;
     virtual InputCheckBox* createInputCheckBox(const QString &label, const QString &text = "", QWidget *parent = nullptr) const = 0;
+    virtual InputLookup* createInputLookup(const QString &label, const QString &placeholder = "", QWidget *parent = nullptr) const = 0;
+    virtual InputButton* createInputButton(const QString &text, QWidget *parent = nullptr) const = 0;
 
     // Métodos Factory de Containers e Layouts
     virtual QGroupBox* createGroupBox(const QString &title, QWidget *parent = nullptr) const = 0;
+    virtual QScrollArea* createScrollArea(QWidget *parent = nullptr) const = 0;
     virtual QHBoxLayout* createHBoxLayout(QWidget *parent = nullptr) const = 0;
     virtual QVBoxLayout* createVBoxLayout(QWidget *parent = nullptr) const = 0;
     virtual QGridLayout* createGridLayout(QWidget *parent = nullptr) const = 0;
@@ -60,3 +46,4 @@ public:
     virtual QWidget* createHorizontalSpacing(int width = 10, QWidget *parent = nullptr) const = 0;
     virtual QWidget* createVerticalSpacing(int height = 10, QWidget *parent = nullptr) const = 0;
 };
+
