@@ -129,6 +129,7 @@ Na raiz do projeto (copiado automaticamente para a pasta `build/` pelo CMake, ou
 ```text
 dfe/
 ├── CMakeLists.txt              # Configuração principal de build CMake
+├── LICENSE                     # Licença de código aberto (GNU General Public License v3.0)
 ├── config.json                 # Parâmetros de conexão com o PostgreSQL
 ├── docs/                       # Documentação e especificação de requisitos
 ├── migrations/                 # Scripts SQL versionados executados na inicialização
@@ -143,3 +144,15 @@ dfe/
     ├── infrastructure/         # PostgreSQL, Repositórios SQL, Migrations, CnpjService e PluginManager
     └── presentation/           # Views (MainWindow, Forms), Providers, Inputs customizados e contratos de UI de plugins (IUIExtension, IUIPluginContext)
 ```
+
+---
+
+## 📄 Licença
+
+Este projeto é software livre e está licenciado sob os termos da **[GNU General Public License v3.0 (GPLv3)](file:///home/lamb/dev/castorsoft/dfe/LICENSE)**.
+
+### Compatibilidade com a Licença Open Source do Qt
+O **Callisto DFE** utiliza o framework **Qt 6**, distribuído sob as licenças de código aberto **GNU LGPLv3** e **GNU GPLv3**. O licenciamento deste projeto sob a **GNU GPLv3** é totalmente compatível e adequado às exigências das licenças open source do ecossistema Qt:
+- Garante total conformidade com os módulos do Qt licenciados sob LGPLv3 e eventuais componentes sob GPLv3;
+- Assegura a liberdade de uso, estudo, modificação e redistribuição do código-fonte para todos os usuários.
+
